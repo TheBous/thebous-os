@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "thebous-os",
-  "version": "1.2.0",
+  "version": "0.0.1",
   "description": "Git workflow automation: branch, PR, merge, tag — synced with Jira, Slack and Confluence",
   "owner": {
     "name": "Luca Valsecchi",
@@ -12,7 +12,7 @@
   "plugins": [
     {
       "name": "thebous-jira-git-sync",
-      "version": "1.2.0",
+      "version": "0.0.1",
       "description": "New branch, create/review/merge PR, tag release — auto-updates Jira status, notifies Slack, manages Confluence docs",
       "author": {
         "name": "Luca Valsecchi",
