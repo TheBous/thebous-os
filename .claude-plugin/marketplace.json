@@ -29,6 +29,26 @@
       "homepage": "https://github.com/TheBous/github-jira-slack-claudecode",
       "repository": "https://github.com/TheBous/github-jira-slack-claudecode",
       "source": "./"
+    },
+    {
+      "name": "morning-briefing",
+      "version": "0.1.0",
+      "description": "Briefing mattutino: PR review notturne, PR ancora in sospeso, commenti nuovi, scadenze Jira, task in partenza, call di oggi",
+      "author": {
+        "name": "Luca Valsecchi",
+        "email": "thebous1993@gmail.com"
+      },
+      "keywords": [
+        "github",
+        "jira",
+        "calendar",
+        "obsidian",
+        "briefing",
+        "automation"
+      ],
+      "homepage": "https://github.com/TheBous/thebous-os",
+      "repository": "https://github.com/TheBous/thebous-os",
+      "source": "./morning-briefing"
     }
   ]
 }
