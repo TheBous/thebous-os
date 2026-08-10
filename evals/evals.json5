@@ -106,7 +106,7 @@
       prompt: "Create a Confluence page documenting the new export feature",
       expected_output: "Loads Confluence credentials, generates page content from the code, and publishes only after user approval",
       expectations: [
-        "Tells the user to run /jira-git-sync:setup if CONFLUENCE_PARENT_URL is missing",
+        "Tells the user to run /thebous-jira-git-sync:setup if CONFLUENCE_PARENT_URL is missing",
         "Generated content is shown to the user before publishing",
         "Page is created under CONFLUENCE_PARENT_URL as parent"
       ]
@@ -119,7 +119,7 @@
       expectations: [
         "Existing page is located before any write, not recreated as a new page",
         "Proposed changes are shown to the user before calling the update API",
-        "Tells the user to run /jira-git-sync:setup if credentials are missing"
+        "Tells the user to run /thebous-jira-git-sync:setup if credentials are missing"
       ]
     },
     {

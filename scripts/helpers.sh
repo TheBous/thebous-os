@@ -8,7 +8,7 @@ ENV_FILE="${CLAUDE_PLUGIN_DATA:-$HOME/.config/jira-git-sync}/.env"
 
 load_env() {
   if [ ! -f "$ENV_FILE" ]; then
-    echo "ERROR: credenziali non trovate. Esegui /jira-git-sync:setup prima." >&2
+    echo "ERROR: credenziali non trovate. Esegui /thebous-jira-git-sync:setup prima." >&2
     exit 1
   fi
   # shellcheck source=/dev/null
