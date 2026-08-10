@@ -17,8 +17,17 @@ Configuration (optional, first run only):
 The first run will ask for:
 - `GITHUB_REPOS`: list of repos to check (comma-separated, leave blank for all your repos)
 - `OBSIDIAN_VAULT_PATH`: path to your Obsidian vault (leave blank to skip Obsidian logging)
+- `GMAIL_ADDRESS` / `GMAIL_APP_PASSWORD`: only needed on harnesses **without** a native Gmail connector (OpenCode, Codex). On Claude Code with the Gmail connector already authorized, leave both blank.
 
 These are saved to `~/.config/morning-briefing/.env` for future runs.
+
+### Gmail App Password (OpenCode, Codex, or any harness without a native Gmail connector)
+
+1. Enable 2-Step Verification on your Google account, if not already on.
+2. Go to https://myaccount.google.com/apppasswords and generate a new App Password (16 characters, no spaces).
+3. Set `GMAIL_ADDRESS` to your Gmail address and `GMAIL_APP_PASSWORD` to that 16-char password in the `.env`.
+
+This uses plain IMAP under the hood — no OAuth app registration, no per-harness setup. It works identically regardless of which harness calls it, since it's just a stored secret and a stdlib IMAP connection.
 
 ## Daily Scheduling
 

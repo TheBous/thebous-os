@@ -1,12 +1,13 @@
 ---
 name: morning-briefing
-description: Genera il briefing mattutino dell'utente su richiesta o quando gira come task schedulato delle 9:00 - copre PR GitHub da revieware richieste durante la notte, PR review ancora aperte da prima, nuovi commenti sulle PR aperte dall'utente, task Jira in scadenza nei prossimi 3 giorni, task Jira che iniziano oggi, e gli impegni/call del giorno dal calendario. Usa SEMPRE questa skill quando l'utente dice "buongiorno", "situazione della giornata", "cosa ho oggi", "com'è la giornata", "briefing mattutino", "morning briefing", "run morning briefing", "riassunto di ieri e oggi", o quando viene invocata dal task schedulato giornaliero - anche se l'utente non nomina esplicitamente PR/Jira/calendario, perché il punto della skill è raccogliere tutto per lui.
+description: Genera il briefing mattutino dell'utente su richiesta o quando gira come task schedulato delle 9:00 - copre PR GitHub da revieware richieste durante la notte, PR review ancora aperte da prima, nuovi commenti sulle PR aperte dall'utente, task Jira in scadenza nei prossimi 3 giorni, task Jira che iniziano oggi, attività Jira notturna, email importanti ricevute durante la notte, gli impegni/call del giorno dal calendario, e una classifica di priorità che riordina tutto questo. Usa SEMPRE questa skill quando l'utente dice "buongiorno", "situazione della giornata", "cosa ho oggi", "com'è la giornata", "briefing mattutino", "morning briefing", "run morning briefing", "riassunto di ieri e oggi", o quando viene invocata dal task schedulato giornaliero - anche se l'utente non nomina esplicitamente PR/Jira/email/calendario, perché il punto della skill è raccogliere tutto per lui.
 ---
 
 # Morning Briefing
 
-Raccoglie in un colpo solo lo stato di sei fonti (PR GitHub in due direzioni, commenti,
-scadenze Jira, task Jira in partenza, calendario) e presenta un unico report. Non è un
+Raccoglie in un colpo solo lo stato di otto fonti (PR GitHub in due direzioni, commenti,
+scadenze Jira, task Jira in partenza, attività Jira notturna, email, calendario) e le
+riordina per priorità in un unico report. Non è un
 riassunto generico: ogni sezione ha una fonte dati precisa e una finestra temporale
 precisa — segui gli step così come sono, non improvvisare query diverse da quelle qui sotto.
 
@@ -17,9 +18,20 @@ Questa skill ha bisogno di due valori, salvati in `${CLAUDE_PLUGIN_DATA}/.env`:
 ```
 GITHUB_REPOS=<lista separata da virgole, es. TheBous/thebous-os,TheBous/altro-repo — vuoto = tutti i repo a cui l'utente ha accesso>
 OBSIDIAN_VAULT_PATH=<path assoluto del vault Obsidian — vuoto = non salvare la daily note>
+GMAIL_ADDRESS=<indirizzo Gmail — vuoto = salta la sezione email, solo su harness senza il connettore Gmail nativo>
+GMAIL_APP_PASSWORD=<App Password di Google (16 caratteri, non la password normale) — vuoto = salta la sezione email>
 ```
 
-Se il file non esiste ancora, chiedi questi due valori all'utente (uno alla volta, entrambi
+`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD` servono **solo** come fallback per harness
+senza un connettore Gmail nativo (vedi Step 6) — su Claude Code con il
+connettore Gmail già autorizzato, lasciali vuoti, non servono. Se l'utente
+vuole configurarli: un'App Password si genera su
+https://myaccount.google.com/apppasswords (richiede la verifica in due
+passaggi attiva sull'account) — è più semplice di un flusso OAuth completo e
+funziona identico su qualsiasi harness, perché è solo una password stdlib
+IMAP, non un'integrazione da configurare separatamente ovunque.
+
+Se il file non esiste ancora, chiedi questi valori all'utente (uno alla volta, tutti
 opzionali — invio vuoto è una risposta valida), poi salvali:
 
 ```bash
@@ -27,6 +39,8 @@ mkdir -p "${CLAUDE_PLUGIN_DATA}"
 cat > "${CLAUDE_PLUGIN_DATA}/.env" <<EOF
 GITHUB_REPOS=<valore o vuoto>
 OBSIDIAN_VAULT_PATH=<valore o vuoto>
+GMAIL_ADDRESS=<valore o vuoto>
+GMAIL_APP_PASSWORD=<valore o vuoto>
 EOF
 ```
 
@@ -127,7 +141,7 @@ Tieni solo le PR che hanno almeno un risultato in una di queste tre chiamate.
 ## Step 4: Task Jira in scadenza (oggi, domani, dopodomani)
 
 Prima risolvi il `cloudId` una sola volta (serve a tutte le chiamate Jira di questo step
-e del prossimo): usa lo strumento MCP `getAccessibleAtlassianResources` e prendi l'`id`
+e dei due successivi): usa lo strumento MCP `getAccessibleAtlassianResources` e prendi l'`id`
 del sito Jira dell'utente (se ce n'è uno solo, è quello; se ce ne sono più, chiedi
 all'utente quale usare — succede raramente, ma non indovinare).
 
@@ -156,7 +170,64 @@ chiedi all'utente quale campo usa per la data di inizio, poi aggiorna questo fil
 nome corretto una volta scoperto — è più veloce chiederlo una volta che indovinare ogni
 mattina.
 
-## Step 6: Impegni/call di oggi
+## Step 6: Attività Jira durante la notte
+
+Jira Cloud non espone un feed pubblico delle notifiche (la campanella che
+vedi nell'interfaccia) via API — questa non è la stessa cosa, è un **proxy**:
+attività reale sui tuoi ticket durante la finestra notturna, che copre la
+maggior parte di quello per cui saresti stato notificato (nuovi commenti,
+menzioni, cambi di stato):
+
+```
+jql: (assignee = currentUser() OR reporter = currentUser()) AND updated >= "<NIGHT_START in formato 'YYYY-MM-DD HH:MM'>" ORDER BY updated DESC
+fields: ["summary", "status", "project", "comment"]
+```
+
+Per ogni ticket risultante, guarda dentro `fields.comment` i commenti con
+`created`/`updated` nella finestra notturna e riportali; se il testo del
+commento contiene il nome/username dell'utente, segnalalo esplicitamente
+come menzione (ha più probabilità di richiedere una risposta rispetto a un
+commento generico).
+
+## Step 7: Email importanti ricevute durante la notte
+
+**Se esiste un tool MCP Gmail nativo nella sessione** (es. `search_threads` —
+tipicamente disponibile su Claude Code con il connettore Gmail autorizzato),
+usalo come fonte primaria:
+
+```
+query: "in:inbox category:primary newer_than:1d -from:notifications@github.com is:unread"
+```
+
+`-from:notifications@github.com` esclude le notifiche GitHub via email: sono
+già coperte, con più dettaglio, dagli step 2 e 3. `category:primary` toglie
+gran parte del rumore promozionale/social — non è perfetto (newsletter e
+alert LinkedIn a volte restano dentro), è un primo filtro ragionevole da
+affinare se vedi troppo rumore nei run reali.
+
+Poi filtra al preciso, con la stessa logica usata per le PR: tieni solo i
+messaggi con `date` dentro `NIGHT_START_ISO` → adesso.
+
+**Fallback universale** (harness senza connettore Gmail nativo — OpenCode,
+Codex, ecc. — usa questo se il tool MCP sopra non è disponibile):
+
+```bash
+if [ -n "${GMAIL_ADDRESS:-}" ] && [ -n "${GMAIL_APP_PASSWORD:-}" ]; then
+  python3 "${CLAUDE_PLUGIN_ROOT}/scripts/gmail_imap_overnight.py" "${GMAIL_ADDRESS}" "${GMAIL_APP_PASSWORD}" \
+    | python3 "${CLAUDE_PLUGIN_ROOT}/scripts/filter_messages_in_window.py" "$NIGHT_START_ISO" "$NOW_ISO"
+fi
+```
+
+Lo script IMAP prende le email non lette degli ultimi 2 giorni (IMAP `SEARCH`
+è granulare per giorno, non per ora), poi il secondo script filtra al preciso
+sulla finestra notturna. Ritorna `[]` (non un errore) se le credenziali
+mancano o sono sbagliate — fonte opzionale, non deve bloccare il resto del
+briefing.
+
+Per ogni email trovata (da entrambe le fonti), mostra mittente e oggetto —
+non il corpo completo, solo abbastanza per giudicare se serve attenzione.
+
+## Step 8: Impegni/call di oggi
 
 Usa lo strumento MCP calendario (`list_events` sul calendario primario, nessun
 `calendarId` esplicito), con:
@@ -175,13 +246,37 @@ gli eventi che soddisfano **almeno una** di queste condizioni:
 Per ciascun evento tenuto, mostra titolo, orario di inizio/fine, e il `conferenceUrl` se
 presente.
 
-## Step 7: Componi il report
+## Step 9: Classifica tutto per priorità
+
+Prima di comporre il report, guarda tutto ciò che hai raccolto negli step 2-8
+insieme e assegna a ogni elemento un livello, usando questi segnali come
+guida (non una formula rigida — usa il giudizio, sono indicatori, non regole
+assolute):
+
+- **🔴 Critica**: task Jira che scade oggi o è già in ritardo; menzione diretta
+  (email o commento Jira) che aspetta chiaramente una risposta da te
+- **🟠 Alta**: PR review richiesta stanotte; nuovo commento su una tua PR che
+  aspetta una risposta; attività Jira notturna su un tuo ticket
+- **🟡 Media**: PR review ancora in sospeso da giorni; task Jira che scade
+  domani o dopodomani; task che inizia oggi
+- **⚪ Bassa/FYI**: email informative non urgenti, promemoria passivi
+
+Un elemento può comparire sia nella classifica di priorità sia nella sua
+sezione dettagliata sotto — la classifica è un indice rapido, non sostituisce
+il dettaglio.
+
+## Step 10: Componi il report
 
 Usa esattamente questa struttura (se una sezione non ha risultati, scrivi "Nessuna" — non
 saltare la sezione, l'utente deve sapere che è stata controllata):
 
 ```markdown
 # 🌅 Morning Briefing — <TODAY>
+
+## 🔥 Da guardare per primo
+- 🔴 <elemento critico> — <perché>
+- 🟠 <elemento alta priorità> — <perché>
+(solo 🔴 e 🟠 qui, elenco corto — il resto è nelle sezioni sotto)
 
 ## 🌙 PR review richieste stanotte
 - [<repo>#<num>] <titolo> — <url>
@@ -198,13 +293,19 @@ saltare la sezione, l'utente deve sapere che è stata controllata):
 ## 🚀 Task Jira che iniziano oggi
 - <KEY> <summary> — <status>
 
+## 🔔 Attività Jira notturna
+- <KEY> <summary> — <chi ha commentato/cosa è cambiato> <menzione se presente>
+
+## 📧 Email importanti stanotte
+- <mittente> — <oggetto>
+
 ## 📞 Impegni di oggi
 - <HH:MM>–<HH:MM> <titolo> <link se presente>
 ```
 
 Mostra questo report in chat, nella lingua dell'utente (italiano).
 
-## Step 8: Salva nella daily note di Obsidian (solo se configurato)
+## Step 11: Salva nella daily note di Obsidian (solo se configurato)
 
 Se `OBSIDIAN_VAULT_PATH` è impostata e la cartella esiste, appendi il report di sopra
 alla daily note di oggi usando lo script già pronto (crea la nota se non esiste,
@@ -213,15 +314,15 @@ trovi due sezioni, non una sovrascritta):
 
 ```bash
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  bash "${CLAUDE_PLUGIN_ROOT}/scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 7>"
+  bash "${CLAUDE_PLUGIN_ROOT}/scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 10>"
 fi
 ```
 
 Se `OBSIDIAN_VAULT_PATH` non è configurata, salta questo step senza dirlo come se fosse
 un errore — è una scelta valida non salvare nulla.
 
-## Step 9: Conferma finale
+## Step 12: Conferma finale
 
 Dopo aver mostrato il report, aggiungi una riga sola:
-- `📓 Salvato anche in Obsidian` (se lo step 8 ha scritto qualcosa)
+- `📓 Salvato anche in Obsidian` (se lo step 11 ha scritto qualcosa)
 - oppure `📓 Obsidian non configurato — solo qui in chat` (se non era configurato)
