@@ -120,10 +120,10 @@ obsidian_append_section() {
 obsidian_append_daily() {
   local vault="$1" line="$2"
   local dir file
-  dir="$vault/Dev/Daily"
-  file="$dir/$(date +%Y-%m-%d).md"
+  dir="$vault/Dev/Daily/$(date +%Y-%m-%d)"
+  file="$dir/10 - Work Log.md"
   mkdir -p "$dir"
-  [ -f "$file" ] || echo "# $(date +%Y-%m-%d)" > "$file"
+  [ -f "$file" ] || echo "# Work Log — $(date +%Y-%m-%d)" > "$file"
   echo "- $line" >> "$file"
 }
 
