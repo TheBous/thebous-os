@@ -5,8 +5,8 @@
 Every action `jira-git-sync` already performs (branch creation, PR review, review
 addressing, doc sync) should also leave a short, linked trace in the user's
 Obsidian vault, so the daily dev workflow is fully logged without extra manual
-work. This is the first sub-project of `thebous-os`; Granola call-notes
-integration and any new orchestration skills are explicitly out of scope here.
+work. This is the first sub-project of `thebous-os`; any new orchestration
+skills beyond this are explicitly out of scope here.
 
 ## Where this lives
 
@@ -35,7 +35,7 @@ Dev/
       plan.md            # from cook's SDD chain (sdd-spec/sdd-design/sdd-tasks)
       review.md           # from review-pr, when the user reviews someone else's PR
       address-review.md   # from address-review, fixes applied to received comments
-      calls.md            # reserved for future Granola integration — not written yet
+      calls.md            # wikilinks to related Granola meeting notes (see Granola section)
   Daily/
     <YYYY-MM-DD>.md        # index/log for the day, links out to ticket notes touched
 ```
@@ -73,9 +73,43 @@ logic:
 | `review-pr` | append `review.md` with the verdict summary, append daily note entry |
 | `address-review` | append `address-review.md` with resolved items summary, append daily note entry |
 | `create-doc` / `update-doc` | append the Confluence page link to the ticket file (no content duplication), append daily note entry |
+| `new-branch`, `cook` | optional: offer to link a related Granola call into `calls.md` (see Granola section) |
 
 `merge-pr`, `tag`, `verify-resolved`, `serve-up`/`serve-down`, `setup` are
 untouched — no Obsidian-relevant state change happens there.
+
+## Granola integration
+
+Granola's own API is cloud-based, OAuth-gated, and currently Enterprise-only
+with no public pricing/access — not usable here, and not worth reverse
+engineering. Instead, sync is delegated entirely to an existing, actively
+maintained community plugin:
+
+- **[dannymcc/Granola-to-Obsidian](https://github.com/dannymcc/Granola-to-Obsidian)**
+  (220 stars, actively maintained) — reads the local Granola desktop app's
+  own credentials and syncs meeting notes straight into the vault on an
+  interval. No API keys or OAuth flow for us to manage.
+- **Manual, one-time setup** (not automated by thebous-os): the user installs
+  this plugin from Obsidian's Community Plugins browser and configures its
+  sync folder — default `Granola/` at the vault root. This is a GUI install
+  inside Obsidian itself; thebous-os does not download or place any third-party
+  plugin files into the vault.
+- Each synced note carries frontmatter: `granola_id`, `title`, `created_at`,
+  `granola_url` — enough to identify and link a note without needing to talk
+  to Granola at all.
+
+**thebous-os's job is only linking, not syncing.** In `new-branch` and `cook`,
+add a step: search `<vault>/Granola/*.md` for notes with `created_at` near the
+ticket's active window (or matching keywords from the ticket title), show the
+user up to 5 candidates by title + date, and let them pick one or skip. On a
+match, append a wikilink to the ticket's `calls.md`:
+
+```
+- [[Granola/2026-08-10_Sprint_Planning]] — linked 2026-08-10
+```
+
+If the `Granola/` folder doesn't exist (plugin not installed), skip this step
+silently — same non-blocking rule as the Obsidian vault path itself.
 
 ## Configuration
 
@@ -113,9 +147,24 @@ for `new-branch`:
 }
 ```
 
+Add one more for the Granola linking step (`new-branch` or `cook`):
+
+```json5
+{
+  command: "new-branch",
+  prompt: "Create a new branch for ticket DC-443, Granola/ folder has 3 recent notes",
+  expected_output: "... after creating the branch, offers up to 5 candidate Granola notes near the ticket's window and links the user's choice into calls.md",
+  expectations: [
+    "Never auto-picks a Granola note without user confirmation",
+    "Skips the linking step silently when the Granola/ folder doesn't exist"
+  ]
+}
+```
+
 ## Out of scope (deferred)
 
-- Granola call-notes integration (`calls.md` stays a reserved, unwritten file).
+- Automating the Granola-to-Obsidian plugin's own installation — the user
+  installs it manually via Obsidian's plugin browser.
 - The source repo `TheBous/github-jira-slack-claudecode` is not touched at all —
   no PR, no branch, nothing pushed there. `thebous-os` is a standalone copy.
 - Platform mirrors (`.opencode/`, `.codex-plugin/`, `gemini-extension.json`) —
