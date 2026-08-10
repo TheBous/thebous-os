@@ -100,11 +100,49 @@ Do you want to update them? (yes/no/list which ones)
 
 Wait for confirmation. For each confirmed doc, update the relevant content to reflect the implemented changes.
 
-### 7. Final confirmation
+### 7. Log to Obsidian (optional)
+
+Only if a Jira ticket was found in step 1 (`<KEY>` is set). Follow `references/obsidian-log.md`. Summarize what the SDD chain produced into a few sentences (`<SDD_SUMMARY>` — not the full spec/design docs) and append it to the ticket's plan:
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
+  PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
+  obsidian_append_section "$PLAN_FILE" "<SDD_SUMMARY>"
+  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — implemented via SDD"
+fi
+```
+
+### 8. Link a Granola call (optional)
+
+Only if `OBSIDIAN_VAULT_PATH` is set and `<KEY>` is set:
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+[ -n "${OBSIDIAN_VAULT_PATH:-}" ] && obsidian_granola_candidates "${OBSIDIAN_VAULT_PATH}" 14
+```
+
+If it lists anything, show up to 5 candidates (filename + `title:` frontmatter) and ask: "Link one of these calls to `<KEY>`? (number or 'no')". On a pick:
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+CALLS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "calls.md")
+echo "- [[Granola/<chosen-filename-without-.md>]] — linked $(date +%Y-%m-%d)" >> "$CALLS_FILE"
+```
+
+If the list is empty or the user declines, skip silently.
+
+### 9. Final confirmation
 
 Show the user:
 - ✅ Feature/fix implemented via SDD
 - ✅ Spec, design, and tasks completed and archived
 - ✅ Tests: full suite green (all scripts passed)
 - ✅ Documentation updated: `<list of files/pages>` (if applicable)
+- ✅ Obsidian: logged (or "skipped, no vault configured")
+- ✅ Granola call linked: `<note>` (if applicable, otherwise omit this line)
 - → Suggest the next step: `/thebous-jira-git-sync:serve-up` to try it in a browser, or `/thebous-jira-git-sync:create-pr` to open the PR
