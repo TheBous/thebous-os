@@ -205,13 +205,29 @@ Wait for a reply before proceeding.
 
 If no document was found or the user declines, skip this step silently.
 
-### 13. Confirmation
+### 13. Log to Obsidian (optional)
+
+Only if the PR's branch matched a Jira key in step 1 (`<KEY>` is set). Follow `references/obsidian-log.md`. Summarize the resolved items (`<RESOLUTION_SUMMARY>`, e.g. "3 comments addressed: 2 fixed, 1 outdated"):
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
+  ADDRESS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "address-review.md")
+  obsidian_append_section "$ADDRESS_FILE" "<RESOLUTION_SUMMARY>"
+  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — addressed review comments"
+fi
+```
+
+### 14. Confirmation
 
 Show the user:
 - Fixes applied for the review comments
 - Tests: `<list of scripts>` — all green (if run)
 - Replies posted on the PR with their emoji statuses
 - Documentation updated: `<list of files/pages>` (if applicable)
+- Obsidian: logged (or "skipped, no vault configured / no linked ticket")
 - Suggest pushing the branch with `git push`
 
 ## Style for reply prose
