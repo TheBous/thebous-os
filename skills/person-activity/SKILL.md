@@ -44,6 +44,51 @@ Each interaction shows who, when, what, and a link to the source.
 3. Queries each source in parallel for interactions by that person on that work item
 4. Synthesizes all results into a timeline and summary report
 
+## Example Usage
+
+**Command:**
+```
+person-activity
+```
+
+**Interaction:**
+```
+Enter work item ID (Jira key, GitHub PR #, or git commit hash): DC-443
+Enter person's name or email: marco@company.com
+```
+
+**Output Sample:**
+```markdown
+# Activity — DC-443 with Marco Rossi
+
+## 📋 Synthetic Summary
+- **Role**: Reviewer, technical lead
+- **Key Decisions**: Approved implementation approach on 2026-07-28; requested schema changes on 2026-07-25
+- **Latest**: Added comment "Looks good, ready to merge" on 2026-08-09
+- **Status**: Approved
+
+## 📍 Timeline
+- 2026-07-25 14:30: Jira comment "Let's adjust the schema to support bulk updates"
+- 2026-07-28 09:15: GitHub review approved with suggestions
+- 2026-08-09 16:45: Jira comment "Looks good, ready to merge"
+
+## 💬 Sources
+### Jira Comments
+- 3 comments | [View on Jira](https://jira.company.com/browse/DC-443)
+
+### GitHub PR/Reviews
+- 2 reviews, 1 comment | [View PR #1842](https://github.com/company/repo/pull/1842)
+
+### Slack
+- 2 messages in #engineering channel
+
+### Email
+- 1 thread with team
+
+### Calendar
+- 1 decision meeting on 2026-07-27
+```
+
 ## Notes
 
 - Each source is **optional** — if credentials are missing or the query fails, it's skipped (no error)
@@ -51,3 +96,4 @@ Each interaction shows who, when, what, and a link to the source.
 - All queries are read-only; no data is modified
 - Typical query time: 2–5 seconds depending on source availability
 - Report is always in markdown, suitable for copying into docs or sharing
+- See `references/examples.md` for more detailed examples and expected outputs
