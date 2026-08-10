@@ -78,14 +78,22 @@ gh api repos/<owner>/<repo>/issues/<number>/timeline --paginate \
 
 (`tail -1` prende la richiesta più recente, se te l'hanno richiesta più volte.)
 
-Dividi le PR in due gruppi confrontando quel timestamp con `NIGHT_START_ISO`:
+Dividi le PR in tre gruppi:
 - **Richieste stanotte**: timestamp >= `NIGHT_START_ISO`
-- **Ancora in sospeso da prima**: timestamp < `NIGHT_START_ISO` (le hai già viste ieri o
-  prima, non le hai ancora chiuse)
+- **Ancora in sospeso da prima (< 3 giorni)**: timestamp < `NIGHT_START_ISO` E > 3 giorni fa
+- **Waiting 3+ giorni** ⚠️: timestamp < 3 giorni fa (flagga nel proactive section)
+
+Il terzo gruppo serve per Step 2.5 (Things at Risk).
 
 Se `gh api .../timeline` non trova nessun evento `review_requested` per una PR (capita se
 la richiesta è arrivata da un team, non da un utente singolo), mettila nel gruppo "ancora
 in sospeso da prima" per default — meglio segnalarla come vecchia che perderla.
+
+## Step 2.5: Proactive flagging — waiting items 3+ giorni
+
+Dalla lista di PR del Step 2, estrai quelle nel gruppo **Waiting 3+ giorni** (review richiesta >3 giorni fa).
+Queste entrano nella sezione "⚠️ Things at Risk" del report, non nella sezione PR ordinaria — sono
+blockers silenziosi che tendono a cadere dalle crepe se non segnalati esplicitamente.
 
 ## Step 3: Nuovi commenti sulle PR che hai aperto tu
 
@@ -284,6 +292,11 @@ saltare la sezione, l'utente deve sapere che è stata controllata):
 
 ```markdown
 # 🌅 Morning Briefing — <TODAY>
+
+## ⚠️ Things at Risk
+- 🔴 PR <repo>#<num> waiting review since <data> — <giorni> giorni, unblocks <impatto>
+- 🔴 <KEY> scade <duedate> (in <N> giorni) — <status>, still in progress
+(mostra solo elementi che richiedono azione immediata)
 
 ## 🔥 Da guardare per primo
 - 🔴 <elemento critico> — <perché>
