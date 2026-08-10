@@ -43,6 +43,62 @@ else
   LATEST_SOURCE="unknown"
 fi
 
+# ── Detect Role: reviewer, commenter, decision-maker ──────────────────
+detect_role() {
+  local json="$1"
+  # Count decision patterns
+  local approved=$(echo "$json" | jq '[.[] | select(.state == "APPROVED")] | length' 2>/dev/null || echo 0)
+  local reviews=$(echo "$json" | jq '[.[] | select(.state != null)] | length' 2>/dev/null || echo 0)
+
+  if [ "$approved" -gt 0 ] || [ "$reviews" -gt 1 ]; then
+    echo "reviewer"
+  else
+    echo "commenter"
+  fi
+}
+
+ROLE=$(detect_role "$COMBINED_JSON")
+
+# ── Extract Key Decisions from activities ───────────────────────────
+extract_decisions() {
+  local json="$1"
+  echo "$json" | jq -r '[
+    .[] |
+    select(.body != null and (.body | length > 0)) |
+    select(
+      (.body | test("(?i)(should|must|approved?|reject|changes?|important|critical|blocking|merge)")) or
+      .state == "APPROVED" or
+      .state == "CHANGES_REQUESTED"
+    ) |
+    .body
+  ] | .[0:2] | map(sub("^\\s+"; "") | split("\\n")[0]) | join("; ")' 2>/dev/null || echo ""
+}
+
+KEY_DECISIONS=$(extract_decisions "$COMBINED_JSON")
+if [ -z "$KEY_DECISIONS" ]; then
+  KEY_DECISIONS="No major decisions recorded"
+fi
+
+# ── Determine Status ────────────────────────────────────────────────
+determine_status() {
+  local json="$1"
+  local latest_state=$(echo "$json" | jq -r '.[-1].state // "unknown"' 2>/dev/null || echo "unknown")
+
+  case "$latest_state" in
+    APPROVED)
+      echo "approved"
+      ;;
+    CHANGES_REQUESTED)
+      echo "waiting for review"
+      ;;
+    *)
+      echo "in-progress"
+      ;;
+  esac
+}
+
+STATUS=$(determine_status "$COMBINED_JSON")
+
 # ── Generate Markdown Report ────────────────────────────────────────
 {
   echo "# Activity — $WORKITEM_ID with $PERSON_DISPLAY"
@@ -55,13 +111,10 @@ fi
     echo "- **Status**: No activities found for this person on this work item"
     echo
   else
-    echo "- **Total Activities**: $TOTAL_ACTIVITIES"
-    [ "$JIRA_COUNT" -gt 0 ] && echo "- **Jira Comments**: $JIRA_COUNT"
-    [ "$GITHUB_COUNT" -gt 0 ] && echo "- **GitHub Reviews & Comments**: $GITHUB_COUNT"
-    [ "$SLACK_COUNT" -gt 0 ] && echo "- **Slack Messages**: $SLACK_COUNT"
-    [ "$EMAIL_COUNT" -gt 0 ] && echo "- **Email Threads**: $EMAIL_COUNT"
-    [ "$CALENDAR_COUNT" -gt 0 ] && echo "- **Calendar Events**: $CALENDAR_COUNT"
-    echo "- **Latest Activity**: $LATEST_TIMESTAMP ($LATEST_SOURCE)"
+    echo "- **Role**: $ROLE"
+    echo "- **Key Decisions**: $KEY_DECISIONS"
+    echo "- **Latest**: $LATEST_TIMESTAMP ($LATEST_SOURCE)"
+    echo "- **Status**: $STATUS"
     echo
   fi
 
