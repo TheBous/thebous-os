@@ -11,29 +11,18 @@ confonderle nell'output:
 1. **Lavoro svolto** — cosa hai fatto (branch, PR, review, task Jira)
 2. **Attività AI** — su quali sessioni Claude Code/OpenCode hai lavorato oggi, e dove
 
-## Configurazione (solo la prima volta)
+## Configurazione
 
-Stessa idea di morning-briefing, salvata in `${CLAUDE_PLUGIN_DATA}/.env`:
-
-```
-OBSIDIAN_VAULT_PATH=<path assoluto del vault Obsidian — vuoto = niente lettura/scrittura Obsidian>
-GITHUB_REPOS=<lista separata da virgole — vuoto = tutti i repo a cui l'utente ha accesso, usato solo come fallback>
-```
-
-Se il file non esiste, chiedi questi due valori (entrambi opzionali) e salvali:
+Le credenziali sono condivise con tutto il plugin thebous-os, in un solo
+`${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env` (`OBSIDIAN_VAULT_PATH` e
+`GITHUB_REPOS`, usato qui solo come fallback) — non duplicare la
+configurazione qui. Caricalo:
 
 ```bash
-mkdir -p "${CLAUDE_PLUGIN_DATA}"
-cat > "${CLAUDE_PLUGIN_DATA}/.env" <<EOF
-OBSIDIAN_VAULT_PATH=<valore o vuoto>
-GITHUB_REPOS=<valore o vuoto>
-EOF
+source "${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env"
 ```
 
-Altrimenti caricalo:
-```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
-```
+Se il file non esiste, dì all'utente di lanciare `/thebous-os:setup` prima.
 
 ## Step 1: Finestra di oggi
 
@@ -53,13 +42,13 @@ DAILY_NOTE="${OBSIDIAN_VAULT_PATH}/Dev/Daily/${TODAY}.md"
 ```
 
 Se il file esiste e ha contenuto oltre al solo header (`# <data>`), quello **è**
-il riepilogo del lavoro di oggi — i comandi thebous-jira-git-sync (new-branch,
+il riepilogo del lavoro di oggi — i comandi thebous-os (new-branch,
 cook, review-pr, address-review, create-pr) ci scrivono già durante il giorno.
 Non serve altro: presentalo riorganizzato in un elenco leggibile, non incollarlo
 grezzo.
 
 **Fallback** (Obsidian non configurato, file assente, o solo l'header senza
-contenuto — significa che oggi non hai usato nessun comando thebous-jira-git-sync,
+contenuto — significa che oggi non hai usato nessun comando thebous-os,
 non che non hai lavorato): query dirette, stesso stile di morning-briefing.
 
 ```bash
@@ -98,7 +87,7 @@ troncato) e `cwd`.
 
 ```bash
 if [ -n "${OPENCODE_BIN:-}" ] || command -v opencode >/dev/null 2>&1; then
-  bash "${CLAUDE_PLUGIN_ROOT}/scripts/opencode_sessions_today.sh"
+  bash "${CLAUDE_PLUGIN_ROOT}/skills/end-of-day/scripts/opencode_sessions_today.sh"
 fi
 ```
 
@@ -135,7 +124,7 @@ Stesso script bundled di morning-briefing (append, mai sovrascrive):
 
 ```bash
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  bash "${CLAUDE_PLUGIN_ROOT}/scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 5>"
+  bash "${CLAUDE_PLUGIN_ROOT}/skills/end-of-day/scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 5>"
 fi
 ```
 

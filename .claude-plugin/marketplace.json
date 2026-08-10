@@ -1,19 +1,19 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "thebous-os",
-  "version": "0.0.1",
-  "description": "Git workflow automation: branch, PR, merge, tag — synced with Jira, Slack and Confluence",
+  "version": "0.1.0",
+  "description": "Git workflow automation: branch, PR, merge, tag — synced with Jira, Slack and Confluence. Plus morning briefing and end-of-day recap, all logged to Obsidian.",
   "owner": {
     "name": "Luca Valsecchi",
     "email": "thebous1993@gmail.com"
   },
-  "homepage": "https://github.com/TheBous/github-jira-slack-claudecode",
-  "repository": "https://github.com/TheBous/github-jira-slack-claudecode",
+  "homepage": "https://github.com/TheBous/thebous-os",
+  "repository": "https://github.com/TheBous/thebous-os",
   "plugins": [
     {
-      "name": "thebous-jira-git-sync",
-      "version": "0.0.1",
-      "description": "New branch, create/review/merge PR, tag release — auto-updates Jira status, notifies Slack, manages Confluence docs",
+      "name": "thebous-os",
+      "version": "0.1.0",
+      "description": "New branch, create/review/merge PR, tag release, morning briefing, end-of-day recap — synced with Jira, Slack, Confluence, GitHub, Gmail and Obsidian",
       "author": {
         "name": "Luca Valsecchi",
         "email": "thebous1993@gmail.com"
@@ -21,55 +21,18 @@
       "keywords": [
         "jira",
         "slack",
+        "confluence",
         "git",
         "github",
+        "gmail",
+        "obsidian",
+        "briefing",
         "automation",
         "devops"
       ],
-      "homepage": "https://github.com/TheBous/github-jira-slack-claudecode",
-      "repository": "https://github.com/TheBous/github-jira-slack-claudecode",
+      "homepage": "https://github.com/TheBous/thebous-os",
+      "repository": "https://github.com/TheBous/thebous-os",
       "source": "./"
-    },
-    {
-      "name": "morning-briefing",
-      "version": "0.1.0",
-      "description": "Briefing mattutino: PR review notturne, PR ancora in sospeso, commenti nuovi, scadenze Jira, task in partenza, call di oggi",
-      "author": {
-        "name": "Luca Valsecchi",
-        "email": "thebous1993@gmail.com"
-      },
-      "keywords": [
-        "github",
-        "jira",
-        "calendar",
-        "obsidian",
-        "briefing",
-        "automation"
-      ],
-      "homepage": "https://github.com/TheBous/thebous-os",
-      "repository": "https://github.com/TheBous/thebous-os",
-      "source": "./morning-briefing"
-    },
-    {
-      "name": "end-of-day",
-      "version": "0.1.0",
-      "description": "Recap di fine giornata: lavoro svolto (Obsidian o fallback GitHub/Jira), sessioni Claude Code e OpenCode di oggi",
-      "author": {
-        "name": "Luca Valsecchi",
-        "email": "thebous1993@gmail.com"
-      },
-      "keywords": [
-        "github",
-        "jira",
-        "obsidian",
-        "claude-code",
-        "opencode",
-        "recap",
-        "automation"
-      ],
-      "homepage": "https://github.com/TheBous/thebous-os",
-      "repository": "https://github.com/TheBous/thebous-os",
-      "source": "./end-of-day"
     }
   ]
 }

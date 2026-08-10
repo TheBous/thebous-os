@@ -14,7 +14,7 @@ Find and update a documentation page in Confluence, identified by URL or title.
 source "${CLAUDE_PLUGIN_DATA}/.env"
 ```
 
-If the file doesn't exist or `CONFLUENCE_PARENT_URL` is missing, tell the user to run `/thebous-jira-git-sync:setup` first.
+If the file doesn't exist or `CONFLUENCE_PARENT_URL` is missing, tell the user to run `/thebous-os:setup` first.
 
 ### 1a. Detect a linked Jira ticket (optional)
 

@@ -147,4 +147,4 @@ Show the user:
 - ✅ Documentation updated: `<list of files/pages>` (if applicable)
 - ✅ Obsidian: logged (or "skipped, no vault configured")
 - ✅ Granola call linked: `<note>` (if applicable, otherwise omit this line)
-- → Suggest the next step: `/thebous-jira-git-sync:serve-up` to try it in a browser, or `/thebous-jira-git-sync:create-pr` to open the PR
+- → Suggest the next step: `/thebous-os:serve-up` to try it in a browser, or `/thebous-os:create-pr` to open the PR

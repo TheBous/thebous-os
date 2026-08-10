@@ -30,17 +30,18 @@ Call `create_scheduled_task` with:
 - `description`: "Briefing mattutino: PR review notturne, PR in sospeso, commenti, scadenze Jira, task in partenza, call di oggi"
 - `prompt`: a fully self-contained prompt (future runs have no memory of this
   conversation) instructing Claude to:
-  1. Read `${CLAUDE_PLUGIN_ROOT}/SKILL.md` in full and execute every step in
-     order, using `gh`, the Atlassian MCP tools, and the Google Calendar MCP
-     tools.
+  1. Read `${CLAUDE_PLUGIN_ROOT}/skills/morning-briefing/SKILL.md` in full and
+     execute every step in order, using `gh`, the Atlassian MCP tools, the
+     Gmail connector (if available), and the Google Calendar MCP tools.
   2. Since `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` may not be set
-     in a scheduled-task context, substitute the actual absolute path to this
-     skill's directory and `~/.config/morning-briefing` respectively,
+     in a scheduled-task context, substitute the actual absolute path to the
+     thebous-os plugin directory and `~/.config/thebous-os` respectively,
      everywhere the SKILL.md references them.
-  3. If the `.env` doesn't exist yet, create it with `GITHUB_REPOS=` (empty)
-     and ask the user for `OBSIDIAN_VAULT_PATH` — but since this runs
-     unattended, fall back to leaving it empty (skip Obsidian) rather than
-     blocking on an answer nobody will give.
+  3. If the shared `.env` doesn't exist yet, create it with the values this
+     skill needs left empty (`GITHUB_REPOS=`, `GMAIL_ADDRESS=`,
+     `GMAIL_APP_PASSWORD=`) and `OBSIDIAN_VAULT_PATH=` — but since this runs
+     unattended, don't block asking the user; leave it empty (skip Obsidian)
+     rather than waiting on an answer nobody will give.
   4. Show the report as the final message, and follow the SKILL.md's own
      Obsidian-saving step if a vault path is configured.
 

@@ -1,0 +1,45 @@
+{
+  "name": "@thebous/thebous-os-opencode-plugin",
+  "version": "0.1.0",
+  "description": "OpenCode plugin for thebous-os — Git/Jira/Slack/Confluence workflow, morning briefing, and end-of-day recap, all logged to Obsidian",
+  "type": "module",
+  "main": ".opencode/plugins/thebous-os.mjs",
+  "exports": {
+    ".": "./.opencode/plugins/thebous-os.mjs"
+  },
+  "files": [
+    ".opencode/plugins/",
+    "commands/",
+    "skills/",
+    "scripts/",
+    "references/"
+  ],
+  "keywords": [
+    "opencode",
+    "plugin",
+    "jira",
+    "git",
+    "github",
+    "slack",
+    "confluence",
+    "gmail",
+    "obsidian",
+    "briefing",
+    "automation",
+    "workflow"
+  ],
+  "author": "Luca Valsecchi <thebous1993@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheBous/thebous-os",
+    "directory": "."
+  },
+  "bugs": {
+    "url": "https://github.com/TheBous/thebous-os/issues"
+  },
+  "homepage": "https://github.com/TheBous/thebous-os#readme",
+  "engines": {
+    "node": ">=18"
+  }
+}

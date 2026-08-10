@@ -11,43 +11,23 @@ riordina per priorità in un unico report. Non è un
 riassunto generico: ogni sezione ha una fonte dati precisa e una finestra temporale
 precisa — segui gli step così come sono, non improvvisare query diverse da quelle qui sotto.
 
-## Configurazione (solo la prima volta)
+## Configurazione
 
-Questa skill ha bisogno di due valori, salvati in `${CLAUDE_PLUGIN_DATA}/.env`:
-
-```
-GITHUB_REPOS=<lista separata da virgole, es. TheBous/thebous-os,TheBous/altro-repo — vuoto = tutti i repo a cui l'utente ha accesso>
-OBSIDIAN_VAULT_PATH=<path assoluto del vault Obsidian — vuoto = non salvare la daily note>
-GMAIL_ADDRESS=<indirizzo Gmail — vuoto = salta la sezione email, solo su harness senza il connettore Gmail nativo>
-GMAIL_APP_PASSWORD=<App Password di Google (16 caratteri, non la password normale) — vuoto = salta la sezione email>
-```
-
-`GMAIL_ADDRESS`/`GMAIL_APP_PASSWORD` servono **solo** come fallback per harness
-senza un connettore Gmail nativo (vedi Step 6) — su Claude Code con il
-connettore Gmail già autorizzato, lasciali vuoti, non servono. Se l'utente
-vuole configurarli: un'App Password si genera su
-https://myaccount.google.com/apppasswords (richiede la verifica in due
-passaggi attiva sull'account) — è più semplice di un flusso OAuth completo e
-funziona identico su qualsiasi harness, perché è solo una password stdlib
-IMAP, non un'integrazione da configurare separatamente ovunque.
-
-Se il file non esiste ancora, chiedi questi valori all'utente (uno alla volta, tutti
-opzionali — invio vuoto è una risposta valida), poi salvali:
+Le credenziali sono condivise con tutto il plugin thebous-os, in un solo
+`${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env` — non duplicare la
+configurazione qui. Caricalo:
 
 ```bash
-mkdir -p "${CLAUDE_PLUGIN_DATA}"
-cat > "${CLAUDE_PLUGIN_DATA}/.env" <<EOF
-GITHUB_REPOS=<valore o vuoto>
-OBSIDIAN_VAULT_PATH=<valore o vuoto>
-GMAIL_ADDRESS=<valore o vuoto>
-GMAIL_APP_PASSWORD=<valore o vuoto>
-EOF
+source "${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env"
 ```
 
-Se il file esiste già, caricalo e basta:
-```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
-```
+Se il file non esiste, o mancano `GITHUB_REPOS`, `OBSIDIAN_VAULT_PATH`,
+`GMAIL_ADDRESS`, `GMAIL_APP_PASSWORD`, dì all'utente di lanciare
+`/thebous-os:setup` prima — quel comando raccoglie tutte le credenziali del
+plugin (Jira/Slack/Confluence + queste) in un colpo solo. `GMAIL_ADDRESS`/
+`GMAIL_APP_PASSWORD` servono **solo** come fallback per harness senza un
+connettore Gmail nativo (vedi Step 6) — su Claude Code con il connettore
+Gmail già autorizzato, restano vuote, non servono.
 
 ## Step 1: Calcola le finestre temporali
 
@@ -213,8 +193,8 @@ Codex, ecc. — usa questo se il tool MCP sopra non è disponibile):
 
 ```bash
 if [ -n "${GMAIL_ADDRESS:-}" ] && [ -n "${GMAIL_APP_PASSWORD:-}" ]; then
-  python3 "${CLAUDE_PLUGIN_ROOT}/scripts/gmail_imap_overnight.py" "${GMAIL_ADDRESS}" "${GMAIL_APP_PASSWORD}" \
-    | python3 "${CLAUDE_PLUGIN_ROOT}/scripts/filter_messages_in_window.py" "$NIGHT_START_ISO" "$NOW_ISO"
+  python3 "${CLAUDE_PLUGIN_ROOT}/skills/morning-briefing/scripts/gmail_imap_overnight.py" "${GMAIL_ADDRESS}" "${GMAIL_APP_PASSWORD}" \
+    | python3 "${CLAUDE_PLUGIN_ROOT}/skills/morning-briefing/scripts/filter_messages_in_window.py" "$NIGHT_START_ISO" "$NOW_ISO"
 fi
 ```
 
@@ -314,7 +294,7 @@ trovi due sezioni, non una sovrascritta):
 
 ```bash
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  bash "${CLAUDE_PLUGIN_ROOT}/scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 10>"
+  bash "${CLAUDE_PLUGIN_ROOT}/skills/morning-briefing/scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 10>"
 fi
 ```
 

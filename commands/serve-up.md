@@ -109,7 +109,7 @@ Show the user:
    Network: http://<LAN_IP>:<PORT>
    Logs:    <log command from step 5>
 
-→ Tear it down with /thebous-jira-git-sync:serve-down
+→ Tear it down with /thebous-os:serve-down
 ```
 
 ## Common pitfalls to avoid

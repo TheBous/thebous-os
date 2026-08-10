@@ -10,5 +10,5 @@ auto-triggering.
 
 ## Steps
 
-Read `${CLAUDE_PLUGIN_ROOT}/SKILL.md` and execute every step in it, in order,
-exactly as written.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/end-of-day/SKILL.md` and execute every step
+in it, in order, exactly as written.

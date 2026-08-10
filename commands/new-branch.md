@@ -23,7 +23,7 @@ Load the credentials:
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
 ```
-If the file doesn't exist, tell the user to run `/thebous-jira-git-sync:setup` first.
+If the file doesn't exist, tell the user to run `/thebous-os:setup` first.
 
 Extract the key (e.g. `DC-443`) from the URL or input. Then fetch the ticket title using the MCP tool `getJiraIssue` with `issueKey: "<KEY>"` and `fields: ["summary"]`.
 

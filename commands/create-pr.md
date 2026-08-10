@@ -193,4 +193,4 @@ Show the user:
 - Ticket `<KEY>` → In Review (if transition succeeded; otherwise note it was skipped)
 - Slack: notified (or "notification failed, but PR and comment are done")
 - Obsidian: PR link recorded (or "skipped, no vault configured / no linked ticket")
-- → Suggest the next step: `/thebous-jira-git-sync:review-pr` to get it reviewed
+- → Suggest the next step: `/thebous-os:review-pr` to get it reviewed
