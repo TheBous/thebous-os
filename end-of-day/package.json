@@ -1,0 +1,40 @@
+{
+  "name": "@thebous/end-of-day-opencode-plugin",
+  "version": "0.1.0",
+  "description": "OpenCode plugin for end-of-day recap — today's work (Obsidian or GitHub/Jira fallback), Claude Code and OpenCode sessions touched today",
+  "type": "module",
+  "main": "../.opencode/plugins/thebous-os.mjs",
+  "exports": {
+    ".": "../.opencode/plugins/thebous-os.mjs"
+  },
+  "files": [
+    "../.opencode/plugins/",
+    "./commands/",
+    "./scripts/"
+  ],
+  "keywords": [
+    "opencode",
+    "plugin",
+    "github",
+    "jira",
+    "obsidian",
+    "claude-code",
+    "opencode",
+    "recap",
+    "automation"
+  ],
+  "author": "Luca Valsecchi <thebous1993@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheBous/thebous-os",
+    "directory": "end-of-day"
+  },
+  "bugs": {
+    "url": "https://github.com/TheBous/thebous-os/issues"
+  },
+  "homepage": "https://github.com/TheBous/thebous-os/tree/main/end-of-day#readme",
+  "engines": {
+    "node": ">=18"
+  }
+}
