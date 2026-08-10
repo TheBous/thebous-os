@@ -130,6 +130,21 @@ curl -sf \
   | jq '{number, url: .html_url}'
 ```
 
+### 6a. Log the PR link to Obsidian (optional)
+
+Only if a Jira ticket was found in step 2 (`<KEY>` is set). Follow `references/obsidian-log.md`:
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
+  PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
+  obsidian_set_pr "$PLAN_FILE" "<PR_URL>"
+  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — PR opened: <PR_URL>"
+fi
+```
+
 ### 7. Jira comment (always)
 
 If there's a ticket, **always** leave a comment on the Jira issue:
@@ -177,4 +192,5 @@ Show the user:
 - Jira comment: left on `<KEY>` (if ticket found)
 - Ticket `<KEY>` → In Review (if transition succeeded; otherwise note it was skipped)
 - Slack: notified (or "notification failed, but PR and comment are done")
+- Obsidian: PR link recorded (or "skipped, no vault configured / no linked ticket")
 - → Suggest the next step: `/thebous-jira-git-sync:review-pr` to get it reviewed
