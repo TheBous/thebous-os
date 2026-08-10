@@ -1,13 +1,13 @@
 ---
 name: morning-briefing
-description: Genera il briefing mattutino dell'utente su richiesta o quando gira come task schedulato delle 9:00 - copre PR GitHub da revieware richieste durante la notte, PR review ancora aperte da prima, nuovi commenti sulle PR aperte dall'utente, task Jira in scadenza nei prossimi 3 giorni, task Jira che iniziano oggi, attività Jira notturna, email importanti ricevute durante la notte, gli impegni/call del giorno dal calendario, e una classifica di priorità che riordina tutto questo. Usa SEMPRE questa skill quando l'utente dice "buongiorno", "situazione della giornata", "cosa ho oggi", "com'è la giornata", "briefing mattutino", "morning briefing", "run morning briefing", "riassunto di ieri e oggi", o quando viene invocata dal task schedulato giornaliero - anche se l'utente non nomina esplicitamente PR/Jira/email/calendario, perché il punto della skill è raccogliere tutto per lui.
+description: Genera il briefing mattutino dell'utente su richiesta o quando gira come task schedulato delle 9:00 - copre PR GitHub da revieware richieste durante la notte, PR review ancora aperte da prima, nuovi commenti sulle PR aperte dall'utente, task Jira in scadenza nei prossimi 3 giorni, task Jira che iniziano oggi, attività Jira notturna, pagine Confluence modificate e menzioni ricevute, email importanti ricevute durante la notte, gli impegni/call del giorno dal calendario, e una classifica di priorità che riordina tutto questo. Usa SEMPRE questa skill quando l'utente dice "buongiorno", "situazione della giornata", "cosa ho oggi", "com'è la giornata", "briefing mattutino", "morning briefing", "run morning briefing", "riassunto di ieri e oggi", o quando viene invocata dal task schedulato giornaliero - anche se l'utente non nomina esplicitamente PR/Jira/email/calendario, perché il punto della skill è raccogliere tutto per lui.
 ---
 
 # Morning Briefing
 
-Raccoglie in un colpo solo lo stato di otto fonti (PR GitHub in due direzioni, commenti,
-scadenze Jira, task Jira in partenza, attività Jira notturna, email, calendario) e le
-riordina per priorità in un unico report. Non è un
+Raccoglie in un colpo solo lo stato di nove fonti (PR GitHub in due direzioni, commenti,
+scadenze Jira, task Jira in partenza, attività Jira notturna, Confluence, email, calendario)
+e le riordina per priorità in un unico report. Non è un
 riassunto generico: ogni sezione ha una fonte dati precisa e una finestra temporale
 precisa — segui gli step così come sono, non improvvisare query diverse da quelle qui sotto.
 
@@ -169,7 +169,39 @@ commento contiene il nome/username dell'utente, segnalalo esplicitamente
 come menzione (ha più probabilità di richiedere una risposta rispetto a un
 commento generico).
 
-## Step 7: Email importanti ricevute durante la notte
+## Step 7: Confluence — pagine modificate e notifiche durante la notte
+
+Se `CONFLUENCE_PARENT_URL` è configurato in `.env`, cerchia per:
+
+**7a. Pagine modificate durante la notte:**
+
+```
+cql: parent = <PARENT_PAGE_ID> AND modified >= "<NIGHT_START in formato 'YYYY-MM-DD HH:MM'>" ORDER BY modified DESC
+fields: ["title", "version.by.displayName", "version.when"]
+```
+
+(Nota: se `parent` non funziona, prova `ancestor = <PARENT_PAGE_ID>` per includere sottocartelle)
+
+Per ogni pagina trovata, mostra titolo, chi l'ha modificata, quando.
+
+**7b. Notifiche — commenti con menzioni dirette:**
+
+Stessa ricerca come 7a, ma poi per ogni pagina controlla i commenti aggiunti nella finestra notturna:
+
+```
+cql: parent = <PARENT_PAGE_ID> AND modified >= "<NIGHT_START in formato 'YYYY-MM-DD HH:MM'>"
+```
+
+Estrai i commenti recenti (`created >= NIGHT_START_ISO`) che contengono:
+- `@<username>` menzione diretta
+- Oppure il tuo indirizzo email
+- Oppure il tuo nome completo
+
+Per ogni commento trovato, mostra **pagina**, **autore**, **testo breve** del commento.
+
+Se nessuna pagina è stata modificata, scrivi "Nessuna". Se no commenti con menzioni, scrivi "Nessuna menzione".
+
+## Step 8: Email importanti ricevute durante la notte
 
 **Se esiste un tool MCP Gmail nativo nella sessione** (es. `search_threads` —
 tipicamente disponibile su Claude Code con il connettore Gmail autorizzato),
@@ -207,7 +239,7 @@ briefing.
 Per ogni email trovata (da entrambe le fonti), mostra mittente e oggetto —
 non il corpo completo, solo abbastanza per giudicare se serve attenzione.
 
-## Step 8: Impegni/call di oggi
+## Step 9: Impegni/call di oggi
 
 Usa lo strumento MCP calendario (`list_events` sul calendario primario, nessun
 `calendarId` esplicito), con:
@@ -226,7 +258,7 @@ gli eventi che soddisfano **almeno una** di queste condizioni:
 Per ciascun evento tenuto, mostra titolo, orario di inizio/fine, e il `conferenceUrl` se
 presente.
 
-## Step 9: Classifica tutto per priorità
+## Step 10: Classifica tutto per priorità
 
 Prima di comporre il report, guarda tutto ciò che hai raccolto negli step 2-8
 insieme e assegna a ogni elemento un livello, usando questi segnali come
@@ -245,7 +277,7 @@ Un elemento può comparire sia nella classifica di priorità sia nella sua
 sezione dettagliata sotto — la classifica è un indice rapido, non sostituisce
 il dettaglio.
 
-## Step 10: Componi il report
+## Step 11: Componi il report
 
 Usa esattamente questa struttura (se una sezione non ha risultati, scrivi "Nessuna" — non
 saltare la sezione, l'utente deve sapere che è stata controllata):
@@ -285,7 +317,7 @@ saltare la sezione, l'utente deve sapere che è stata controllata):
 
 Mostra questo report in chat, nella lingua dell'utente (italiano).
 
-## Step 11: Salva nella daily note di Obsidian (solo se configurato)
+## Step 12: Salva nella daily note di Obsidian (solo se configurato)
 
 Se `OBSIDIAN_VAULT_PATH` è impostata e la cartella esiste, appendi il report di sopra
 alla daily note di oggi usando lo script già pronto (crea la nota se non esiste,
@@ -301,7 +333,7 @@ fi
 Se `OBSIDIAN_VAULT_PATH` non è configurata, salta questo step senza dirlo come se fosse
 un errore — è una scelta valida non salvare nulla.
 
-## Step 12: Conferma finale
+## Step 13: Conferma finale
 
 Dopo aver mostrato il report, aggiungi una riga sola:
 - `📓 Salvato anche in Obsidian` (se lo step 11 ha scritto qualcosa)
