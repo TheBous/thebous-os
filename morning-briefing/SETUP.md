@@ -2,7 +2,7 @@
 
 ## Installation
 
-All platforms (Claude Code, OpenCode, Codex):
+### Claude Code
 
 ```bash
 /plugin install morning-briefing@thebous-os
@@ -12,6 +12,27 @@ Configuration (optional, first run only):
 
 ```bash
 /morning-briefing:run
+```
+
+### OpenCode / Codex
+
+1. Clone or sync the [thebous-os](https://github.com/TheBous/thebous-os) repository
+2. Add the plugin to your `opencode.json`:
+
+```json
+{
+  "plugin": ["./thebous-os/.opencode/plugins/thebous-os.mjs"]
+}
+```
+
+(Adjust path if you cloned elsewhere — it should point to the thebous-os directory relative to your OpenCode config)
+
+3. Restart OpenCode. Commands are immediately available as `/morning-briefing-run` and `/morning-briefing-schedule`
+
+Configuration (first run only):
+
+```bash
+/morning-briefing-run
 ```
 
 The first run will ask for:
@@ -39,29 +60,32 @@ This uses plain IMAP under the hood — no OAuth app registration, no per-harnes
 
 Creates a daily cron task at 9:00 AM (local time), using Claude Code's built-in scheduled tasks. Task runs automatically when the app is open; if closed at 9:00 AM, it runs on next app launch.
 
-### OpenCode / Codex / Command Line (manual cron)
+### OpenCode (automatic via OpenCode's built-in scheduler)
 
-Neither tool has a built-in scheduler equivalent to Claude Code's — use your
-system's native cron to invoke it. The exact non-interactive invocation
-syntax depends on the harness's CLI (check its `--help` or docs for a
-non-interactive/print mode); the general shape:
+If OpenCode has a built-in scheduler (check the docs or settings), use it to run `/morning-briefing-run` at 9:00 AM daily.
 
-**macOS/Linux:**
+### OpenCode / Codex / Command Line (manual cron fallback)
+
+Neither tool has a guaranteed built-in scheduler — use your system's native cron as a fallback. The command shape depends on how each harness's CLI works:
+
+**macOS/Linux (with OpenCode CLI available):**
 
 ```bash
 # Add to crontab
 crontab -e
 
-# Append this line (runs at 9:00 AM local time) — adjust the command to
-# whatever your harness's non-interactive invocation actually looks like:
-0 9 * * * cd /path/to/thebous-os && <harness-cli> "run the morning-briefing skill at morning-briefing/SKILL.md"
+# Append this line (runs at 9:00 AM local time):
+# Adjust the harness invocation to match your OpenCode CLI's non-interactive mode
+0 9 * * * cd /path/to/thebous-os && opencode "run /morning-briefing-run"
 ```
+
+Consult OpenCode's `--help` or docs for the exact non-interactive invocation syntax.
 
 **Windows (Task Scheduler):**
 
 Create a scheduled task:
 - Trigger: Daily, 9:00 AM
-- Action: run the harness's CLI non-interactively, same command as above
+- Action: Run OpenCode's CLI with the same command as above
 
 ### Manual Invocation (all platforms)
 
