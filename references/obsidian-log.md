@@ -70,6 +70,8 @@ If it lists anything, show the user up to 5 candidates (filename + the note's
 On a pick, append a line to `calls.md`:
 
 ```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
 CALLS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "calls.md")
 echo "- [[Granola/<filename-without-.md>]] — linked $(date +%Y-%m-%d)" >> "$CALLS_FILE"
 ```

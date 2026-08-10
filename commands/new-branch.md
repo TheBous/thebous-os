@@ -102,6 +102,8 @@ source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
 If it lists anything, show up to 5 candidates (filename + `title:` frontmatter) and ask: "Vuoi collegare una di queste call a `<KEY>`? (numero o 'no')". On a pick:
 
 ```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
 CALLS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "calls.md")
 echo "- [[Granola/<chosen-filename-without-.md>]] — linked $(date +%Y-%m-%d)" >> "$CALLS_FILE"
 ```
