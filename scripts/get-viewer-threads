@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+#
+# Fetch all review threads on a PR where the current viewer has commented.
+# Returns resolved AND unresolved threads, annotated with the viewer's
+# last substantive comment and the PR author's reply (if any).
+
+set -e
+
+if [ $# -lt 1 ]; then
+    echo "Usage: get-viewer-threads PR_NUMBER [OWNER/REPO]"
+    echo "Example: get-viewer-threads 123"
+    echo "Example: get-viewer-threads 123 EveryInc/cora"
+    exit 1
+fi
+
+PR_NUMBER=$1
+
+if [ -n "$2" ]; then
+    OWNER=$(echo "$2" | cut -d/ -f1)
+    REPO=$(echo "$2" | cut -d/ -f2)
+else
+    # `|| true` is load-bearing: under `set -e`, a failed command substitution
+    # in an assignment aborts the script immediately.
+    OWNER=$(gh repo view --json owner -q .owner.login 2>/dev/null || true)
+    REPO=$(gh repo view --json name -q .name 2>/dev/null || true)
+fi
+
+if [ -z "$OWNER" ] || [ -z "$REPO" ]; then
+    echo "Error: could not resolve owner/repo. Run from inside the target git repository, or pass OWNER/REPO as the second argument." >&2
+    exit 1
+fi
+
+tmp_threads=$(mktemp)
+tmp_comments=$(mktemp)
+tmp_reviews=$(mktemp)
+trap 'rm -f "$tmp_threads" "$tmp_comments" "$tmp_reviews"' EXIT
+
+# Fetch ALL review threads (resolved + unresolved) — paginated per connection
+gh api graphql --paginate --slurp \
+  -f owner="$OWNER" -f repo="$REPO" -F pr="$PR_NUMBER" \
+  -f query='
+query Threads($owner: String!, $repo: String!, $pr: Int!, $endCursor: String) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      author { login }
+      reviewThreads(first: 100, after: $endCursor) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          path
+          line
+          originalLine
+          startLine
+          originalStartLine
+          comments(first: 100) {
+            nodes {
+              id
+              author { login }
+              body
+              createdAt
+              url
+            }
+          }
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+}' > "$tmp_threads"
+
+# Fetch top-level PR comments (paginated)
+gh api graphql --paginate --slurp \
+  -f owner="$OWNER" -f repo="$REPO" -F pr="$PR_NUMBER" \
+  -f query='
+query Comments($owner: String!, $repo: String!, $pr: Int!, $endCursor: String) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      comments(first: 100, after: $endCursor) {
+        nodes {
+          id
+          author { login }
+          body
+          createdAt
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+}' > "$tmp_comments"
+
+# Fetch reviews to detect PENDING and get viewer login
+gh api graphql --paginate --slurp \
+  -f owner="$OWNER" -f repo="$REPO" -F pr="$PR_NUMBER" \
+  -f query='
+query Reviews($owner: String!, $repo: String!, $pr: Int!, $endCursor: String) {
+  viewer { login }
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      reviews(first: 100, after: $endCursor) {
+        nodes {
+          id
+          author { login }
+          body
+          state
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  }
+}' > "$tmp_reviews"
+
+# Build output with jq:
+# 1. Extract viewer login and PR author login
+# 2. Find all threads where viewer has at least one comment
+# 3. For each viewer thread, extract:
+#    - The thread metadata
+#    - The viewer's last substantive comment
+#    - The PR author's reply (if any)
+# 4. Detect PENDING review owned by viewer
+# 5. Also include top-level PR comments where viewer commented
+jq -n \
+  --slurpfile threads "$tmp_threads" \
+  --slurpfile comments "$tmp_comments" \
+  --slurpfile reviews "$tmp_reviews" '
+  ($threads[0][0].data.repository.pullRequest.author) as $pr_author |
+  ($reviews[0][0].data.viewer.login) as $viewer |
+  [$threads[0][].data.repository.pullRequest.reviewThreads.nodes[]] as $all_threads |
+  [$comments[0][].data.repository.pullRequest.comments.nodes[]] as $all_comments |
+  [$reviews[0][].data.repository.pullRequest.reviews.nodes[]] as $all_reviews |
+
+  # Build viewer threads: threads where the viewer has at least one comment
+  [$all_threads[] | {
+    id,
+    isResolved,
+    isOutdated,
+    path,
+    line,
+    originalLine,
+    startLine,
+    originalStartLine,
+    comments: [.comments.nodes[] | {id, author: .author.login, body, createdAt, url}],
+    viewer_comment: ([.comments.nodes[]
+      | select(.author.login == $viewer)
+      | select((.body // "") | length > 0)
+    ] | last | {body, createdAt} // null),
+    author_reply: ([.comments.nodes[]
+      | select(.author.login == $pr_author.login)
+      | select((.body // "") | length > 0)
+    ] | last | {body, createdAt} // null)
+  } | select(.viewer_comment != null)] as $viewer_threads |
+
+  # Build viewer top-level PR comments
+  [$all_comments[]
+    | select(.author.login == $viewer)
+    | select((.body // "") | length > 0)
+    | {id, body, createdAt}] as $viewer_pr_comments |
+
+  {
+    pending_review: (first($all_reviews[]
+      | select(.state == "PENDING")
+      | select(($viewer == null) or (.author.login == $viewer))
+      | .id) // null),
+    viewer_login: $viewer,
+    pr_author_login: ($pr_author.login // null),
+    viewer_threads: $viewer_threads,
+    viewer_pr_comments: $viewer_pr_comments
+  }'

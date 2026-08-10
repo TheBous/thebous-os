@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# Unresolve (reopen) a PR review thread that was marked as resolved.
+# GitHub GraphQL mutation: unresolveReviewThread
+
+set -e
+
+if [ $# -eq 0 ]; then
+    echo "Usage: reopen-pr-thread THREAD_ID"
+    echo "Example: reopen-pr-thread PRRT_kwDOABC123"
+    exit 1
+fi
+
+THREAD_ID=$1
+
+gh api graphql -f threadId="$THREAD_ID" -f query='
+mutation UnresolveReviewThread($threadId: ID!) {
+  unresolveReviewThread(input: {threadId: $threadId}) {
+    thread {
+      id
+      isResolved
+      path
+      line
+    }
+  }
+}'

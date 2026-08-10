@@ -1,0 +1,34 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "thebous-os",
+  "version": "1.2.0",
+  "description": "Git workflow automation: branch, PR, merge, tag — synced with Jira, Slack and Confluence",
+  "owner": {
+    "name": "Luca Valsecchi",
+    "email": "thebous1993@gmail.com"
+  },
+  "homepage": "https://github.com/TheBous/github-jira-slack-claudecode",
+  "repository": "https://github.com/TheBous/github-jira-slack-claudecode",
+  "plugins": [
+    {
+      "name": "thebous-jira-git-sync",
+      "version": "1.2.0",
+      "description": "New branch, create/review/merge PR, tag release — auto-updates Jira status, notifies Slack, manages Confluence docs",
+      "author": {
+        "name": "Luca Valsecchi",
+        "email": "thebous1993@gmail.com"
+      },
+      "keywords": [
+        "jira",
+        "slack",
+        "git",
+        "github",
+        "automation",
+        "devops"
+      ],
+      "homepage": "https://github.com/TheBous/github-jira-slack-claudecode",
+      "repository": "https://github.com/TheBous/github-jira-slack-claudecode",
+      "source": "./"
+    }
+  ]
+}

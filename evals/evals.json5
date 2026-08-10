@@ -1,0 +1,179 @@
+// Evals for the jira-git-sync plugin commands (skill-creator evals.json schema, one eval per command).
+{
+  skill_name: "jira-git-sync",
+  evals: [
+    {
+      id: 1,
+      command: "new-branch",
+      prompt: "Create a new branch for ticket DC-443",
+      expected_output: "Fetches DC-443 from Jira, derives a branch name from its title, creates and checks out the branch, transitions the ticket to In Progress, and posts a Slack notification",
+      expectations: [
+        "Calls getJiraIssue (or equivalent) for DC-443 before naming the branch",
+        "Branch name includes the lowercase ticket key, e.g. dc-443",
+        "Ticket is transitioned to 'In Progress' via the Jira MCP",
+        "A Slack message is sent announcing the new branch",
+        "Does not invent a branch name when Jira lookup fails — asks the user instead"
+      ]
+    },
+    {
+      id: 2,
+      command: "new-branch",
+      prompt: "Create a new branch called feat/export-csv",
+      expected_output: "Skips all Jira steps since a free-form branch name was given, creates and checks out feat/export-csv directly",
+      expectations: [
+        "No Jira MCP calls are made",
+        "Branch feat/export-csv is created and checked out",
+        "No Slack notification claims a Jira ticket was moved"
+      ]
+    },
+    {
+      id: 3,
+      command: "cook",
+      prompt: "Implement the fix on the current branch dc-500-fix-login and make sure tests pass",
+      expected_output: "Extracts DC-500 from the branch name, fetches ticket context, implements the change, runs the test suite, and updates docs if needed",
+      expectations: [
+        "Ticket key is uppercased to DC-500 before any Jira call",
+        "getJiraIssue is called with fields summary and description",
+        "The project's test command is run and its result reported before declaring success",
+        "Documentation is only updated if the change affects documented behavior"
+      ]
+    },
+    {
+      id: 4,
+      command: "create-pr",
+      prompt: "Open a PR for this branch against main",
+      expected_output: "Verifies clean/pushed status, generates title and description from the Jira ticket and diff, opens the PR via gh, comments on Jira, and notifies Slack",
+      expectations: [
+        "Checks git status and warns before proceeding if there are uncommitted changes",
+        "Confirms the branch is pushed to origin before opening the PR",
+        "PR is created against main via gh pr create",
+        "A comment linking the PR is added to the corresponding Jira ticket",
+        "A Slack notification is sent suggesting review-pr as next step"
+      ]
+    },
+    {
+      id: 5,
+      command: "review-pr",
+      prompt: "Review PR #128",
+      expected_output: "Reads the full diff in file context, checks correctness/test-coverage/naming conventions, presents a verdict, and only submits the structured review after user confirmation",
+      expectations: [
+        "Fetches PR #128 metadata via gh pr view before analyzing",
+        "Presents a verdict to the user before submitting anything",
+        "Does not call gh to submit the review until the user explicitly confirms",
+        "Inline comments reference this repo's naming-convention references when relevant"
+      ]
+    },
+    {
+      id: 6,
+      command: "address-review",
+      prompt: "Address the review comments on my open PR",
+      expected_output: "Iterates open PR comments one at a time, proposes a fix per comment, applies only after approval, replies on the PR, then updates docs if needed",
+      expectations: [
+        "Comments are processed one at a time, not all at once",
+        "No code is changed before the user approves that specific fix",
+        "Each addressed comment gets a reply on the PR",
+        "Documentation update is considered only after all comments are resolved"
+      ]
+    },
+    {
+      id: 7,
+      command: "merge-pr",
+      prompt: "Merge my open PR",
+      expected_output: "Lists the user's open PRs to pick from (or uses the one specified), merges into main, transitions the linked Jira ticket to In Staging, and notifies Slack",
+      expectations: [
+        "If no PR is specified, lists open PRs authored by the current user before merging",
+        "Merge targets main",
+        "Linked Jira ticket is transitioned to 'In Staging', not 'Done'",
+        "Slack notification is sent after the merge succeeds"
+      ]
+    },
+    {
+      id: 8,
+      command: "tag",
+      prompt: "Cut a release tag for production",
+      expected_output: "Reads the latest git tag, proposes a patch-bumped next version (or v0.1.0 if none exist), waits for confirmation, tags the release, transitions all included Jira tickets to Done, and notifies Slack",
+      expectations: [
+        "Latest tag is fetched via git tag --sort=-version:refname before suggesting the next one",
+        "Proposes v0.1.0 specifically when no tags exist yet",
+        "Waits for user confirmation of the tag name before creating it",
+        "Every Jira ticket included in the release range is transitioned to Done",
+        "Slack notification is sent after tagging"
+      ]
+    },
+    {
+      id: 9,
+      command: "create-doc",
+      prompt: "Create a Confluence page documenting the new export feature",
+      expected_output: "Loads Confluence credentials, generates page content from the code, and publishes only after user approval",
+      expectations: [
+        "Tells the user to run /jira-git-sync:setup if CONFLUENCE_PARENT_URL is missing",
+        "Generated content is shown to the user before publishing",
+        "Page is created under CONFLUENCE_PARENT_URL as parent"
+      ]
+    },
+    {
+      id: 10,
+      command: "update-doc",
+      prompt: "Update the Confluence page about the export feature with the latest changes",
+      expected_output: "Finds the existing page by URL or title, and updates it only after showing the diff to the user",
+      expectations: [
+        "Existing page is located before any write, not recreated as a new page",
+        "Proposed changes are shown to the user before calling the update API",
+        "Tells the user to run /jira-git-sync:setup if credentials are missing"
+      ]
+    },
+    {
+      id: 11,
+      command: "setup",
+      prompt: "Set up jira-git-sync for this project",
+      expected_output: "Walks the user through Jira base URL, Slack webhook, Confluence parent URL, and transition IDs one question at a time, saving results to the plugin's .env",
+      expectations: [
+        "Asks one question at a time and waits for the answer instead of dumping all questions at once",
+        "Explains where to generate the Slack webhook URL",
+        "Allows the Confluence parent URL to be left blank for users who don't use Confluence",
+        "Notes that Jira/Confluence auth goes through the Atlassian Rovo MCP, not manual API tokens"
+      ]
+    },
+    {
+      id: 12,
+      command: "verify-resolved",
+      prompt: "Verify that my review comments on PR #128 were correctly addressed",
+      expected_output: "Fetches all threads where you commented on PR #128, evaluates each fix against the original concern, and reports which ones are correct, partial, or missing",
+      expectations: [
+        "Fetches PR #128 metadata and all threads where viewer commented",
+        "Checks for unsubmitted (PENDING) review and stops if one exists",
+        "Reads the current code at each thread's location before deciding verdict",
+        "For outdated threads, searches the file for an anchor to find moved code",
+        "Reports verdicts grouped by: fixed, not-fixed, partial, outdated",
+        "Replies to threads that need attention (and reopens if resolved but wrong)"
+      ]
+    },
+    {
+      id: 13,
+      command: "serve-up",
+      prompt: "Start the app locally so I can test what we just built",
+      expected_output: "Detects the runtime from docker-compose/Dockerfile/package.json, resolves the port, starts the service detached, polls until it responds, and reports the local and LAN URLs",
+      expectations: [
+        "Detection prefers a compose file over a bare Dockerfile when both exist",
+        "The port is read from the project (compose ports / EXPOSE / script flag / .env), not assumed",
+        "The service is started detached — no foreground blocking process",
+        "Readiness is confirmed by polling the port, not by the start command's exit code",
+        "Both the localhost URL and the LAN IP URL are reported",
+        "An already-occupied port is reported to the user rather than having its process killed"
+      ]
+    },
+    {
+      id: 14,
+      command: "serve-down",
+      prompt: "Stop the local service",
+      expected_output: "Detects whether a compose stack, the jira-git-sync-serve container, or a pid-file dev process is running, stops it, and verifies the port is free",
+      expectations: [
+        "All three sources are checked (compose stack, named container, pid file)",
+        "The pid is checked with kill -0 before signalling, to avoid killing a recycled pid",
+        "The port is re-checked after teardown to confirm it is actually free",
+        "docker compose down -v is only run after explicit user confirmation about deleting volumes",
+        "A process on the port that serve-up did not start is reported, not killed"
+      ]
+    }
+  ]
+}
