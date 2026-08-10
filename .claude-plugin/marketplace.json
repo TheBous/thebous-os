@@ -49,6 +49,27 @@
       "homepage": "https://github.com/TheBous/thebous-os",
       "repository": "https://github.com/TheBous/thebous-os",
       "source": "./morning-briefing"
+    },
+    {
+      "name": "end-of-day",
+      "version": "0.1.0",
+      "description": "Recap di fine giornata: lavoro svolto (Obsidian o fallback GitHub/Jira), sessioni Claude Code e OpenCode di oggi",
+      "author": {
+        "name": "Luca Valsecchi",
+        "email": "thebous1993@gmail.com"
+      },
+      "keywords": [
+        "github",
+        "jira",
+        "obsidian",
+        "claude-code",
+        "opencode",
+        "recap",
+        "automation"
+      ],
+      "homepage": "https://github.com/TheBous/thebous-os",
+      "repository": "https://github.com/TheBous/thebous-os",
+      "source": "./end-of-day"
     }
   ]
 }
