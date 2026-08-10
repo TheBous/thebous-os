@@ -16,6 +16,22 @@ Configuration (optional, first run only):
 
 ### OpenCode / Codex
 
+**From npm/GitHub (recommended):**
+
+```bash
+opencode plugin install @thebous/end-of-day-opencode-plugin
+```
+
+**Or directly from GitHub:**
+
+```bash
+opencode plugin install github:TheBous/thebous-os#end-of-day
+```
+
+Restart OpenCode. The command is immediately available as `/end-of-day-run`
+
+**Local installation (development):**
+
 1. Clone or sync the [thebous-os](https://github.com/TheBous/thebous-os) repository
 2. Add the plugin to your `opencode.json`:
 
@@ -27,7 +43,7 @@ Configuration (optional, first run only):
 
 (Adjust path if you cloned elsewhere — it should point to the thebous-os directory relative to your OpenCode config)
 
-3. Restart OpenCode. The command is immediately available as `/end-of-day-run`
+3. Restart OpenCode
 
 Configuration (first run only):
 
