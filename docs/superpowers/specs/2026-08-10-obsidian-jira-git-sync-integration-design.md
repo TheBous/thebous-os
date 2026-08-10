@@ -8,6 +8,24 @@ Obsidian vault, so the daily dev workflow is fully logged without extra manual
 work. This is the first sub-project of `thebous-os`; Granola call-notes
 integration and any new orchestration skills are explicitly out of scope here.
 
+## Where this lives
+
+The user does not want the source repo (`TheBous/github-jira-slack-claudecode`)
+touched. Instead, `thebous-os` gets its own one-time copy of the full command
+set — it becomes the working copy going forward, not a patch on top of the
+original:
+
+- Copy `commands/*.md` (all 13), `references/*.md`, `scripts/helpers.sh`,
+  `SKILL.md` from the source repo's `main` branch into `thebous-os` (same
+  relative paths, so the existing cross-references between files keep working
+  unmodified).
+- Skip platform mirrors (`.opencode/`, `.codex-plugin/`, `gemini-extension.json`)
+  — thebous-os only needs to work as a Claude Code skill.
+- This is a snapshot, not a live fork: no sync-back mechanism to the source
+  repo. Future improvements to either copy are manual.
+- Obsidian hooks are added directly into the copied `commands/*.md` files
+  (per the table below) plus the new `references/obsidian-log.md`.
+
 ## Vault structure
 
 ```
@@ -98,8 +116,8 @@ for `new-branch`:
 ## Out of scope (deferred)
 
 - Granola call-notes integration (`calls.md` stays a reserved, unwritten file).
-- Syncing the same instructions into `.opencode/command/*.md`, `.codex-plugin`,
-  `gemini-extension.json` mirrors — this design targets the Claude Code
-  `commands/*.md` + `references/` path only; multi-platform sync is a
-  follow-up decision, not assumed here.
+- The source repo `TheBous/github-jira-slack-claudecode` is not touched at all —
+  no PR, no branch, nothing pushed there. `thebous-os` is a standalone copy.
+- Platform mirrors (`.opencode/`, `.codex-plugin/`, `gemini-extension.json`) —
+  not copied, thebous-os targets Claude Code only.
 - Any Dataview/query layer inside Obsidian — plain markdown + frontmatter only.
