@@ -229,12 +229,28 @@ If yes, follow `references/jira-transition.md` for the comment call only — **d
 🔍 Review PR #<NUMBER>: <Approved|Changes requested|Commented> — <PR_URL>
 ```
 
-### 10. Confirmation
+### 10. Log to Obsidian (optional)
+
+Only if a Jira ticket was matched in step 1 (`<KEY>` is set). Follow `references/obsidian-log.md`:
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
+  REVIEW_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "review.md")
+  obsidian_append_section "$REVIEW_FILE" "PR #<NUMBER> — <Approved|Changes requested|Commented>. <count> findings posted."
+  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — reviewed PR #<NUMBER>"
+fi
+```
+
+### 11. Confirmation
 
 Show the user:
 - Review submitted: `<Approved|Changes requested|Commented>`
 - Inline comments posted: `<count>`
 - Jira comment: yes/no
+- Obsidian: logged (or "skipped, no vault configured / no linked ticket")
 
 ## Style for review prose
 
