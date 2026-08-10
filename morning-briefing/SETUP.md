@@ -25,14 +25,17 @@ These are saved to `~/.config/morning-briefing/.env` for future runs.
 ### Claude Code (automatic)
 
 ```bash
-/thebous-jira-git-sync:setup-morning-briefing
+/morning-briefing:schedule
 ```
 
-Creates a daily cron task at 9:00 AM (local time). Task runs automatically when the app is open; if closed at 9:00 AM, it runs on next app launch.
+Creates a daily cron task at 9:00 AM (local time), using Claude Code's built-in scheduled tasks. Task runs automatically when the app is open; if closed at 9:00 AM, it runs on next app launch.
 
 ### OpenCode / Codex / Command Line (manual cron)
 
-Use your system's native cron:
+Neither tool has a built-in scheduler equivalent to Claude Code's — use your
+system's native cron to invoke it. The exact non-interactive invocation
+syntax depends on the harness's CLI (check its `--help` or docs for a
+non-interactive/print mode); the general shape:
 
 **macOS/Linux:**
 
@@ -40,15 +43,16 @@ Use your system's native cron:
 # Add to crontab
 crontab -e
 
-# Append this line (runs at 9:00 AM local time):
-0 9 * * * /path/to/claude /plugin run morning-briefing@thebous-os
+# Append this line (runs at 9:00 AM local time) — adjust the command to
+# whatever your harness's non-interactive invocation actually looks like:
+0 9 * * * cd /path/to/thebous-os && <harness-cli> "run the morning-briefing skill at morning-briefing/SKILL.md"
 ```
 
 **Windows (Task Scheduler):**
 
 Create a scheduled task:
 - Trigger: Daily, 9:00 AM
-- Action: Run program `/path/to/claude.exe` with arguments `/plugin run morning-briefing@thebous-os`
+- Action: run the harness's CLI non-interactively, same command as above
 
 ### Manual Invocation (all platforms)
 
