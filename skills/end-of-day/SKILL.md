@@ -85,20 +85,23 @@ troncato) e `cwd`.
 
 ## Step 4: Sessioni OpenCode di oggi
 
+Usa le API native di OpenCode (`session_list` / `session_info`) — non richiedono
+autenticazione e funzionano anche se il server OpenCode richiede bearer token per
+l'HTTP API. Le API native ti danno accesso diretto allo store delle sessioni:
+
 ```bash
-if [ -n "${OPENCODE_BIN:-}" ] || command -v opencode >/dev/null 2>&1; then
-  bash "${CLAUDE_PLUGIN_ROOT}/skills/end-of-day/scripts/opencode_sessions_today.sh"
-fi
+# Pseudo-codice (implementa con opencode CLI o API disponibile nel tuo harness)
+sessions = opencode.session_list()
+today_sessions = sessions.filter(s => s.time.updated.date() == today)
 ```
 
-Lo script è autosufficiente: avvia un server OpenCode temporaneo su una porta
-libera, interroga `/api/session`, filtra per oggi, lo spegne. Ritorna `[]`
-(non un errore) se OpenCode non è installato — è una fonte opzionale, la sua
-assenza non deve bloccare il resto del recap.
+Per ogni sessione trovata, mostra `title` (ricavato dal primo messaggio se
+assente come campo), `location.directory`, e se vuoi anche `cost`/`tokens` per
+un rapido senso di quanto è stata pesante. Ordina per `time.updated` decrescente
+(le più recenti prima).
 
-Per ogni sessione nell'array risultante, mostra `title`, `location.directory`,
-e se vuoi anche `cost`/`tokens` per un rapido senso di quanto è stata pesante.
-Ordina per `time.updated` decrescente (le più recenti prima).
+Se OpenCode non è installato o le API non sono disponibili, ritorna `[]` — è una
+fonte opzionale, la sua assenza non deve bloccare il resto del recap.
 
 ## Step 5: Componi il report
 
