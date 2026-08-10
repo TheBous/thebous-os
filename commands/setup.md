@@ -34,7 +34,7 @@ JIRA_IN_STAGING_ID=<value>
 JIRA_DONE_ID=<value>
 SLACK_WEBHOOK_URL=<value>
 CONFLUENCE_PARENT_URL=<value or empty string>
-OBSIDIAN_VAULT_PATH=<value or empty string>
+OBSIDIAN_VAULT_PATH="<value or empty string>"
 ```
 
 Run `mkdir -p "${CLAUDE_PLUGIN_DATA}"` before writing the file. Confirm to the user that the configuration has been saved and suggest trying `/thebous-jira-git-sync:new-branch`.

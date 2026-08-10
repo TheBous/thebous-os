@@ -122,7 +122,9 @@ Only if `OBSIDIAN_VAULT_PATH` is set and `<KEY>` is set:
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
 source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
-[ -n "${OBSIDIAN_VAULT_PATH:-}" ] && obsidian_granola_candidates "${OBSIDIAN_VAULT_PATH}" 14
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ]; then
+  obsidian_granola_candidates "${OBSIDIAN_VAULT_PATH}" 14
+fi
 ```
 
 If it lists anything, show up to 5 candidates (filename + `title:` frontmatter) and ask: "Link one of these calls to `<KEY>`? (number or 'no')". On a pick:

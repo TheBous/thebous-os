@@ -96,7 +96,9 @@ Only if `OBSIDIAN_VAULT_PATH` is set and `<KEY>` is set. Follow `references/obsi
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
 source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
-[ -n "${OBSIDIAN_VAULT_PATH:-}" ] && obsidian_granola_candidates "${OBSIDIAN_VAULT_PATH}" 14
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ]; then
+  obsidian_granola_candidates "${OBSIDIAN_VAULT_PATH}" 14
+fi
 ```
 
 If it lists anything, show up to 5 candidates (filename + `title:` frontmatter) and ask: "Vuoi collegare una di queste call a `<KEY>`? (numero o 'no')". On a pick:

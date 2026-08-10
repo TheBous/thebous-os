@@ -1,6 +1,6 @@
 // Evals for the jira-git-sync plugin commands (skill-creator evals.json schema, one eval per command).
 {
-  skill_name: "jira-git-sync",
+  skill_name: "thebous-jira-git-sync",
   evals: [
     {
       id: 1,

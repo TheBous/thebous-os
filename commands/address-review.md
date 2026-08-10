@@ -30,6 +30,17 @@ curl -sf -H "Authorization: Bearer $(gh auth token)" \
 
 If there's no open PR for the current branch, ask the user to pass the URL explicitly.
 
+### 1a. Detect a linked Jira ticket (optional)
+
+Extract a Jira key from the PR's branch name (`headRefName`, already fetched in step 1) using the `extract_jira_key` helper in `scripts/helpers.sh`:
+
+```bash
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+KEY=$(extract_jira_key "<headRefName>")
+```
+
+Store the result as `<KEY>` if non-empty — used later in step 13 to log to Obsidian. If no key is found, `<KEY>` stays empty and step 13 is skipped.
+
 ### 2. Ask about worktree usage
 
 Ask the user:
@@ -207,7 +218,7 @@ If no document was found or the user declines, skip this step silently.
 
 ### 13. Log to Obsidian (optional)
 
-Only if the PR's branch matched a Jira key in step 1 (`<KEY>` is set). Follow `references/obsidian-log.md`. Summarize the resolved items (`<RESOLUTION_SUMMARY>`, e.g. "3 comments addressed: 2 fixed, 1 outdated"):
+Only if the PR's branch matched a Jira key in step 1a (`<KEY>` is set). Follow `references/obsidian-log.md`. Summarize the resolved items (`<RESOLUTION_SUMMARY>`, e.g. "3 comments addressed: 2 fixed, 1 outdated"):
 
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
