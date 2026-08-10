@@ -75,9 +75,44 @@ curl -sf -o /dev/null -X POST "$SLACK_WEBHOOK_URL" \
 
 If there was no Jira ticket, the Slack message is just: `🌿 New branch: \`<branch-name>\``
 
-### 7. Confirmation
+### 7. Log to Obsidian (optional)
+
+Only if a Jira ticket was found in step 2 (`<KEY>` is set). Follow `references/obsidian-log.md`; in short:
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
+  obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md" >/dev/null
+  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — branch \`<branch-name>\` created"
+fi
+```
+
+### 8. Link a Granola call (optional)
+
+Only if `OBSIDIAN_VAULT_PATH` is set and `<KEY>` is set. Follow `references/obsidian-log.md`'s Granola section:
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+[ -n "${OBSIDIAN_VAULT_PATH:-}" ] && obsidian_granola_candidates "${OBSIDIAN_VAULT_PATH}" 14
+```
+
+If it lists anything, show up to 5 candidates (filename + `title:` frontmatter) and ask: "Vuoi collegare una di queste call a `<KEY>`? (numero o 'no')". On a pick:
+
+```bash
+CALLS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "calls.md")
+echo "- [[Granola/<chosen-filename-without-.md>]] — linked $(date +%Y-%m-%d)" >> "$CALLS_FILE"
+```
+
+If the list is empty or the user declines, skip silently.
+
+### 9. Confirmation
 
 Show the user:
 - Branch created: `<branch-name>`
 - Ticket transitioned: `<KEY>` → In Progress (if applicable)
 - Slack: notified
+- Obsidian: logged (or "skipped, no vault configured")
+- Granola call linked: `<note>` (if applicable, otherwise omit this line)
