@@ -16,6 +16,10 @@ source "${CLAUDE_PLUGIN_DATA}/.env"
 
 If the file doesn't exist or `CONFLUENCE_PARENT_URL` is missing, tell the user to run `/thebous-jira-git-sync:setup` first.
 
+### 1a. Detect a linked Jira ticket (optional)
+
+Extract a Jira key from the current branch name (pattern `[A-Za-z]+-[0-9]+`, case-insensitive), uppercased (e.g. `dc-443` → `DC-443`), same rule used in `cook.md`. Store it as `<KEY>` if found — used later to link this doc into Obsidian. If no key is found, `<KEY>` stays empty and the Obsidian step at the end is skipped.
+
 ### 2. Identify the page
 
 Ask the user: "URL or title of the page to update?"
@@ -42,7 +46,23 @@ Use the MCP tool `updateConfluencePage` with the page ID and the updated content
 
 For tag changes: update the Tags row directly in the metadata table in the HTML body.
 
+### 5a. Log to Obsidian (optional)
+
+Only if `<KEY>` was found in step 1a. Follow `references/obsidian-log.md`:
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ] && [ -n "<KEY>" ]; then
+  PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
+  obsidian_append_section "$PLAN_FILE" "Confluence page updated: [<title>](<page URL>)"
+  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — Confluence page updated: <title>"
+fi
+```
+
 ### 6. Confirmation
 
 Show the user:
 - Page updated: `<title>` → `<page URL>`
+- Obsidian: logged (or "skipped, no vault configured / no linked ticket")

@@ -16,6 +16,10 @@ source "${CLAUDE_PLUGIN_DATA}/.env"
 
 If the file doesn't exist or `CONFLUENCE_PARENT_URL` is missing, tell the user to run `/thebous-jira-git-sync:setup` first.
 
+### 1a. Detect a linked Jira ticket (optional)
+
+Extract a Jira key from the current branch name (pattern `[A-Za-z]+-[0-9]+`, case-insensitive), uppercased (e.g. `dc-443` → `DC-443`), same rule used in `cook.md`. Store it as `<KEY>` if found — used later to link this doc into Obsidian. If no key is found, `<KEY>` stays empty and the Obsidian step at the end is skipped.
+
 ### 2. Identify the target
 
 If the user passed a file path when invoking the command (e.g. `/create-doc src/auth/login.ts`), use it directly.
@@ -98,7 +102,23 @@ Use the MCP tool `createConfluencePage` with:
 - `body`: HTML composed in step 6
 - `contentFormat`: `"html"`
 
+### 7a. Log to Obsidian (optional)
+
+Only if `<KEY>` was found in step 1a. Follow `references/obsidian-log.md`:
+
+```bash
+source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ] && [ -n "<KEY>" ]; then
+  PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
+  obsidian_append_section "$PLAN_FILE" "Confluence page created: [<title>](<page URL>)"
+  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — Confluence page created: <title>"
+fi
+```
+
 ### 8. Confirmation
 
 Show the user:
 - Page created: `<title>` → `<page URL>`
+- Obsidian: logged (or "skipped, no vault configured / no linked ticket")
