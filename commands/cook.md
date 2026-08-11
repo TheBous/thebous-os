@@ -60,6 +60,13 @@ Always use Spec-Driven Development. Invoke the SDD skill chain in order:
 7. **`sdd-verify`** — Validate that implementation matches specs, design, and tasks
 8. **`sdd-archive`** — Archive the completed change and persist the final report
 
+As soon as `sdd-design` and `sdd-tasks` produce their documents, always generate visual companions (not optional):
+
+- Invoke `visual-explainer:generate-visual-plan` on the design + tasks docs
+- Invoke `visual-explainer:generate-web-diagram` for an architecture/flow diagram of the change
+
+Keep the resulting HTML file paths — they're logged to Obsidian in step 7.
+
 After SDD completes with successful verification, proceed to step 5.
 
 ### 5. Run the full test suite
@@ -102,15 +109,22 @@ Wait for confirmation. For each confirmed doc, update the relevant content to re
 
 ### 7. Log to Obsidian (optional)
 
-Only if a Jira ticket was found in step 1 (`<KEY>` is set). Follow `references/obsidian-log.md`. Summarize what the SDD chain produced into a few sentences (`<SDD_SUMMARY>` — not the full spec/design docs) and append it to the ticket's plan:
+Only if a Jira ticket was found in step 1 (`<KEY>` is set). Follow `references/obsidian-log.md`.
+
+Copy the **full** SDD documents produced by `sdd-propose`/`sdd-spec`/`sdd-design`/`sdd-tasks` (proposal, spec, design, tasks — whatever landed under `docs/superpowers/{plans,specs}/`) into the ticket's Obsidian folder, plus the visual companions from step 3. Don't just summarize — the point is having the actual documentation searchable in the vault:
 
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
 source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
 
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
+  TICKET_DIR=$(obsidian_ticket_dir "${OBSIDIAN_VAULT_PATH}" "<KEY>")
+  mkdir -p "$TICKET_DIR/docs"
+  cp <proposal/spec/design/tasks files from docs/superpowers/{plans,specs}/> "$TICKET_DIR/docs/"
+  cp <visual-plan.html> <web-diagram.html> "$TICKET_DIR/docs/"
+
   PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
-  obsidian_append_section "$PLAN_FILE" "<SDD_SUMMARY>"
+  obsidian_append_section "$PLAN_FILE" "<SDD_SUMMARY> — full docs in [[<KEY>/docs]]"
   obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — implemented via SDD"
 fi
 ```
@@ -143,8 +157,9 @@ If the list is empty or the user declines, skip silently.
 Show the user:
 - ✅ Feature/fix implemented via SDD
 - ✅ Spec, design, and tasks completed and archived
+- ✅ Visual plan + web diagram generated: `<paths>`
 - ✅ Tests: full suite green (all scripts passed)
 - ✅ Documentation updated: `<list of files/pages>` (if applicable)
-- ✅ Obsidian: logged (or "skipped, no vault configured")
+- ✅ Obsidian: full SDD docs + visuals logged under `<KEY>/docs` (or "skipped, no vault configured")
 - ✅ Granola call linked: `<note>` (if applicable, otherwise omit this line)
 - → Suggest the next step: `/thebous-os:serve-up` to try it in a browser, or `/thebous-os:create-pr` to open the PR
