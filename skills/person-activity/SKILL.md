@@ -46,48 +46,12 @@ Each interaction shows who, when, what, and a link to the source.
 
 ## Example Usage
 
-**Command:**
-```
-person-activity
-```
-
-**Interaction:**
 ```
 Enter work item ID (Jira key, GitHub PR #, or git commit hash): DC-443
 Enter person's name or email: marco@company.com
 ```
 
-**Output Sample:**
-```markdown
-# Activity — DC-443 with Marco Rossi
-
-## 📋 Synthetic Summary
-- **Role**: Reviewer, technical lead
-- **Key Decisions**: Approved implementation approach on 2026-07-28; requested schema changes on 2026-07-25
-- **Latest**: Added comment "Looks good, ready to merge" on 2026-08-09
-- **Status**: Approved
-
-## 📍 Timeline
-- 2026-07-25 14:30: Jira comment "Let's adjust the schema to support bulk updates"
-- 2026-07-28 09:15: GitHub review approved with suggestions
-- 2026-08-09 16:45: Jira comment "Looks good, ready to merge"
-
-## 💬 Sources
-### Jira Comments
-- 3 comments | [View on Jira](https://jira.company.com/browse/DC-443)
-
-### GitHub PR/Reviews
-- 2 reviews, 1 comment | [View PR #1842](https://github.com/company/repo/pull/1842)
-
-### Slack
-- 2 messages in #engineering channel
-
-### Email
-- 1 thread with team
-
-### Calendar
-- 1 decision meeting on 2026-07-27
-```
+→ full sample output in `references/examples.md` (Example 1).
 
 ## Notes
 

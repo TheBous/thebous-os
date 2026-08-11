@@ -8,11 +8,11 @@ REPORT=$(mktemp)
 echo "## Section
 - a line" > "$REPORT"
 
-OUT1=$(bash "$SCRIPT_DIR/append_daily_note.sh" "$VAULT" "$REPORT")
+OUT1=$(bash "$SCRIPT_DIR/append_daily_note.sh" "$VAULT" "$REPORT" "00 - Morning Briefing.md" "Morning Briefing")
 if grep -qF "a line" "$OUT1"; then echo "PASS: first call creates note with content"; else echo "FAIL: first call creates note with content"; FAIL=1; fi
 
 echo "second run" > "$REPORT"
-bash "$SCRIPT_DIR/append_daily_note.sh" "$VAULT" "$REPORT" >/dev/null
+bash "$SCRIPT_DIR/append_daily_note.sh" "$VAULT" "$REPORT" "00 - Morning Briefing.md" "Morning Briefing" >/dev/null
 if grep -qF "a line" "$OUT1" && grep -qF "second run" "$OUT1"; then
   echo "PASS: second call appends without erasing the first"
 else
@@ -20,8 +20,16 @@ else
   FAIL=1
 fi
 
-SECTION_COUNT=$(grep -c '^## Morning Briefing' "$OUT1")
-if [ "$SECTION_COUNT" = "2" ]; then echo "PASS: two dated sections present"; else echo "FAIL: expected 2 sections, got $SECTION_COUNT"; FAIL=1; fi
+HEADER_COUNT=$(grep -c '^# Morning Briefing' "$OUT1")
+if [ "$HEADER_COUNT" = "1" ]; then echo "PASS: header written once, not duplicated on second append"; else echo "FAIL: expected 1 header, got $HEADER_COUNT"; FAIL=1; fi
+
+OUT2=$(bash "$SCRIPT_DIR/append_daily_note.sh" "$VAULT" "$REPORT" "30 - End of Day Recap.md" "End of Day Recap")
+if [ "$OUT2" != "$OUT1" ] && grep -qF "second run" "$OUT2"; then
+  echo "PASS: different note_filename writes a separate file"
+else
+  echo "FAIL: different note_filename writes a separate file"
+  FAIL=1
+fi
 
 rm -rf "$VAULT" "$REPORT"
 

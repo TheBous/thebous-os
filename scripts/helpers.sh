@@ -4,11 +4,11 @@
 set -euo pipefail
 
 # ── Credentials ──────────────────────────────────────────────────
-ENV_FILE="${CLAUDE_PLUGIN_DATA:-$HOME/.config/jira-git-sync}/.env"
+ENV_FILE="${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env"
 
 load_env() {
   if [ ! -f "$ENV_FILE" ]; then
-    echo "ERROR: credenziali non trovate. Esegui /thebous-jira-git-sync:setup prima." >&2
+    echo "ERROR: credenziali non trovate. Esegui /thebous-os:setup prima." >&2
     exit 1
   fi
   # shellcheck source=/dev/null
@@ -54,6 +54,15 @@ slack_notify() {
   curl -sf -o /dev/null -X POST "$SLACK_WEBHOOK_URL" \
     -H "Content-type: application/json" \
     -d "{\"text\":\"$msg\"}"
+}
+
+# ── GitHub ────────────────────────────────────────────────────────
+gh_repo_filter() {
+  # Builds --repo= flags for `gh search`/`gh pr` from comma-separated GITHUB_REPOS.
+  # Echoes nothing (all repos) if GITHUB_REPOS is unset. Always exits 0.
+  if [ -n "${GITHUB_REPOS:-}" ]; then
+    echo "$GITHUB_REPOS" | tr ',' '\n' | sed 's/^/--repo=/' | tr '\n' ' '
+  fi
 }
 
 # ── Utilities ─────────────────────────────────────────────────────
