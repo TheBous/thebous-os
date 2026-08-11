@@ -17,6 +17,15 @@ gh pr view --json number,title,body,author,headRefName,baseRefName,additions,del
 
 Extract the branch name and check if it matches a Jira key pattern (e.g., `DC-123`). If it does, fetch the ticket via the `getJiraIssue` MCP tool or `jq` from the Jira API, using the same credentials pattern as `references/jira-transition.md`.
 
+**Enhanced task context** — before proceeding, also:
+1. Search the PR title and body for any Jira task identifier or link (e.g., `[DC-123]`, `DC-123:`, `debto.atlassian.net/browse/DC-123`)
+2. Use `getJiraIssue` to fetch full task details: summary, description, status, priority, assignee, type, custom fields
+3. Check for **linked predecessor tasks** (blocking dependencies) using the "issuelinks" field or by querying linked issues:
+   ```jql
+   key in issueFunction in linkedIssuesOf("DC-123", "is blocked by")
+   ```
+4. Store this context (task key, summary, predecessors) for display before review analysis
+
 If no PR is open on the current branch, ask the user to pass the PR number or URL explicitly.
 
 ### 2. Gather full context
@@ -28,6 +37,31 @@ gh pr view <NUMBER> --json headRefOid --jq '.headRefOid'
 ```
 
 Read full files (not just hunks) for lines touched by the diff. Always read the complete file when the diff doesn't show function bodies, type definitions, or imports.
+
+### 2.5. Display task context (if available)
+
+If a Jira task was identified in Step 1, display its context before the review:
+
+```
+## Task Context — <KEY>
+
+**Summary**: <title>
+**Status**: <status>
+**Priority**: <priority>
+**Type**: <type>
+**Assignee**: <assignee>
+
+**Description**: <first 200 chars of description>
+
+**Predecessors** (blocking dependencies):
+- <PRED-1>: <pred title> — <pred status>
+- <PRED-2>: <pred title> — <pred status>
+(or "None" if no predecessors)
+
+**Key points to review**: <derived from task description and predecessors>
+```
+
+This context informs the depth and focus of the code review. The reviewer can now connect code changes to their task context and understand any upstream work that might affect this PR.
 
 ### 3. Ask about review depth
 
@@ -50,6 +84,13 @@ wt switch pr:${PR_NUMBER}
 ```
 
 This creates a dedicated worktree for the review. **Do not create another worktree inside ce-code-review** — the next step will know one already exists.
+
+Store the task context (from Step 2.5) in environment variables for reference during analysis:
+```bash
+export REVIEW_JIRA_KEY="<KEY>"
+export REVIEW_TASK_SUMMARY="<summary>"
+export REVIEW_PREDECESSORS="<predecessor list>"
+```
 
 ### 5. Delegate analysis to ce-code-review
 
