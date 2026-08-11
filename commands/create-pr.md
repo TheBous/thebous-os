@@ -29,9 +29,12 @@ git push -u origin "$(git branch --show-current)"
 
 ### 2. Extract the Jira ticket and fetch details
 
-From the branch name, look for a pattern `[A-Za-z]+-[0-9]+`, case-insensitive — branch names use a lowercase key. Uppercase the match (e.g. `dc-443` → `DC-443`) before using it as `<KEY>`.
+```bash
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+KEY=$(extract_jira_key "$(git branch --show-current)")
+```
 
-If found, fetch the ticket's title and description using the MCP tool `getJiraIssue` with `issueKey: "<KEY>"` and `fields: ["summary", "description"]`.
+If `<KEY>` is non-empty, fetch the ticket's title and description using the MCP tool `getJiraIssue` with `issueKey: "<KEY>"` and `fields: ["summary", "description"]`.
 
 ### 3. Analyze the diff against the base branch
 
@@ -155,13 +158,10 @@ source "${CLAUDE_PLUGIN_DATA}/.env"
 
 Use the MCP tool `addCommentToJiraIssue` with `issueKey: "<KEY>"` and `comment: "🔍 PR opened: <PR_URL>"`.
 
-**If the MCP call fails**, use curl fallback:
+**If the MCP call fails**, use the `jira_comment` helper as fallback:
 ```bash
-curl -sf -o /dev/null \
-  -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -X POST "$JIRA_BASE_URL/rest/api/2/issue/<KEY>/comment" \
-  -d "{\"body\":\"🔍 PR opened: <PR_URL>\"}"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+jira_comment "<KEY>" "🔍 PR opened: <PR_URL>"
 ```
 
 ### 8. Jira transition (optional)
@@ -176,9 +176,8 @@ If the transition fails or `JIRA_IN_REVIEW_ID` is not configured, **continue any
 
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
-curl -sf -o /dev/null -X POST "$SLACK_WEBHOOK_URL" \
-  -H "Content-type: application/json" \
-  -d "{\"text\":\"🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Review*\"}"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+slack_notify "🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Review*"
 ```
 
 If there's no Jira ticket: `🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>`

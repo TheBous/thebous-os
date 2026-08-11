@@ -18,19 +18,24 @@ If the file doesn't exist or `CONFLUENCE_PARENT_URL` is missing, tell the user t
 
 ### 1a. Detect a linked Jira ticket (optional)
 
-Extract a Jira key from the current branch name (pattern `[A-Za-z]+-[0-9]+`, case-insensitive), uppercased (e.g. `dc-443` → `DC-443`), same rule used in `cook.md`. Store it as `<KEY>` if found — used later to link this doc into Obsidian. If no key is found, `<KEY>` stays empty and the Obsidian step at the end is skipped.
+```bash
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+KEY=$(extract_jira_key "$(git branch --show-current)")
+```
+
+Store it as `<KEY>` if found — used later to link this doc into Obsidian. If no key is found, `<KEY>` stays empty and the Obsidian step at the end is skipped.
 
 ### 2. Identify the page
 
 Ask the user: "URL or title of the page to update?"
 
-**If URL**: extract the page ID with `echo "<URL>" | grep -oP '(?<=pages/)[0-9]+'`
+**If URL**: `source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"; PAGE_ID=$(confluence_page_id "<URL>")`
 
-**If title**: use the MCP tool `searchConfluenceUsingCql` with:
+**If title**: extract `PARENT_PAGE_ID` the same way from `CONFLUENCE_PARENT_URL`, then use the MCP tool `searchConfluenceUsingCql` with:
 ```
 title = "<title>" AND ancestor = <PARENT_PAGE_ID>
 ```
-where `PARENT_PAGE_ID` is extracted from `CONFLUENCE_PARENT_URL`. If there are multiple results, show them and ask which one.
+If there are multiple results, show them and ask which one.
 
 ### 3. Fetch the current content
 

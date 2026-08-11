@@ -45,7 +45,11 @@ curl -sf -H "Authorization: Bearer $(gh auth token)" \
 Extract:
 - `headRefName`: the PR's branch
 - `url`: the PR URL
-- Jira key from the branch name (pattern `[A-Za-z]+-[0-9]+`, case-insensitive — branch names use a lowercase key). Uppercase the match (e.g. `dc-443` → `DC-443`) before using it as `<KEY>`.
+- Jira key from the branch name:
+  ```bash
+  source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+  KEY=$(extract_jira_key "<headRefName>")
+  ```
 
 ### 3. Merge the PR
 
@@ -77,10 +81,9 @@ If there's a linked Jira ticket, follow `references/jira-transition.md` (in the 
 
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
 MERGED_BY=$(git config user.name 2>/dev/null || echo "unknown")
-curl -sf -o /dev/null -X POST "$SLACK_WEBHOOK_URL" \
-  -H "Content-type: application/json" \
-  -d "{\"text\":\"🔀 PR #<NUMBER> merged to main\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Staging*\n👤 $MERGED_BY\n🔗 <PR_URL>\"}"
+slack_notify "🔀 PR #<NUMBER> merged to main\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Staging*\n👤 $MERGED_BY\n🔗 <PR_URL>"
 ```
 
 If there's no Jira ticket, the Slack message is: `🔀 PR #<NUMBER> merged to main — <PR_TITLE>`
@@ -96,7 +99,8 @@ git diff main...<BRANCH_NAME> --name-only
 
 Extract `PARENT_PAGE_ID` from `CONFLUENCE_PARENT_URL`:
 ```bash
-echo "$CONFLUENCE_PARENT_URL" | grep -oP '(?<=pages/)[0-9]+'
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+PARENT_PAGE_ID=$(confluence_page_id "$CONFLUENCE_PARENT_URL")
 ```
 
 Use the MCP tool `searchConfluenceUsingCql` to search for pages mentioning the changed files:

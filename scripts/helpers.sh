@@ -65,6 +65,17 @@ gh_repo_filter() {
   fi
 }
 
+# ── Confluence ────────────────────────────────────────────────────
+confluence_page_id() {
+  # Extracts the numeric page ID from a Confluence page URL (any /pages/<id> URL).
+  echo "$1" | grep -oP '(?<=pages/)[0-9]+'
+}
+
+confluence_space_key() {
+  # Extracts the space key from a Confluence URL (.../spaces/<KEY>/...).
+  echo "$1" | grep -oP '(?<=spaces/)[^/]+'
+}
+
 # ── Utilities ─────────────────────────────────────────────────────
 extract_jira_key() {
   # Accepts branch name, URL, or free text — returns uppercase key or empty
@@ -72,6 +83,15 @@ extract_jira_key() {
     | grep -oiE '[A-Za-z]+-[0-9]+' \
     | head -1 \
     | tr '[:lower:]' '[:upper:]'
+}
+
+extract_jira_keys() {
+  # Same pattern as extract_jira_key, but returns every unique uppercase key
+  # found in the text (one per line) — for scanning commit ranges/release notes.
+  echo "$1" \
+    | grep -oiE '[A-Za-z]+-[0-9]+' \
+    | tr '[:lower:]' '[:upper:]' \
+    | sort -u
 }
 
 slugify() {

@@ -25,7 +25,12 @@ source "${CLAUDE_PLUGIN_DATA}/.env"
 ```
 If the file doesn't exist, tell the user to run `/thebous-os:setup` first.
 
-Extract the key (e.g. `DC-443`) from the URL or input. Then fetch the ticket title using the MCP tool `getJiraIssue` with `issueKey: "<KEY>"` and `fields: ["summary"]`.
+Extract the key (e.g. `DC-443`) from the URL or input using the `extract_jira_key` helper:
+```bash
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+KEY=$(extract_jira_key "<url-or-input>")
+```
+Then fetch the ticket title using the MCP tool `getJiraIssue` with `issueKey: "<KEY>"` and `fields: ["summary"]`.
 
 Build the branch name: `feat/<key-lowercase>-<slugified-title>`.
 - Slugify: lowercase, spaces and special characters → `-`, max 50 characters after the prefix.
@@ -39,7 +44,8 @@ If `CONFLUENCE_PARENT_URL` is configured in `.env`:
 
 Extract 3-5 meaningful keywords from the ticket's title and description (exclude articles, common verbs, noise words). Extract `PARENT_PAGE_ID` from `CONFLUENCE_PARENT_URL` with:
 ```bash
-echo "$CONFLUENCE_PARENT_URL" | grep -oP '(?<=pages/)[0-9]+'
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+PARENT_PAGE_ID=$(confluence_page_id "$CONFLUENCE_PARENT_URL")
 ```
 
 Use the MCP tool `searchConfluenceUsingCql` with:
@@ -68,9 +74,8 @@ Follow `references/jira-transition.md` (in the plugin root) with:
 
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
-curl -sf -o /dev/null -X POST "$SLACK_WEBHOOK_URL" \
-  -H "Content-type: application/json" \
-  -d "{\"text\":\"🌿 New branch: \`<branch-name>\`\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Progress*\"}"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+slack_notify "🌿 New branch: \`<branch-name>\`\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Progress*"
 ```
 
 If there was no Jira ticket, the Slack message is just: `🌿 New branch: \`<branch-name>\``

@@ -37,7 +37,12 @@ else
 fi
 ```
 
-Extract all unique Jira keys (pattern `[A-Za-z]+-[0-9]+`, case-insensitive — branch names use a lowercase key, commit messages may use either) from commit messages and merged branch names. Uppercase every match (e.g. `dc-443` → `DC-443`) before deduplicating, so the same ticket isn't counted twice under different casing. Show the list to the user.
+Extract all unique Jira keys from commit messages and merged branch names:
+```bash
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+extract_jira_keys "<commit log from above>"
+```
+Show the list to the user.
 
 ### 3. Create and push the tag
 
@@ -73,12 +78,11 @@ Build the list of tickets as Jira links:
 
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
 DEPLOYER=$(git config user.name 2>/dev/null || echo "unknown")
 
 # Message with all tickets as links
-curl -sf -o /dev/null -X POST "$SLACK_WEBHOOK_URL" \
-  -H "Content-type: application/json" \
-  -d "{\"text\":\"🚀 *Deploy Production* — Tag \`<TAG>\`\n👤 $DEPLOYER\n🎫 Tickets: <TICKET_LIST_WITH_LINKS>\n<RELEASE_URL_IF_PRESENT>\"}"
+slack_notify "🚀 *Deploy Production* — Tag \`<TAG>\`\n👤 $DEPLOYER\n🎫 Tickets: <TICKET_LIST_WITH_LINKS>\n<RELEASE_URL_IF_PRESENT>"
 ```
 
 Ticket format in the message: `<JIRA_BASE_URL/browse/DC-443|DC-443>` for each ticket, separated by a space.

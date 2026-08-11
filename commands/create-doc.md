@@ -18,7 +18,12 @@ If the file doesn't exist or `CONFLUENCE_PARENT_URL` is missing, tell the user t
 
 ### 1a. Detect a linked Jira ticket (optional)
 
-Extract a Jira key from the current branch name (pattern `[A-Za-z]+-[0-9]+`, case-insensitive), uppercased (e.g. `dc-443` → `DC-443`), same rule used in `cook.md`. Store it as `<KEY>` if found — used later to link this doc into Obsidian. If no key is found, `<KEY>` stays empty and the Obsidian step at the end is skipped.
+```bash
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+KEY=$(extract_jira_key "$(git branch --show-current)")
+```
+
+Store it as `<KEY>` if found — used later to link this doc into Obsidian. If no key is found, `<KEY>` stays empty and the Obsidian step at the end is skipped.
 
 ### 2. Identify the target
 
@@ -61,8 +66,9 @@ Wait for a reply. If the user asks for changes, apply them and show it again. On
 ### 5. Extract the space key and parent page ID
 
 ```bash
-echo "$CONFLUENCE_PARENT_URL" | grep -oP '(?<=spaces/)[^/]+'  # → SPACE_KEY
-echo "$CONFLUENCE_PARENT_URL" | grep -oP '(?<=pages/)[0-9]+'   # → PAGE_ID
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+SPACE_KEY=$(confluence_space_key "$CONFLUENCE_PARENT_URL")
+PAGE_ID=$(confluence_page_id "$CONFLUENCE_PARENT_URL")
 ```
 
 ### 6. Compose the final body

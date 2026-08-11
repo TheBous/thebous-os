@@ -10,14 +10,13 @@ Implement a feature or fix starting from the context of the current branch/ticke
 
 ### 1. Gather context
 
-Extract the Jira key from the current branch (pattern `[A-Za-z]+-[0-9]+`, case-insensitive — branch names use a lowercase key):
+Extract the Jira key from the current branch:
 ```bash
-git branch --show-current
+source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+KEY=$(extract_jira_key "$(git branch --show-current)")
 ```
 
-Uppercase the extracted key (e.g. `dc-443` → `DC-443`) before using it in any Jira call.
-
-If found, fetch the ticket's title and description with the MCP tool `getJiraIssue` using `issueKey: "<KEY>"` and `fields: ["summary", "description"]`.
+If `<KEY>` is non-empty, fetch the ticket's title and description with the MCP tool `getJiraIssue` using `issueKey: "<KEY>"` and `fields: ["summary", "description"]`.
 
 Show the user:
 ```
