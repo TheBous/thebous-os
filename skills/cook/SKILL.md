@@ -1,6 +1,6 @@
 ---
 name: cook
-description: Use when implementing a feature or fix on the current branch and the work may require Jira context, Granola meeting context, tests, or documentation updates
+description: Use when the user decides to develop, implement, plan, design, or fix a feature, bug, task, or other change, including when they request an implementation plan before coding
 ---
 
 ## Goal

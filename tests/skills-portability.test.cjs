@@ -87,3 +87,21 @@ test('cook asks before pulling Granola and saves a selected meeting as a ticket 
   assert.match(cook, /granola_id.*title.*created_at.*updated_at.*granola_url.*imported_at/s);
   assert.match(cook, /\.md/);
 });
+
+test('core workflow skills declare their automatic trigger conditions', () => {
+  const triggers = {
+    cook: /Use when.*(develop|implement|plan).*(feature|fix)|Use when.*(feature|fix).*(develop|implement|plan)/is,
+    'new-branch': /Use when.*(create|start|open).*branch/is,
+    'create-pr': /Use when.*(create|open).*(PR|pull request).*merge|Use when.*merge.*branch/is,
+    'review-pr': /Use when.*review.*(PR|pull request)/is,
+  };
+
+  for (const [name, pattern] of Object.entries(triggers)) {
+    const metadata = readFrontmatter(path.join(skillsDir, name, 'SKILL.md'));
+    assert.match(metadata.description, pattern, `${name} must describe its automatic trigger`);
+  }
+
+  const createPr = fs.readFileSync(path.join(skillsDir, 'create-pr', 'SKILL.md'), 'utf8');
+  assert.match(createPr, /merge.*branch|existing pull request/i);
+  assert.match(createPr, /skills\/merge-pr\/SKILL\.md/);
+});

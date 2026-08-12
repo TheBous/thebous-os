@@ -1,11 +1,17 @@
 ---
 name: create-pr
-description: Validate the Jira task, create a PR on GitHub against main, comment on Jira, and notify Slack
+description: Use when the user asks to create or open a pull request, or to merge a branch, after development is complete
 ---
 
 ## Goal
 
 Create a Pull Request for the current branch against `main`, after validating the Jira task and automatically generating the title and description from the Jira ticket and the branch diff.
+
+## Routing
+
+If the user asks to merge a branch or an existing pull request rather than to
+create one, load `skills/merge-pr/SKILL.md` and follow that workflow instead.
+Do not run the PR-creation steps for a merge request.
 
 ## Steps
 

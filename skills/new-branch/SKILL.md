@@ -1,6 +1,6 @@
 ---
 name: new-branch
-description: Create a new branch from a Jira task, move the task to In Progress, and notify Slack
+description: Use when the user asks to create, start, or open a new git branch, especially from a Jira task
 ---
 
 ## Goal

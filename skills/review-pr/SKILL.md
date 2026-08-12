@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review a GitHub PR — identify PR and Jira ticket, switch to isolated worktree, delegate analysis to ce-code-review (report-only), present findings by severity, and submit structured review with inline comments and suggested fixes
+description: Use when the user asks to review, inspect, or analyze a GitHub pull request
 ---
 
 ## Goal
