@@ -31,7 +31,7 @@ Add to your `opencode.json`:
 Or install directly from GitHub/npm — see the root `README.md` / `package.json`.
 
 Commands are immediately available:
-- `/new-branch`, `/create-pr`, `/review-pr`, etc. (the git/Jira/Slack/Confluence workflow)
+- `/create-jira-task`, `/new-branch`, `/create-pr`, `/review-pr`, etc. (the git/Jira/Slack/Confluence workflow)
 - `/morning-briefing` — Generate the morning briefing
 - `/morning-briefing-schedule` — Set up the daily 9 AM task
 - `/end-of-day` — Generate the end-of-day recap

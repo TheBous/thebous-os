@@ -5,7 +5,7 @@ description: Git → Jira → Slack → Confluence workflow automation. Use when
 
 # jira-git-sync
 
-A bundle of 13 git/Jira/Slack/Confluence workflows, part of the thebous-os plugin. Each one lives as a plain markdown file under `${CLAUDE_PLUGIN_ROOT}/commands/`. **Do not read them all** — only read the specific one the user is asking for, then follow its numbered steps.
+A bundle of 14 git/Jira/Slack/Confluence workflows, part of the thebous-os plugin. Each one lives as a plain markdown file under `${CLAUDE_PLUGIN_ROOT}/commands/`. **Do not read them all** — only read the specific one the user is asking for, then follow its numbered steps.
 
 Shared helpers (read on demand when a step references them):
 - `${CLAUDE_PLUGIN_ROOT}/references/jira-transition.md` — standard Jira transition + comment pattern
@@ -22,6 +22,7 @@ Map the user's request to one of these files and `read` it before acting:
 | User intent | File |
 |---|---|
 | Configure Jira/Slack/Confluence/Obsidian/GitHub/Gmail credentials (first run) | `commands/setup.md` |
+| "Create a Jira task", "open a task with the standard template" | `commands/create-jira-task.md` |
 | "Start this ticket", "create a branch for DC-443" | `commands/new-branch.md` |
 | "Implement this", "cook the feature", "fix the bug" | `commands/cook.md` |
 | "Run it locally", "start the app", "spin up the service" | `commands/serve-up.md` |

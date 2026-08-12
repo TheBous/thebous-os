@@ -9,6 +9,7 @@ Full step-by-step logic for each workflow lives in `commands/*.md` (shared helpe
 | File | What it does |
 |---|---|
 | `commands/setup.md` | Configure Jira, Slack, Confluence, Obsidian, GitHub, Gmail credentials (single setup for the whole plugin) |
+| `commands/create-jira-task.md` | Create a Jira task with the fixed Italian description and acceptance-criteria template |
 | `commands/new-branch.md` | Create branch from Jira ticket, move ticket to In Progress, notify Slack |
 | `commands/cook.md` | Implement feature/fix: write code, run tests, update docs |
 | `commands/serve-up.md` | Detect the runtime (compose/Dockerfile/package.json) and start the app detached on localhost |
