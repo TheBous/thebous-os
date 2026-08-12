@@ -44,33 +44,15 @@ How do you want to approach this task?
 - If they choose **2**: invoke the `grilling` skill before proceeding
 - If they choose **3 or 4**: proceed to step 3
 
-This choice only affects how requirements are refined beforehand — implementation always follows SDD + TDD (Spec-Driven Development + Test-Driven Development), regardless of which option was picked.
+This choice only affects how requirements are refined beforehand — implementation proceeds with SDD, regardless of which option was picked.
 
-### 3. Enter the SDD workflow
+### 3. Proceed with SDD
 
-Always use Spec-Driven Development. Invoke the SDD skill chain in order:
-
-1. **`sdd-explore`** — Investigate the codebase, understand current architecture, compare approaches
-2. **`sdd-propose`** — Formalize the change into a proposal with intent, scope, and approach
-3. **`sdd-spec`** — Write delta specifications with requirements and scenarios
-4. **`sdd-design`** — Create technical design document with architecture decisions
-5. **`sdd-tasks`** — Break down the change into actionable, ordered work items
-6. **`sdd-apply`** — Implement code changes following the spec and tasks
-7. **`sdd-verify`** — Validate that implementation matches specs, design, and tasks
-8. **`sdd-archive`** — Archive the completed change and persist the final report
-
-As soon as `sdd-design` and `sdd-tasks` produce their documents, always generate visual companions (not optional):
-
-- Invoke `visual-explainer:generate-visual-plan` on the design + tasks docs
-- Invoke `visual-explainer:generate-web-diagram` for an architecture/flow diagram of the change
-
-Keep the resulting HTML file paths — they're logged to Obsidian in step 7.
-
-After SDD completes with successful verification, proceed to step 5.
+Always use Spec-Driven Development for the implementation. Follow the SDD workflow available in the current environment.
 
 ### 5. Run the full test suite
 
-SDD's `sdd-verify` already validates targeted tests. Now run the **complete test suite** to ensure no regressions:
+Run the **complete test suite** to ensure no regressions:
 
 Read `references/run-tests.md` (in the plugin root) and follow the instructions to find and run the project's full tests/lint/checks.
 
@@ -110,7 +92,7 @@ Wait for confirmation. For each confirmed doc, update the relevant content to re
 
 Only if a Jira ticket was found in step 1 (`<KEY>` is set). Follow `references/obsidian-log.md`.
 
-Copy the **full** SDD documents produced by `sdd-propose`/`sdd-spec`/`sdd-design`/`sdd-tasks` (proposal, spec, design, tasks — whatever landed under `docs/superpowers/{plans,specs}/`) into the ticket's Obsidian folder, plus the visual companions from step 3. Don't just summarize — the point is having the actual documentation searchable in the vault:
+Copy any SDD documents produced during the implementation into the ticket's Obsidian folder:
 
 ```bash
 source "${CLAUDE_PLUGIN_DATA}/.env"
@@ -119,11 +101,10 @@ source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
   TICKET_DIR=$(obsidian_ticket_dir "${OBSIDIAN_VAULT_PATH}" "<KEY>")
   mkdir -p "$TICKET_DIR/docs"
-  cp <proposal/spec/design/tasks files from docs/superpowers/{plans,specs}/> "$TICKET_DIR/docs/"
-  cp <visual-plan.html> <web-diagram.html> "$TICKET_DIR/docs/"
+  cp <SDD documents> "$TICKET_DIR/docs/"
 
   PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
-  obsidian_append_section "$PLAN_FILE" "<SDD_SUMMARY> — full docs in [[<KEY>/docs]]"
+  obsidian_append_section "$PLAN_FILE" "<SDD_SUMMARY> — SDD docs in [[<KEY>/docs]]"
   obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — implemented via SDD"
 fi
 ```
@@ -155,10 +136,8 @@ If the list is empty or the user declines, skip silently.
 
 Show the user:
 - ✅ Feature/fix implemented via SDD
-- ✅ Spec, design, and tasks completed and archived
-- ✅ Visual plan + web diagram generated: `<paths>`
 - ✅ Tests: full suite green (all scripts passed)
 - ✅ Documentation updated: `<list of files/pages>` (if applicable)
-- ✅ Obsidian: full SDD docs + visuals logged under `<KEY>/docs` (or "skipped, no vault configured")
+- ✅ Obsidian: SDD docs logged under `<KEY>/docs` (or "skipped, no vault configured")
 - ✅ Granola call linked: `<note>` (if applicable, otherwise omit this line)
 - → Suggest the next step: `/thebous-os:serve-up` to try it in a browser, or `/thebous-os:create-pr` to open the PR
