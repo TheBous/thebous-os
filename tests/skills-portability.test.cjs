@@ -74,3 +74,16 @@ test('OpenCode can parse every command adapter', () => {
     assert.match(parsed.template, new RegExp(`skills/${name}/SKILL\\.md`));
   }
 });
+
+test('cook asks before pulling Granola and saves a selected meeting as a ticket page', () => {
+  const cook = fs.readFileSync(path.join(skillsDir, 'cook', 'SKILL.md'), 'utf8');
+  assert.match(cook, /prima di iniziare|before.*coding|before.*implement/i);
+  assert.match(cook, /Granola/i);
+  assert.match(cook, /explicit|esplicita|conferma|ask which meeting/i);
+  assert.match(cook, /non.*auto|never.*auto|mai.*auto/i);
+  assert.match(cook, /Dev\/Tickets|Tickets/);
+  assert.match(cook, /include=transcript/);
+  assert.match(cook, /granola-<GRANOLA_ID>\.md/);
+  assert.match(cook, /granola_id.*title.*created_at.*updated_at.*granola_url.*imported_at/s);
+  assert.match(cook, /\.md/);
+});

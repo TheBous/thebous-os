@@ -1,6 +1,6 @@
 ---
 name: cook
-description: Develop a feature or fix on the current branch, run tests, and update documentation
+description: Use when implementing a feature or fix on the current branch and the work may require Jira context, Granola meeting context, tests, or documentation updates
 ---
 
 ## Goal
@@ -26,7 +26,54 @@ Is this what you want to implement? Do you want to add details or correct the di
 
 Wait for a reply and incorporate any clarifications before proceeding.
 
-### 2. Choose the development flow
+### 2. Pull optional Granola context before development
+
+Before choosing the development flow or writing any code, ask:
+
+```text
+Vuoi che recuperi i meeting di Granola per avere più contesto sullo sviluppo? (sì/no)
+```
+
+If the user says **no**, continue to step 3 without pulling anything.
+
+If the user says **yes**:
+
+1. Require `<KEY>` and a configured `OBSIDIAN_VAULT_PATH`. If either is
+   missing, explain that the meeting cannot be imported into the ticket and
+   ask whether to continue without Granola.
+2. Prefer an available Granola MCP connection. Otherwise use the official
+   Granola API with `GRANOLA_API_KEY`. On this machine, when the Obsidian
+   Granola plugin is configured but the environment variable is absent, use
+   the configured `apiKey` from
+   `<OBSIDIAN_VAULT_PATH>/.obsidian/plugins/granola-sync-plus/data.json` or
+   `granola-sync/data.json` without printing or persisting the key elsewhere.
+3. Pull all accessible note summaries from `GET
+   https://public-api.granola.ai/v1/notes`, following pagination with
+   `cursor`. Show a numbered selection with title and creation date. If the
+   list is large, let the user filter it by title/date before selecting.
+4. Ask which meeting to use. Never select a meeting automatically, even when
+   one title appears to match the Jira ticket. If the user declines or no
+   meeting is selected, continue without importing one.
+5. For the selected note, pull its detail with `include=transcript`, then
+   create a new Markdown page in the existing Obsidian ticket folder
+   `Dev/Tickets/<KEY>` using `obsidian_ticket_dir`. Name it
+   `granola-<GRANOLA_ID>.md` so the same meeting cannot be imported twice.
+6. Do not overwrite an existing page silently. If that file already exists,
+   tell the user it is already imported and ask whether to use it or choose
+   another meeting.
+7. The new page must contain frontmatter for `ticket`, `granola_id`, `title`,
+   `created_at`, `updated_at`, `granola_url`, and `imported_at`, followed by
+   the meeting title, summary, attendees, and full transcript when returned
+   by Granola. Preserve the source content; do not invent or summarize it.
+8. Confirm the imported page path to the user before proceeding with the
+   development flow.
+
+The Granola pull and Obsidian import are read-only with respect to the code
+repository. If the API, MCP, or vault write fails, report the exact failure
+and ask whether to continue without Granola; do not start implementation
+silently after a failed requested import.
+
+### 3. Choose the development flow
 
 Ask the user:
 ```
@@ -40,11 +87,11 @@ How do you want to approach this task?
 
 - If they choose **1**: invoke the `superpowers:brainstorming` skill before proceeding
 - If they choose **2**: invoke the `grilling` skill before proceeding
-- If they choose **3 or 4**: proceed to step 3
+- If they choose **3 or 4**: proceed to step 4
 
 This choice only affects how requirements are refined beforehand — implementation proceeds with SDD, regardless of which option was picked.
 
-### 3. Proceed with SDD
+### 4. Proceed with SDD
 
 Always use Spec-Driven Development for the implementation. Follow the SDD workflow available in the current environment.
 
@@ -107,35 +154,12 @@ if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
 fi
 ```
 
-### 8. Link a Granola call (optional)
-
-Only if `OBSIDIAN_VAULT_PATH` is set and `<KEY>` is set:
-
-```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
-source "scripts/helpers.sh"
-if [ -n "${OBSIDIAN_VAULT_PATH:-}" ]; then
-  obsidian_granola_candidates "${OBSIDIAN_VAULT_PATH}" 14
-fi
-```
-
-If it lists anything, show up to 5 candidates (filename + `title:` frontmatter) and ask: "Link one of these calls to `<KEY>`? (number or 'no')". On a pick:
-
-```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
-source "scripts/helpers.sh"
-CALLS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "calls.md")
-echo "- [[Granola/<chosen-filename-without-.md>]] — linked $(date +%Y-%m-%d)" >> "$CALLS_FILE"
-```
-
-If the list is empty or the user declines, skip silently.
-
-### 9. Final confirmation
+### 8. Final confirmation
 
 Show the user:
 - ✅ Feature/fix implemented via SDD
 - ✅ Tests: full suite green (all scripts passed)
 - ✅ Documentation updated: `<list of files/pages>` (if applicable)
 - ✅ Obsidian: SDD docs logged under `<KEY>/docs` (or "skipped, no vault configured")
-- ✅ Granola call linked: `<note>` (if applicable, otherwise omit this line)
+- ✅ Granola context page: `<path>` (if imported, otherwise "skipped")
 - → Suggest the next step: `/thebous-os:serve-up` to try it in a browser, or `/thebous-os:create-pr` to open the PR
