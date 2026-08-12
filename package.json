@@ -7,6 +7,9 @@
   "exports": {
     ".": "./.opencode/plugins/thebous-os.mjs"
   },
+  "scripts": {
+    "test": "node --test tests/skills-portability.test.cjs"
+  },
   "files": [
     ".opencode/plugins/",
     "commands/",

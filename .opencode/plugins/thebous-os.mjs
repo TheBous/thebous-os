@@ -1,9 +1,8 @@
 // thebous-os — OpenCode plugin.
 //
-// Discovers and registers commands from commands/*.md — the single unified
-// command directory for the whole thebous-os plugin (git/Jira/Slack/Confluence
-// workflow, morning briefing, end-of-day recap). Self-locates via
-// import.meta.url so paths work across hosts without symlinks.
+// Discovers canonical skills and compatibility commands from this package.
+// Skills are the source of truth; commands are thin prompt adapters.
+// Self-locates via import.meta.url so paths work across hosts without symlinks.
 //
 // Add to opencode.json:
 //   { "plugin": ["./thebous-os/.opencode/plugins/thebous-os.mjs"] }
@@ -22,6 +21,7 @@ export default async ({ client } = {}) => {
     config: async (config) => {
       if (!config.command) config.command = {};
       const commandDir = path.join(__dirname, '..', '..', 'commands');
+      const skillsDir = path.resolve(__dirname, '..', '..', 'skills');
       try {
         for (const file of fs.readdirSync(commandDir).filter((f) => f.endsWith('.md'))) {
           const name = path.basename(file, '.md');
@@ -29,6 +29,10 @@ export default async ({ client } = {}) => {
           if (parsed) config.command[name] = parsed;
         }
       } catch (e) {}
+
+      config.skills = config.skills || {};
+      config.skills.paths = config.skills.paths || [];
+      if (!config.skills.paths.includes(skillsDir)) config.skills.paths.push(skillsDir);
     },
   };
 };

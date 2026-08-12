@@ -52,7 +52,7 @@ contenuto — significa che oggi non hai usato nessun comando thebous-os,
 non che non hai lavorato): query dirette, stesso stile di morning-briefing.
 
 ```bash
-REPO_FILTER=$(source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"; gh_repo_filter)
+REPO_FILTER=$(source "scripts/helpers.sh"; gh_repo_filter)
 gh search prs --author=@me --created=">=${TODAY}" $REPO_FILTER --json number,title,url,repository,state --limit 30
 gh search prs --author=@me --merged-at=">=${TODAY}" $REPO_FILTER --json number,title,url,repository --limit 30
 ```
@@ -124,7 +124,7 @@ Stesso script bundled di morning-briefing (append, mai sovrascrive):
 
 ```bash
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  bash "${CLAUDE_PLUGIN_ROOT}/scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 5>" "30 - End of Day Recap.md" "End of Day Recap"
+  bash "scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 5>" "30 - End of Day Recap.md" "End of Day Recap"
 fi
 ```
 

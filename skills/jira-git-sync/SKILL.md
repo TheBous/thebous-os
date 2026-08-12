@@ -1,47 +1,48 @@
 ---
 name: jira-git-sync
-description: Git → Jira → Slack → Confluence workflow automation. Use when the user wants to start a task from a Jira ticket, create a branch, open/review/merge a PR, tag a release, or sync Confluence docs with code. Invocable per-workflow (e.g. "run new-branch", "merge the PR via jira-git-sync") — the relevant command file is read on demand, not all loaded at once.
+description: Git → Jira → Slack → Confluence workflow automation. Use when the user wants to start a task from a Jira ticket, create a branch, open/review/merge a PR, tag a release, or sync Confluence docs with code. Route the request to the matching workflow skill instead of reading command adapters.
 ---
 
 # jira-git-sync
 
-A bundle of 14 git/Jira/Slack/Confluence workflows, part of the thebous-os plugin. Each one lives as a plain markdown file under `${CLAUDE_PLUGIN_ROOT}/commands/`. **Do not read them all** — only read the specific one the user is asking for, then follow its numbered steps.
+Use this skill as an index for the Jira/Git/Slack/Confluence workflows. The complete workflow instructions live in the matching canonical skill under `skills/`; root `commands/*.md` files are compatibility adapters only.
 
-Shared helpers (read on demand when a step references them):
-- `${CLAUDE_PLUGIN_ROOT}/references/jira-transition.md` — standard Jira transition + comment pattern
-- `${CLAUDE_PLUGIN_ROOT}/references/run-tests.md` — how to find and run this project's test suite
-- `${CLAUDE_PLUGIN_ROOT}/references/naming-conventions-{code,db,nextjs}.md` — naming rules applied during `cook` and `review-pr`
-- `${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh` — bash helpers for credential loading, Jira REST, Slack, slugification
+Shared helpers and references, loaded only when the selected workflow requires them:
 
-Credentials are shared with the rest of thebous-os (morning-briefing, end-of-day), read from `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env`. If missing, tell the user to run `/thebous-os:setup` first.
+- `references/jira-transition.md` — standard Jira transition and comment pattern
+- `references/run-tests.md` — how to find and run this project's test suite
+- `references/naming-conventions-{code,db,nextjs}.md` — naming rules applied during `cook` and `review-pr`
+- `scripts/helpers.sh` — credential loading, Jira REST, Slack, slugification
 
-## Workflows
+Credentials are shared with the rest of thebous-os and live in `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env`. If the file is missing, tell the user to run `/thebous-os:setup` first.
 
-Map the user's request to one of these files and `read` it before acting:
+## Workflow index
 
-| User intent | File |
+Map the user's request to the matching skill:
+
+| User intent | Skill |
 |---|---|
-| Configure Jira/Slack/Confluence/Obsidian/GitHub/Gmail credentials (first run) | `commands/setup.md` |
-| "Create a Jira task", "open a task with the standard template" | `commands/create-jira-task.md` |
-| "Start this ticket", "create a branch for DC-443" | `commands/new-branch.md` |
-| "Implement this", "cook the feature", "fix the bug" | `commands/cook.md` |
-| "Run it locally", "start the app", "spin up the service" | `commands/serve-up.md` |
-| "Stop the service", "tear it down", "shut it off" | `commands/serve-down.md` |
-| "Open a PR", "create pull request" | `commands/create-pr.md` |
-| "Review this PR", "look at PR #N" | `commands/review-pr.md` |
-| "Address review comments", "fix the review feedback" | `commands/address-review.md` |
-| "Verify resolved comments", "check if feedback was fixed" | `commands/verify-resolved.md` |
-| "Merge the PR", "ship it" | `commands/merge-pr.md` |
-| "Tag a release", "cut v1.2.3" | `commands/tag.md` |
-| "Create a Confluence page from this code" | `commands/create-doc.md` |
-| "Update the Confluence doc for this" | `commands/update-doc.md` |
+| Configure Jira/Slack/Confluence/Obsidian/GitHub/Gmail credentials (first run) | `skills/setup/SKILL.md` |
+| "Create a Jira task", "open a task with the standard template" | `skills/create-jira-task/SKILL.md` |
+| "Start this ticket", "create a branch for DC-443" | `skills/new-branch/SKILL.md` |
+| "Implement this", "cook the feature", "fix the bug" | `skills/cook/SKILL.md` |
+| "Run it locally", "start the app", "spin up the service" | `skills/serve-up/SKILL.md` |
+| "Stop the service", "tear it down", "shut it off" | `skills/serve-down/SKILL.md` |
+| "Open a PR", "create pull request" | `skills/create-pr/SKILL.md` |
+| "Review this PR", "look at PR #N" | `skills/review-pr/SKILL.md` |
+| "Address review comments", "fix the review feedback" | `skills/address-review/SKILL.md` |
+| "Verify resolved comments", "check if feedback was fixed" | `skills/verify-resolved/SKILL.md` |
+| "Merge the PR", "ship it" | `skills/merge-pr/SKILL.md` |
+| "Tag a release", "cut v1.2.3" | `skills/tag/SKILL.md` |
+| "Create a Confluence page from this code" | `skills/create-doc/SKILL.md` |
+| "Update the Confluence doc for this" | `skills/update-doc/SKILL.md` |
 
-## How to invoke
+## Invocation
 
-1. Identify which workflow the user wants from the table above.
-2. `read` the matching `${CLAUDE_PLUGIN_ROOT}/commands/<name>.md` file.
-3. Follow its numbered steps exactly — those steps are the source of truth, this `SKILL.md` is only a router.
-4. If a step says "Follow `references/<x>.md`", `read` that file (under `${CLAUDE_PLUGIN_ROOT}/references/`) too and apply the pattern.
-5. Source `${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh` when a step needs bash helpers.
+1. Identify the matching workflow skill from the table.
+2. Read that `skills/<name>/SKILL.md` file in full.
+3. Follow its instructions in order.
+4. If it references `references/<x>.md`, read that file from `references/`.
+5. If it needs a helper, source it from `scripts/helpers.sh`.
 
-The full workflow table and same instructions also live in `AGENTS.md` at the repo root (for agents that read AGENTS.md directly instead of loading skills).
+Do not read every workflow into context and do not route through a provider-specific command file.

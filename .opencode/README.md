@@ -1,13 +1,15 @@
 # thebous-os OpenCode Plugin
 
-This directory contains the OpenCode plugin for thebous-os — a single unified plugin covering:
+This directory contains the OpenCode adapter for thebous-os — a single unified package covering:
 - Git/Jira/Slack/Confluence workflow (new-branch, cook, create-pr, review-pr, etc.)
 - Morning briefing (PR reviews, Jira, email, calendar, priority ranking)
 - End-of-day recap (today's work, Claude Code/OpenCode sessions)
 
+The source of truth is `../skills/<name>/SKILL.md`. Root `../commands/*.md` files are thin compatibility adapters for slash-command hosts.
+
 ## How it works
 
-- **`plugins/thebous-os.mjs`** — Entry point that self-locates via `import.meta.url`. Discovers and registers every command from `commands/*.md` at the repo root — one flat directory, same commands used by the Claude Code plugin.
+- **`plugins/thebous-os.mjs`** — Entry point that self-locates via `import.meta.url`. Registers root compatibility commands and adds the canonical `skills/` directory to OpenCode's native skill discovery.
 - **`plugins/thebous-os-frontmatter.cjs`** — Parser for YAML frontmatter in command files
 
 ## Zero-setup across hosts
@@ -35,6 +37,8 @@ Commands are immediately available:
 - `/morning-briefing` — Generate the morning briefing
 - `/morning-briefing-schedule` — Set up the daily 9 AM task
 - `/end-of-day` — Generate the end-of-day recap
+
+Canonical skills are also available through OpenCode's native `skill` tool when the plugin is loaded.
 
 ## Initial Configuration (first run)
 

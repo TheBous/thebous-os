@@ -55,7 +55,7 @@ il secondo scatta da solo.)
 ## Step 2: PR review — richieste a te
 
 ```bash
-REPO_FILTER=$(source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"; gh_repo_filter)
+REPO_FILTER=$(source "scripts/helpers.sh"; gh_repo_filter)
 gh search prs --review-requested=@me --state=open $REPO_FILTER \
   --json number,title,url,repository,createdAt --limit 50
 ```
@@ -230,8 +230,8 @@ Codex, ecc. — usa questo se il tool MCP sopra non è disponibile):
 
 ```bash
 if [ -n "${GMAIL_ADDRESS:-}" ] && [ -n "${GMAIL_APP_PASSWORD:-}" ]; then
-  python3 "${CLAUDE_PLUGIN_ROOT}/skills/morning-briefing/scripts/gmail_imap_overnight.py" "${GMAIL_ADDRESS}" "${GMAIL_APP_PASSWORD}" \
-    | python3 "${CLAUDE_PLUGIN_ROOT}/skills/morning-briefing/scripts/filter_messages_in_window.py" "$NIGHT_START_ISO" "$NOW_ISO"
+  python3 "skills/morning-briefing/scripts/gmail_imap_overnight.py" "${GMAIL_ADDRESS}" "${GMAIL_APP_PASSWORD}" \
+    | python3 "skills/morning-briefing/scripts/filter_messages_in_window.py" "$NIGHT_START_ISO" "$NOW_ISO"
 fi
 ```
 
@@ -336,7 +336,7 @@ trovi due sezioni, non una sovrascritta):
 
 ```bash
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  bash "${CLAUDE_PLUGIN_ROOT}/scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 10>" "00 - Morning Briefing.md" "Morning Briefing"
+  bash "scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 10>" "00 - Morning Briefing.md" "Morning Briefing"
 fi
 ```
 

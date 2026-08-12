@@ -2,7 +2,14 @@
 
 Git workflow automation synced with Jira, Slack, and Confluence, plus a morning briefing and an end-of-day recap. Originally packaged as a Claude Code plugin, but the workflows below are plain instructions any coding agent can follow.
 
-Full step-by-step logic for each workflow lives in `commands/*.md` (shared helpers in `references/*.md`, shell helpers in `scripts/helpers.sh`). The morning-briefing and end-of-day skills have their own routers at `skills/morning-briefing/SKILL.md` and `skills/end-of-day/SKILL.md`. Read the matching file before running a workflow.
+Full step-by-step logic for each workflow lives in `skills/*/SKILL.md` (shared helpers in `references/*.md`, shell helpers in `scripts/helpers.sh`). Root `commands/*.md` files are compatibility adapters for command-based hosts. Read the matching skill before running a workflow.
+
+## Skill architecture
+
+- `skills/<name>/SKILL.md` is the canonical, provider-neutral workflow source.
+- `commands/<name>.md` is a thin compatibility adapter for command-based hosts; it must not contain workflow logic.
+- Supporting material belongs in `references/`, `scripts/`, or the skill's own resource directories and must be referenced with relative paths.
+- Provider manifests, hooks, and discovery adapters may live under provider-specific directories, but must delegate to the canonical skill.
 
 ## Workflows
 
@@ -38,9 +45,9 @@ Commands read `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env` — one sha
 
 ## Running a workflow outside Claude Code
 
-These are markdown files with a `description` header and numbered steps — no plugin runtime required. Four ways to use them:
+These are Markdown skills with optional command adapters — no plugin runtime required for the canonical workflow. Four ways to use them:
 
-1. **Ad hoc**: tell your agent to read the relevant `commands/<name>.md` file (or `skills/<skill-name>/SKILL.md` for morning-briefing/end-of-day/jira-git-sync/person-activity) and follow it.
+1. **Ad hoc**: tell your agent to read the relevant `skills/<skill-name>/SKILL.md` file and follow it.
 2. **Codex plugin (native)**: `codex plugin marketplace add TheBous/thebous-os` then `codex plugin add thebous-os@thebous-os`. `.codex-plugin/plugin.json` points Codex at the same `skills/` directory Claude Code uses — every skill becomes available as `@<skill-name>` (e.g. `@jira-git-sync`, `@morning-briefing`). No separate content to maintain; it's the identical `skills/` folder.
 3. **OpenCode plugin (native)**: see `.opencode/README.md` — `opencode plugin install github:TheBous/thebous-os` registers every command from `commands/*.md` automatically, no symlinks needed.
 4. **Any other agent, manually**: copy the file into your tool's custom-prompt/command directory so it's invocable the same way `/thebous-os:<name>` works in Claude Code.
