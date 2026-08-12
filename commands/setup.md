@@ -10,6 +10,8 @@ Guide the user step by step through the setup. Ask one question at a time and wa
 
 1. **Jira Base URL** — ask for the Jira base URL (e.g. `https://company.atlassian.net`). Needed to build links in Slack messages.
 
+1a. **Jira Email + API Token** (optional on Claude Code, required elsewhere) — the Atlassian Rovo MCP covers Jira/Confluence calls on Claude Code, but a few paths always use direct REST instead of MCP: the curl fallback in `references/jira-transition.md` and `scripts/helpers.sh` (used if the MCP call errors), and `person-activity`'s Jira queries (no MCP path at all). On Codex/OpenCode, where the Rovo MCP isn't available, this is the **only** way Jira calls work. Ask for the Jira account email and an API token (generate one at https://id.atlassian.com/manage-profile/security/api-tokens). Leave both blank to skip — MCP-only paths keep working on Claude Code, but the fallback/person-activity paths will fail until this is set.
+
 2. **Slack Webhook URL** — explain where to create it: `api.slack.com → Your Apps → Incoming Webhooks → Add New Webhook`, then ask for the URL.
 
 3. **Confluence Parent URL** — ask for the URL of the Confluence page that will act as the parent folder for documentation (e.g. `https://company.atlassian.net/wiki/spaces/TECH/pages/123456/Documentation`). This page must already exist. If the user doesn't use Confluence, they can skip this step by leaving it blank.
@@ -32,6 +34,8 @@ Create the `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}` directory if it doe
 
 ```
 JIRA_BASE_URL=<value>
+JIRA_EMAIL=<value or empty string>
+JIRA_API_TOKEN=<value or empty string>
 JIRA_IN_PROGRESS_ID=<value>
 JIRA_IN_REVIEW_ID=<value or empty string>
 JIRA_IN_STAGING_ID=<value>

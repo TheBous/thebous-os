@@ -9,19 +9,19 @@ echo "=== Jira Comments Query Integration Test ==="
 echo
 
 # Load environment
-if [ ! -f ~/.config/jira-git-sync/.env ]; then
-  echo "ERROR: Jira credentials not found at ~/.config/jira-git-sync/.env"
-  echo "Please run /thebous-jira-git-sync:setup first"
+if [ ! -f ~/.config/thebous-os/.env ]; then
+  echo "ERROR: Jira credentials not found at ~/.config/thebous-os/.env"
+  echo "Please run /thebous-os:setup first"
   exit 1
 fi
 
-source ~/.config/jira-git-sync/.env
+source ~/.config/thebous-os/.env
 
 # Check if credentials are configured
 if [ -z "${JIRA_API_TOKEN:-}" ] || [ -z "${JIRA_EMAIL:-}" ]; then
   echo "WARNING: Jira API token or email not configured"
   echo "Skipping live integration tests"
-  echo "Set JIRA_API_TOKEN and JIRA_EMAIL in ~/.config/jira-git-sync/.env"
+  echo "Set JIRA_API_TOKEN and JIRA_EMAIL in ~/.config/thebous-os/.env"
   exit 0
 fi
 
