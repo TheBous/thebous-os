@@ -10,13 +10,10 @@ Implement a feature or fix starting from the context of the current branch/ticke
 
 ### 1. Gather context
 
-Extract the Jira key from the current branch:
-```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
-KEY=$(extract_jira_key "$(git branch --show-current)")
-```
-
-If `<KEY>` is non-empty, fetch the ticket's title and description with the MCP tool `getJiraIssue` using `issueKey: "<KEY>"` and `fields: ["summary", "description"]`.
+Follow `references/jira-task-context.md` with:
+- `<SOURCES>` = the current branch name
+- `<REQUIRED>` = `optional`
+- `<DETAILS>` = `basic`
 
 Show the user:
 ```

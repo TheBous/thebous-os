@@ -15,16 +15,17 @@ Use `gh pr view` to get PR metadata (same pattern as other jira-git-sync workflo
 gh pr view --json number,title,body,author,headRefName,baseRefName,additions,deletions,changedFiles
 ```
 
-Extract the branch name and check if it matches a Jira key pattern (e.g., `DC-123`). If it does, fetch the ticket via the `getJiraIssue` MCP tool or `jq` from the Jira API, using the same credentials pattern as `references/jira-transition.md`.
+Follow `references/jira-task-context.md` with:
+- `<SOURCES>` = the PR head branch, then the PR title and body
+- `<REQUIRED>` = `optional`
+- `<DETAILS>` = `full`
 
-**Enhanced task context** — before proceeding, also:
-1. Search the PR title and body for any Jira task identifier or link (e.g., `[DC-123]`, `DC-123:`, `debto.atlassian.net/browse/DC-123`)
-2. Use `getJiraIssue` to fetch full task details: summary, description, status, priority, assignee, type, custom fields
-3. Check for **linked predecessor tasks** (blocking dependencies) using the "issuelinks" field or by querying linked issues:
+If a Jira task is resolved, check for **linked predecessor tasks** (blocking dependencies) using the `<TASK_LINKS>` output or by querying linked issues:
    ```jql
    key in issueFunction in linkedIssuesOf("DC-123", "is blocked by")
    ```
-4. Store this context (task key, summary, predecessors) for display before review analysis
+
+Store the resolved task context (key, summary, requirements, and predecessors) for display before review analysis. If no task is provided, continue without Jira context.
 
 If no PR is open on the current branch, ask the user to pass the PR number or URL explicitly.
 
@@ -61,7 +62,7 @@ If a Jira task was identified in Step 1, display its context before the review:
 **Key points to review**: <derived from task description and predecessors>
 ```
 
-This context informs the depth and focus of the code review. The reviewer can now connect code changes to their task context and understand any upstream work that might affect this PR.
+This context informs the depth and focus of the code review. Compare the implementation against `<TASK_REQUIREMENTS>` so the reviewer can connect code changes to the task and understand any upstream work that might affect this PR.
 
 ### 3. Ask about review depth
 

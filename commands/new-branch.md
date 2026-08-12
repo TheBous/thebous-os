@@ -25,12 +25,12 @@ source "${CLAUDE_PLUGIN_DATA}/.env"
 ```
 If the file doesn't exist, tell the user to run `/thebous-os:setup` first.
 
-Extract the key (e.g. `DC-443`) from the URL or input using the `extract_jira_key` helper:
-```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
-KEY=$(extract_jira_key "<url-or-input>")
-```
-Then fetch the ticket title using the MCP tool `getJiraIssue` with `issueKey: "<KEY>"` and `fields: ["summary"]`.
+Follow `references/jira-task-context.md` with:
+- `<SOURCES>` = the user's URL or ticket input
+- `<REQUIRED>` = `required`
+- `<DETAILS>` = `basic`
+
+Use `<KEY>` and `<TASK_SUMMARY>` from the shared output to build the branch name.
 
 Build the branch name: `feat/<key-lowercase>-<slugified-title>`.
 - Slugify: lowercase, spaces and special characters → `-`, max 50 characters after the prefix.

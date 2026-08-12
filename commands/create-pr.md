@@ -29,14 +29,12 @@ git push -u origin "$(git branch --show-current)"
 
 ### 2. Extract the Jira ticket and fetch details
 
-```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
-KEY=$(extract_jira_key "$(git branch --show-current)")
-```
+Follow `references/jira-task-context.md` with:
+- `<SOURCES>` = the current branch name
+- `<REQUIRED>` = `required`
+- `<DETAILS>` = `basic`
 
-If `<KEY>` is empty, ask the user for the Jira key or ticket URL. Extract the key from their answer with `extract_jira_key`. A Jira task is required for this workflow; if the user cannot provide one, stop before creating the PR.
-
-If `<KEY>` is non-empty, fetch the ticket's title and description using the MCP tool `getJiraIssue` with `issueKey: "<KEY>"` and `fields: ["summary", "description"]`. If the Jira fetch fails, or both the acceptance criteria and description are unavailable, stop before creating the PR.
+The resolved `<KEY>`, `<TASK_SUMMARY>`, and `<TASK_DESCRIPTION>` are used in the PR title and description.
 
 ### 3. Analyze the diff against the base branch
 
@@ -57,11 +55,9 @@ Analyze the diff to identify:
 
 ### 4. Validate the implementation against Jira (mandatory gate)
 
-Compare the full diff and the tests against the fetched Jira task:
+Compare the full diff and the tests against `<TASK_REQUIREMENTS>` from `references/jira-task-context.md`.
 
-- If the description contains explicit acceptance criteria, check every criterion individually.
-- Otherwise, use the task description as the requirements to validate.
-- For each item, record `✅ Met`, `⚠️ Partially met / unverifiable`, or `❌ Not met`, with concise evidence from the changed files or tests.
+For each requirement, record `✅ Met`, `⚠️ Partially met / unverifiable`, or `❌ Not met`, with concise evidence from the changed files or tests.
 
 Show the checklist to the user and ask:
 ```
