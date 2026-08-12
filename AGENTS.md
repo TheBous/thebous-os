@@ -37,8 +37,9 @@ Commands read `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env` — one sha
 
 ## Running a workflow outside Claude Code
 
-These are markdown files with a `description` header and numbered steps — no plugin runtime required. Three ways to use them:
+These are markdown files with a `description` header and numbered steps — no plugin runtime required. Four ways to use them:
 
-1. **Ad hoc**: tell your agent to read the relevant `commands/<name>.md` file (or `skills/<skill-name>/SKILL.md` for morning-briefing/end-of-day) and follow it.
-2. **As a native custom command**: copy the file into your tool's custom-prompt/command directory (e.g. Codex CLI: `~/.codex/prompts/`) so it's invocable the same way `/thebous-os:<name>` works in Claude Code.
+1. **Ad hoc**: tell your agent to read the relevant `commands/<name>.md` file (or `skills/<skill-name>/SKILL.md` for morning-briefing/end-of-day/jira-git-sync/person-activity) and follow it.
+2. **Codex plugin (native)**: `codex plugin marketplace add TheBous/thebous-os` then `codex plugin add thebous-os@thebous-os`. `.codex-plugin/plugin.json` points Codex at the same `skills/` directory Claude Code uses — every skill becomes available as `@<skill-name>` (e.g. `@jira-git-sync`, `@morning-briefing`). No separate content to maintain; it's the identical `skills/` folder.
 3. **OpenCode plugin (native)**: see `.opencode/README.md` — `opencode plugin install github:TheBous/thebous-os` registers every command from `commands/*.md` automatically, no symlinks needed.
+4. **Any other agent, manually**: copy the file into your tool's custom-prompt/command directory so it's invocable the same way `/thebous-os:<name>` works in Claude Code.

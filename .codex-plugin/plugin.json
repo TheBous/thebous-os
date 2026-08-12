@@ -1,0 +1,23 @@
+{
+  "name": "thebous-os",
+  "version": "0.1.0",
+  "description": "Git/Jira/Slack/Confluence workflow automation, plus morning briefing and end-of-day recap — logs everything to Obsidian",
+  "author": {
+    "name": "Luca Valsecchi",
+    "email": "thebous1993@gmail.com"
+  },
+  "homepage": "https://github.com/TheBous/thebous-os",
+  "repository": "https://github.com/TheBous/thebous-os",
+  "keywords": [
+    "jira",
+    "slack",
+    "confluence",
+    "git",
+    "github",
+    "gmail",
+    "obsidian",
+    "briefing",
+    "automation"
+  ],
+  "skills": "./skills/"
+}
