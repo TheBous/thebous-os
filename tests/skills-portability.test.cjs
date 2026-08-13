@@ -108,6 +108,17 @@ test('create-jira-task always uses Markdown H2 description sections', () => {
   assert.doesNotMatch(skill, /^Acceptance Criteria\s*$/m);
 });
 
+test('explain-change defines the visual fallback and ce-explain preference', () => {
+  const skill = fs.readFileSync(path.join(skillsDir, 'explain-change', 'SKILL.md'), 'utf8');
+  assert.match(skill, /ce-explain/);
+  assert.match(skill, /compound-engineering:ce-explain/);
+  assert.match(skill, /HTML/i);
+  assert.match(skill, /SVG|diagram/i);
+  assert.match(skill, /business/i);
+  assert.match(skill, /tecnic/i);
+  assert.match(skill, /non.*wall of text|wall of text/i);
+});
+
 test('cook asks before pulling Granola and saves a selected meeting as a ticket page', () => {
   const cook = fs.readFileSync(path.join(skillsDir, 'cook', 'SKILL.md'), 'utf8');
   assert.match(cook, /prima di iniziare|before.*coding|before.*implement/i);
