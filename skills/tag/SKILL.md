@@ -78,8 +78,8 @@ Run in sequence for all tickets found. If a ticket fails (e.g. already Done), lo
 Build the list of tickets as Jira links:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 DEPLOYER=$(git config user.name 2>/dev/null || echo "unknown")
 
 # Message with all tickets as links

@@ -22,7 +22,8 @@ Accept:
 
 Load the credentials:
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
+source "scripts/helpers.sh"
+load_env
 ```
 If the file doesn't exist, tell the user to run `/thebous-os:setup` first.
 
@@ -74,8 +75,8 @@ Follow `references/jira-transition.md` (in the plugin root) with:
 ### 6. Slack notification
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 slack_notify "🌿 New branch: \`<branch-name>\`\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Progress*"
 ```
 
@@ -86,8 +87,8 @@ If there was no Jira ticket, the Slack message is just: `🌿 New branch: \`<bra
 Only if a Jira ticket was found in step 2 (`<KEY>` is set). Follow `references/obsidian-log.md`; in short:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
   obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md" >/dev/null
@@ -100,8 +101,8 @@ fi
 Only if `OBSIDIAN_VAULT_PATH` is set and `<KEY>` is set. Follow `references/obsidian-log.md`'s Granola section:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ]; then
   obsidian_granola_candidates "${OBSIDIAN_VAULT_PATH}" 14
 fi
@@ -110,8 +111,8 @@ fi
 If it lists anything, show up to 5 candidates (filename + `title:` frontmatter) and ask: "Vuoi collegare una di queste call a `<KEY>`? (numero o 'no')". On a pick:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 CALLS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "calls.md")
 echo "- [[Granola/<chosen-filename-without-.md>]] — linked $(date +%Y-%m-%d)" >> "$CALLS_FILE"
 ```

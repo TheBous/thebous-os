@@ -84,7 +84,7 @@ Preferire il server MCP Atlassian configurato:
 3. creare l'issue con lo strumento di creazione Jira esposto dal server, passando progetto, tipo issue, summary e la descrizione completa;
 4. usare i nomi e i parametri esatti esposti dallo strumento disponibile, senza inventare campi custom.
 
-Se il MCP non è disponibile o fallisce, usare il fallback REST solo se sono configurati `JIRA_BASE_URL`, `JIRA_EMAIL` e `JIRA_API_TOKEN` nel file `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env`:
+Se il MCP non è disponibile o fallisce, usare il fallback REST solo se sono configurati `JIRA_BASE_URL`, `JIRA_EMAIL` e `JIRA_API_TOKEN` nel file `.env` condiviso, risolto da `scripts/helpers.sh`:
 
 ```bash
 source "scripts/helpers.sh"

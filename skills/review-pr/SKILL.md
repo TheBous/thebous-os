@@ -277,8 +277,8 @@ If yes, follow `references/jira-transition.md` for the comment call only — **d
 Only if a Jira ticket was matched in step 1 (`<KEY>` is set). Follow `references/obsidian-log.md`:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
   REVIEW_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "review.md")

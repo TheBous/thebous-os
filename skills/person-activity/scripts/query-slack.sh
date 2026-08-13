@@ -25,7 +25,11 @@ fi
 # 4. Slack search is best-effort (API may have limitations)
 
 # Check if Slack credentials are available
-SLACK_CONFIG="${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+# shellcheck source=/dev/null
+source "$PROJECT_ROOT/scripts/helpers.sh"
+SLACK_CONFIG="$ENV_FILE"
 if [ ! -f "$SLACK_CONFIG" ]; then
   # Slack not configured; return empty gracefully
   echo "[]"

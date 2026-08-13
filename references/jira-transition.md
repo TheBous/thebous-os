@@ -6,7 +6,8 @@ Inputs needed from the calling step: `<KEY>` (the Jira ticket key), `<TRANSITION
 
 1. Load credentials:
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
+source "scripts/helpers.sh"
+load_env
 ```
 
 2. Try the MCP tools first:
@@ -15,7 +16,8 @@ source "${CLAUDE_PLUGIN_DATA}/.env"
 
 3. **If either MCP tool call fails**, fall back to curl:
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
+source "scripts/helpers.sh"
+load_env
 
 curl -sf -o /dev/null \
   -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \

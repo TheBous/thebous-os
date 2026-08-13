@@ -36,8 +36,8 @@ Call `create_scheduled_task` with:
      Gmail connector (if available), and the Google Calendar MCP tools.
   2. Resolve the installed repository root at runtime and use it wherever
      this package's files are referenced. Do not rely on a provider-specific
-     plugin-root variable. If `${CLAUDE_PLUGIN_DATA}` is unset, use
-     `~/.config/thebous-os` for shared configuration.
+     plugin-root variable. If `THEBOUS_OS_DATA_DIR` is unset, use
+     `${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os` for shared configuration.
   3. If the shared `.env` doesn't exist yet, create it with the values this
      skill needs left empty (`GITHUB_REPOS=`, `GMAIL_ADDRESS=`,
      `GMAIL_APP_PASSWORD=`) and `OBSIDIAN_VAULT_PATH=` — but since this runs

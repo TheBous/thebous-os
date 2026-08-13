@@ -115,7 +115,8 @@ ls docs/ 2>/dev/null && grep -rl "<changed-file>" docs/ 2>/dev/null
 
 **Confluence** — if `CONFLUENCE_PARENT_URL` is configured in `.env`:
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
+source "scripts/helpers.sh"
+load_env
 ```
 Extract `PARENT_PAGE_ID` and use the MCP tool `searchConfluenceUsingCql`:
 ```
@@ -140,8 +141,8 @@ Only if a Jira ticket was found in step 1 (`<KEY>` is set). Follow `references/o
 Copy any SDD documents produced during the implementation into the ticket's Obsidian folder:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
   TICKET_DIR=$(obsidian_ticket_dir "${OBSIDIAN_VAULT_PATH}" "<KEY>")

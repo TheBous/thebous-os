@@ -75,6 +75,31 @@ test('OpenCode can parse every command adapter', () => {
   }
 });
 
+test('canonical skills and references do not depend on provider-specific paths', () => {
+  const canonicalFiles = [
+    ...fs.readdirSync(skillsDir)
+      .map((name) => path.join(skillsDir, name, 'SKILL.md'))
+      .filter((file) => fs.existsSync(file)),
+    ...fs.readdirSync(path.join(root, 'references'))
+      .map((name) => path.join(root, 'references', name))
+      .filter((file) => file.endsWith('.md')),
+  ];
+
+  for (const file of canonicalFiles) {
+    assert.doesNotMatch(
+      fs.readFileSync(file, 'utf8'),
+      /CLAUDE_PLUGIN_(DATA|ROOT)/,
+      `${file} must use the provider-neutral data resolver`,
+    );
+  }
+});
+
+test('shared helper exposes a provider-neutral data directory override', () => {
+  const helper = fs.readFileSync(path.join(root, 'scripts/helpers.sh'), 'utf8');
+  assert.match(helper, /THEBOUS_OS_DATA_DIR=/);
+  assert.match(helper, /ENV_FILE="\$THEBOUS_OS_DATA_DIR\/\.env"/);
+});
+
 test('cook asks before pulling Granola and saves a selected meeting as a ticket page', () => {
   const cook = fs.readFileSync(path.join(skillsDir, 'cook', 'SKILL.md'), 'utf8');
   assert.match(cook, /prima di iniziare|before.*coding|before.*implement/i);

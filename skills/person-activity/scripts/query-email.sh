@@ -11,7 +11,10 @@ if [ -z "${PERSON_EMAIL:-}" ] || [ -z "${WORKITEM_ID:-}" ]; then
 fi
 
 # ── Load Credentials ────────────────────────────────────────────────
-ENV_FILE="${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+# shellcheck source=/dev/null
+source "$PROJECT_ROOT/scripts/helpers.sh"
 if [ ! -f "$ENV_FILE" ]; then
   echo "[]"
   exit 0

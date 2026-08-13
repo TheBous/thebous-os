@@ -158,8 +158,8 @@ curl -sf \
 If `OBSIDIAN_VAULT_PATH` is configured, follow `references/obsidian-log.md`:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
   PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
@@ -173,7 +173,8 @@ fi
 Always leave a comment on the Jira issue:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
+source "scripts/helpers.sh"
+load_env
 ```
 
 Use the MCP tool `addCommentToJiraIssue` with `issueKey: "<KEY>"` and `comment: "🔍 PR opened: <PR_URL>"`.
@@ -195,8 +196,8 @@ If the transition fails or `JIRA_IN_REVIEW_ID` is not configured, **continue any
 ### 10. Slack notification
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 slack_notify "🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Review*"
 ```
 

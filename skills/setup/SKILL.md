@@ -31,7 +31,14 @@ Guide the user step by step through the setup. Ask one question at a time and wa
 
 ## Saving
 
-Create the `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}` directory if it doesn't exist, then write the file `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env`:
+Resolve `THEBOUS_OS_DATA_DIR` from the provider environment, falling back to `${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os`:
+
+```bash
+source "scripts/helpers.sh"
+THEBOUS_OS_DATA_DIR="${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}"
+```
+
+Create that directory if it doesn't exist, then write `.env` there:
 
 ```
 JIRA_BASE_URL=<value>
@@ -49,4 +56,4 @@ GMAIL_ADDRESS=<value or empty string>
 GMAIL_APP_PASSWORD=<value or empty string>
 ```
 
-Run `mkdir -p "${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}"` before writing the file. Confirm to the user that the configuration has been saved and suggest trying `/thebous-os:new-branch`.
+Run `mkdir -p "$THEBOUS_OS_DATA_DIR"` before writing the file. Confirm to the user that the configuration has been saved and suggest trying `/thebous-os:new-branch`.

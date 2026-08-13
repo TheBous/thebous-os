@@ -4,7 +4,10 @@
 set -euo pipefail
 
 # ── Credentials ──────────────────────────────────────────────────
-ENV_FILE="${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env"
+# THEBOUS_OS_DATA_DIR is the provider-neutral override. Keep the Claude
+# variable only as a backwards-compatible fallback for existing installs.
+THEBOUS_OS_DATA_DIR="${THEBOUS_OS_DATA_DIR:-${CLAUDE_PLUGIN_DATA:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}}"
+ENV_FILE="$THEBOUS_OS_DATA_DIR/.env"
 
 load_env() {
   if [ ! -f "$ENV_FILE" ]; then

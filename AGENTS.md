@@ -41,7 +41,7 @@ Full step-by-step logic for each workflow lives in `skills/*/SKILL.md` (shared h
 
 ## Credentials
 
-Commands read `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env` — one shared file for every workflow and skill in this plugin. Outside Claude Code, `CLAUDE_PLUGIN_DATA` is unset, so credentials are read from `~/.config/thebous-os/.env` — run through `commands/setup.md` once to create it.
+Commands read `${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env` — one shared file for every workflow and skill in this plugin. Provider adapters may set `THEBOUS_OS_DATA_DIR`; otherwise credentials are read from `~/.config/thebous-os/.env`. Run through `commands/setup.md` once to create it.
 
 ## Running a workflow outside Claude Code
 

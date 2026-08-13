@@ -12,7 +12,8 @@ Find and update a documentation page in Confluence, identified by URL or title.
 ### 1. Load the credentials
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
+source "scripts/helpers.sh"
+load_env
 ```
 
 If the file doesn't exist or `CONFLUENCE_PARENT_URL` is missing, tell the user to run `/thebous-os:setup` first.
@@ -57,8 +58,8 @@ For tag changes: update the Tags row directly in the metadata table in the HTML 
 Only if `<KEY>` was found in step 1a. Follow `references/obsidian-log.md`:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ] && [ -n "<KEY>" ]; then
   PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")

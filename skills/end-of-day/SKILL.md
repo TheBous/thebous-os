@@ -14,12 +14,13 @@ confonderle nell'output:
 ## Configurazione
 
 Le credenziali sono condivise con tutto il plugin thebous-os, in un solo
-`${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env` (`OBSIDIAN_VAULT_PATH` e
+`${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env` (`OBSIDIAN_VAULT_PATH` e
 `GITHUB_REPOS`, usato qui solo come fallback) — non duplicare la
 configurazione qui. Caricalo:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env"
+source "scripts/helpers.sh"
+load_env
 ```
 
 Se il file non esiste, dì all'utente di lanciare `/thebous-os:setup` prima.

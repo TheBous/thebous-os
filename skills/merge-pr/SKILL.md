@@ -81,8 +81,8 @@ If there's a linked Jira ticket, follow `references/jira-transition.md` (in the 
 ### 5. Slack notification
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 MERGED_BY=$(git config user.name 2>/dev/null || echo "unknown")
 slack_notify "🔀 PR #<NUMBER> merged to main\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Staging*\n👤 $MERGED_BY\n🔗 <PR_URL>"
 ```

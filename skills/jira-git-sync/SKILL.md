@@ -14,7 +14,7 @@ Shared helpers and references, loaded only when the selected workflow requires t
 - `references/naming-conventions-{code,db,nextjs}.md` — naming rules applied during `cook` and `review-pr`
 - `scripts/helpers.sh` — credential loading, Jira REST, Slack, slugification
 
-Credentials are shared with the rest of thebous-os and live in `${CLAUDE_PLUGIN_DATA:-$HOME/.config/thebous-os}/.env`. If the file is missing, tell the user to run `/thebous-os:setup` first.
+Credentials are shared with the rest of thebous-os and live in `${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env`. If the file is missing, tell the user to run `/thebous-os:setup` first.
 
 ## Workflow index
 

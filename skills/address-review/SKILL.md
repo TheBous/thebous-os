@@ -188,7 +188,8 @@ ls docs/ 2>/dev/null && grep -rl "<changed-file-name>" docs/ 2>/dev/null
 
 **Confluence** — load the credentials and check if `CONFLUENCE_PARENT_URL` is configured:
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env" 2>/dev/null
+source "scripts/helpers.sh"
+if [ -f "$ENV_FILE" ]; then load_env; fi
 ```
 
 If `CONFLUENCE_PARENT_URL` is not empty, use the MCP tool `searchConfluenceUsingCql`:
@@ -222,8 +223,8 @@ If no document was found or the user declines, skip this step silently.
 Only if the PR's branch matched a Jira key in step 1a (`<KEY>` is set). Follow `references/obsidian-log.md`. Summarize the resolved items (`<RESOLUTION_SUMMARY>`, e.g. "3 comments addressed: 2 fixed, 1 outdated"):
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
 source "scripts/helpers.sh"
+load_env
 
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
   ADDRESS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "address-review.md")

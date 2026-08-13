@@ -48,4 +48,4 @@ First run of any command will ask for configuration (Jira, Slack, Confluence, Ob
 /setup
 ```
 
-Values are saved to `~/.config/thebous-os/.env` for future runs.
+Values are saved to `${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env` for future runs. Provider adapters can set `THEBOUS_OS_DATA_DIR` when a host has its own persistent data directory.

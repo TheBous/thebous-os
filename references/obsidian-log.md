@@ -8,8 +8,8 @@ Jira ticket in scope, **skip the step silently** — never fail or warn about it
 ## Setup (every time)
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
-source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+source "scripts/helpers.sh"
+if [ -f "$ENV_FILE" ]; then load_env; fi
 ```
 
 Then guard every Obsidian write with:
@@ -58,8 +58,8 @@ commands never talk to Granola directly — they only read that folder.
 To offer a link (in `new-branch` and `cook`):
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
-source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+source "scripts/helpers.sh"
+if [ -f "$ENV_FILE" ]; then load_env; fi
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ]; then
   obsidian_granola_candidates "${OBSIDIAN_VAULT_PATH}" 14
 fi
@@ -70,8 +70,8 @@ If it lists anything, show the user up to 5 candidates (filename + the note's
 On a pick, append a line to `calls.md`:
 
 ```bash
-source "${CLAUDE_PLUGIN_DATA}/.env"
-source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+source "scripts/helpers.sh"
+if [ -f "$ENV_FILE" ]; then load_env; fi
 CALLS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "calls.md")
 echo "- [[Granola/<filename-without-.md>]] — linked $(date +%Y-%m-%d)" >> "$CALLS_FILE"
 ```

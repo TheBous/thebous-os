@@ -12,7 +12,7 @@ Use this reference whenever a workflow needs details for a Jira task. Do not rei
 
 1. Load the helper and extract the first Jira key from each `<SOURCES>` value, using the first key found:
    ```bash
-   source "${CLAUDE_PLUGIN_ROOT}/scripts/helpers.sh"
+   source "scripts/helpers.sh"
    KEY=$(extract_jira_key "<SOURCE_1> <SOURCE_2> ...")
    ```
 2. If `<KEY>` is empty, ask the user for a Jira key or ticket URL. Run `extract_jira_key` on the answer.
