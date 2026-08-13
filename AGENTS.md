@@ -34,6 +34,8 @@ Full step-by-step logic for each workflow lives in `skills/*/SKILL.md` (shared h
 | `commands/morning-briefing-schedule.md` | Set up the daily 9 AM scheduled task for the morning briefing |
 | `commands/end-of-day.md` | Generate the end-of-day recap (today's work + Claude Code/OpenCode sessions) |
 
+Version manifests are bumped automatically by `.github/workflows/bump-version.yml` after each push to `main`. The workflow keeps `package.json`, Claude manifests, and the Codex manifest aligned.
+
 ## Requirements
 
 - Authenticated `gh` CLI (`gh auth login`)

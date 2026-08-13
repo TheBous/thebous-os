@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 const test = require('node:test');
 const { parseCommandFile } = require('../.opencode/plugins/thebous-os-frontmatter.cjs');
 
@@ -98,6 +99,27 @@ test('shared helper exposes a provider-neutral data directory override', () => {
   const helper = fs.readFileSync(path.join(root, 'scripts/helpers.sh'), 'utf8');
   assert.match(helper, /THEBOUS_OS_DATA_DIR=/);
   assert.match(helper, /ENV_FILE="\$THEBOUS_OS_DATA_DIR\/\.env"/);
+});
+
+test('version bump workflow keeps all manifests aligned', () => {
+  const script = path.join(root, 'scripts/bump-version.cjs');
+  const workflow = fs.readFileSync(path.join(root, '.github/workflows/bump-version.yml'), 'utf8');
+  const check = spawnSync(process.execPath, ['--check', script], { encoding: 'utf8' });
+
+  assert.equal(check.status, 0, check.stderr);
+  assert.match(workflow, /branches:\s*[\r\n]+\s+- main/);
+  assert.match(workflow, /node scripts\/bump-version\.cjs/);
+  assert.match(workflow, /npm test/);
+  assert.match(workflow, /contents: write/);
+
+  const versions = [
+    JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version,
+    JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin/plugin.json'), 'utf8')).version,
+    JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin/marketplace.json'), 'utf8')).version,
+    JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin/marketplace.json'), 'utf8')).plugins[0].version,
+    JSON.parse(fs.readFileSync(path.join(root, '.codex-plugin/plugin.json'), 'utf8')).version,
+  ];
+  assert.equal(new Set(versions).size, 1);
 });
 
 test('create-jira-task always uses Markdown H2 description sections', () => {
