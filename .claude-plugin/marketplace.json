@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "thebous-os",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Git workflow automation: branch, PR, merge, tag — synced with Jira, Slack and Confluence. Plus morning briefing and end-of-day recap, all logged to Obsidian.",
   "owner": {
     "name": "Luca Valsecchi",
@@ -12,7 +12,7 @@
   "plugins": [
     {
       "name": "thebous-os",
-      "version": "0.2.9",
+      "version": "0.2.10",
       "description": "New branch, create/review/merge PR, tag release, morning briefing, end-of-day recap — synced with Jira, Slack, Confluence, GitHub, Gmail and Obsidian",
       "author": {
         "name": "Luca Valsecchi",
