@@ -13,13 +13,13 @@ person-activity
 
 **User Input:**
 ```
-Enter work item ID (Jira key, GitHub PR #, or git commit hash): DC-443
+Enter work item ID (Jira key, GitHub PR #, or git commit hash): T-200
 Enter person's name or email: marco@company.com
 ```
 
 **Expected Output:**
 ```markdown
-# Activity — DC-443 with Marco Rossi
+# Activity — T-200 with Marco Rossi
 
 ## 📋 Synthetic Summary
 - **Role**: Reviewer, implementation owner
@@ -36,7 +36,7 @@ Enter person's name or email: marco@company.com
 
 ## 💬 Sources
 ### Jira Comments
-- 4 comments | [View on Jira](https://jira.company.com/browse/DC-443)
+- 4 comments | [View on Jira](https://jira.company.com/browse/T-200)
 
 ### GitHub PR/Reviews
 - 1 approved review | [View PR #1285](https://github.com/company/repo/pull/1285)
@@ -48,7 +48,7 @@ Enter person's name or email: marco@company.com
 - 0 threads
 
 ### Calendar
-- 1 event: "DC-443 refactoring sync" on 2026-07-19
+- 1 event: "T-200 refactoring sync" on 2026-07-19
 ```
 
 **What You Learn:**
@@ -335,7 +335,7 @@ To test the skill with real data:
 person-activity
 
 # Or if scripted:
-WORKITEM_TYPE=jira WORKITEM_ID=DC-443 PERSON_EMAIL=marco@company.com person-activity
+WORKITEM_TYPE=jira WORKITEM_ID=T-200 PERSON_EMAIL=marco@company.com person-activity
 ```
 
 See the main `SKILL.md` for usage notes on credentials and optional data sources.

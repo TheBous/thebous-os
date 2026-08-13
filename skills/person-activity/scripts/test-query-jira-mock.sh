@@ -14,7 +14,7 @@ echo
 create_mock_jira_response() {
   cat << 'EOF'
 {
-  "key": "DC-443",
+  "key": "T-200",
   "fields": {
     "summary": "Implement user authentication",
     "comment": {
@@ -63,13 +63,13 @@ echo "Test 1: Filter comments by email (marco.rossi@company.com)"
 echo
 
 mock_response=$(create_mock_jira_response)
-JIRA_BASE_URL="https://debto.atlassian.net"
+JIRA_BASE_URL="https://test.atlassian.net"
 
 # Simulate filtering logic from the script
 output=$(echo "$mock_response" | jq \
   --arg email "marco.rossi@company.com" \
   --arg names "marco rossi" \
-  --arg issue_url "https://debto.atlassian.net/browse/DC-443" \
+  --arg issue_url "https://test.atlassian.net/browse/T-200" \
   '[
     .fields.comment.comments[] |
     select(
@@ -117,7 +117,7 @@ echo
 output_by_name=$(echo "$mock_response" | jq \
   --arg email "" \
   --arg names "marco rossi" \
-  --arg issue_url "https://debto.atlassian.net/browse/DC-443" \
+  --arg issue_url "https://test.atlassian.net/browse/T-200" \
   '[
     .fields.comment.comments[] |
     select(
@@ -151,7 +151,7 @@ echo
 output_no_match=$(echo "$mock_response" | jq \
   --arg email "nonexistent@company.com" \
   --arg names "nonexistent person" \
-  --arg issue_url "https://debto.atlassian.net/browse/DC-443" \
+  --arg issue_url "https://test.atlassian.net/browse/T-200" \
   '[
     .fields.comment.comments[] |
     select(

@@ -14,8 +14,8 @@ Create a git branch linked to a Jira ticket, transition the ticket to In Progres
 Ask the user: "Branch name or Jira ticket URL/ID?"
 
 Accept:
-- Full Jira URL (e.g. `https://company.atlassian.net/browse/DC-443`)
-- Ticket key (e.g. `DC-443` or `dc-443`)
+- Full Jira URL (e.g. `https://company.atlassian.net/browse/T-200`)
+- Ticket key (e.g. `T-200` or `t-200`)
 - Free-form branch name (e.g. `feat/my-thing`) — in this case skip the Jira steps
 
 ### 2. If input is a Jira ticket
@@ -36,7 +36,7 @@ Use `<KEY>` and `<TASK_SUMMARY>` from the shared output to build the branch name
 
 Build the branch name: `feat/<key-lowercase>-<slugified-title>`.
 - Slugify: lowercase, spaces and special characters → `-`, max 50 characters after the prefix.
-- Example: `DC-443` + "Implement OAuth login" → `feat/dc-443-implement-oauth-login`
+- Example: `T-200` + "Implement OAuth login" → `feat/t-200-implement-oauth-login`
 
 Show the proposed name and ask for confirmation. The user can edit it.
 

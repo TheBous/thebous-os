@@ -19,7 +19,7 @@ Collects all interactions a specific person had on a given work item (Jira task,
 The skill asks for two pieces of information:
 
 1. **Work Item ID** — One of:
-   - Jira key (e.g., `DC-443`)
+   - Jira key (e.g., `T-200`)
    - GitHub PR number (e.g., `#250` or `PR 250`)
    - Git commit hash, short or long (e.g., `abc123def`)
 
@@ -47,7 +47,7 @@ Each interaction shows who, when, what, and a link to the source.
 ## Example Usage
 
 ```
-Enter work item ID (Jira key, GitHub PR #, or git commit hash): DC-443
+Enter work item ID (Jira key, GitHub PR #, or git commit hash): T-200
 Enter person's name or email: marco@company.com
 ```
 

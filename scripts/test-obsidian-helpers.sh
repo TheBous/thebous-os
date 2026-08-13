@@ -31,14 +31,14 @@ assert_file_contains() {
 VAULT=$(mktemp -d)
 
 # obsidian_ticket_dir
-assert_eq "ticket_dir path" "$VAULT/Dev/Tickets/DC-443" "$(obsidian_ticket_dir "$VAULT" "DC-443")"
+assert_eq "ticket_dir path" "$VAULT/Dev/Tickets/T-200" "$(obsidian_ticket_dir "$VAULT" "T-200")"
 
 # obsidian_ensure_ticket_file — creates with frontmatter, idempotent
-FILE=$(obsidian_ensure_ticket_file "$VAULT" "DC-443" "plan.md")
-assert_eq "ensure_ticket_file path" "$VAULT/Dev/Tickets/DC-443/plan.md" "$FILE"
-assert_file_contains "frontmatter has ticket key" "$FILE" "ticket: DC-443"
-obsidian_ensure_ticket_file "$VAULT" "DC-443" "plan.md" >/dev/null
-COUNT=$(grep -c '^ticket: DC-443$' "$FILE"); assert_eq "frontmatter not duplicated on 2nd call" "1" "$COUNT"
+FILE=$(obsidian_ensure_ticket_file "$VAULT" "T-200" "plan.md")
+assert_eq "ensure_ticket_file path" "$VAULT/Dev/Tickets/T-200/plan.md" "$FILE"
+assert_file_contains "frontmatter has ticket key" "$FILE" "ticket: T-200"
+obsidian_ensure_ticket_file "$VAULT" "T-200" "plan.md" >/dev/null
+COUNT=$(grep -c '^ticket: T-200$' "$FILE"); assert_eq "frontmatter not duplicated on 2nd call" "1" "$COUNT"
 
 # obsidian_set_pr — inserts then updates idempotently
 obsidian_set_pr "$FILE" "https://github.com/x/y/pull/1"
@@ -54,8 +54,8 @@ assert_file_contains "prior content preserved" "$FILE" "existing body line"
 assert_file_contains "new section appended" "$FILE" "did a thing"
 
 # obsidian_append_daily — creates file, appends bullets across calls
-obsidian_append_daily "$VAULT" "[[DC-443]] — branch created"
-obsidian_append_daily "$VAULT" "[[DC-443]] — PR opened"
+obsidian_append_daily "$VAULT" "[[T-200]] — branch created"
+obsidian_append_daily "$VAULT" "[[T-200]] — PR opened"
 DAILY_FILE="$VAULT/Dev/Daily/$(date +%Y-%m-%d).md"
 assert_file_contains "daily bullet 1" "$DAILY_FILE" "branch created"
 assert_file_contains "daily bullet 2" "$DAILY_FILE" "PR opened"

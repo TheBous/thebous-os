@@ -24,7 +24,7 @@ Map the user's request to the matching skill:
 |---|---|
 | Configure Jira/Slack/Confluence/Obsidian/GitHub/Gmail credentials (first run) | `skills/setup/SKILL.md` |
 | "Create a Jira task", "open a task with the standard template" | `skills/create-jira-task/SKILL.md` |
-| "Start this ticket", "create a branch for DC-443" | `skills/new-branch/SKILL.md` |
+| "Start this ticket", "create a branch for T-200" | `skills/new-branch/SKILL.md` |
 | "Implement this", "cook the feature", "fix the bug" | `skills/cook/SKILL.md` |
 | "Run it locally", "start the app", "spin up the service" | `skills/serve-up/SKILL.md` |
 | "Stop the service", "tear it down", "shut it off" | `skills/serve-down/SKILL.md` |

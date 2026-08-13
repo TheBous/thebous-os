@@ -15,7 +15,7 @@ source "$PROJECT_ROOT/scripts/helpers.sh"
 # ── Interactive Input ────────────────────────────────────────────────
 echo "=== Person Activity Report ==="
 echo
-read -p "Work item ID? (e.g., DC-443, PR #250, abc123def): " WORKITEM_ID
+read -p "Work item ID? (e.g., T-200, PR #250, abc123def): " WORKITEM_ID
 read -p "Person? (email or full name): " PERSON_INPUT
 
 # Export for downstream scripts

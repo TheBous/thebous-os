@@ -5,11 +5,11 @@
     {
       id: 1,
       command: "new-branch",
-      prompt: "Create a new branch for ticket DC-443",
-      expected_output: "Fetches DC-443 from Jira, derives a branch name from its title, creates and checks out the branch, transitions the ticket to In Progress, and posts a Slack notification",
+      prompt: "Create a new branch for ticket T-200",
+      expected_output: "Fetches T-200 from Jira, derives a branch name from its title, creates and checks out the branch, transitions the ticket to In Progress, and posts a Slack notification",
       expectations: [
-        "Calls getJiraIssue (or equivalent) for DC-443 before naming the branch",
-        "Branch name includes the lowercase ticket key, e.g. dc-443",
+        "Calls getJiraIssue (or equivalent) for T-200 before naming the branch",
+        "Branch name includes the lowercase ticket key, e.g. t-200",
         "Ticket is transitioned to 'In Progress' via the Jira MCP",
         "A Slack message is sent announcing the new branch",
         "Does not invent a branch name when Jira lookup fails — asks the user instead"
@@ -178,8 +178,8 @@
     {
       id: 15,
       command: "new-branch",
-      prompt: "Create a new branch for ticket DC-443, OBSIDIAN_VAULT_PATH configured and Granola/ has 2 recent notes",
-      expected_output: "Creates the branch, transitions DC-443, then creates Dev/Tickets/DC-443/plan.md, appends today's daily note, offers the 2 recent Granola notes and links the user's pick into calls.md",
+      prompt: "Create a new branch for ticket T-200, OBSIDIAN_VAULT_PATH configured and Granola/ has 2 recent notes",
+      expected_output: "Creates the branch, transitions T-200, then creates Dev/Tickets/T-200/plan.md, appends today's daily note, offers the 2 recent Granola notes and links the user's pick into calls.md",
       expectations: [
         "Does not write to Obsidian before the branch and Jira transition succeed",
         "Never auto-picks a Granola note without explicit user confirmation",

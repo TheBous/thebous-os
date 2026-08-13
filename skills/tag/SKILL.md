@@ -86,7 +86,7 @@ DEPLOYER=$(git config user.name 2>/dev/null || echo "unknown")
 slack_notify "🚀 *Deploy Production* — Tag \`<TAG>\`\n👤 $DEPLOYER\n🎫 Tickets: <TICKET_LIST_WITH_LINKS>\n<RELEASE_URL_IF_PRESENT>"
 ```
 
-Ticket format in the message: `<JIRA_BASE_URL/browse/DC-443|DC-443>` for each ticket, separated by a space.
+Ticket format in the message: `<JIRA_BASE_URL/browse/T-200|T-200>` for each ticket, separated by a space.
 
 ### 7. Confirmation
 
