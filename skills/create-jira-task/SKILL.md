@@ -8,11 +8,11 @@ description: Create a Jira task from a user request using the repository's fixed
 Creare un nuovo task Jira con una descrizione sempre composta da:
 
 ```text
-Descrizione
+## Descrizione
 
 <descrizione del lavoro>
 
-Acceptance Criteria
+## Acceptance Criteria
 
 [ ] <criterio verificabile>
 
@@ -40,11 +40,11 @@ Non indovinare la chiave del progetto, il tipo issue o requisiti funzionali manc
 Generare la descrizione in italiano, salvo richiesta diversa dell'utente, rispettando esattamente questa struttura:
 
 ```text
-Descrizione
+## Descrizione
 
 <uno o più paragrafi concisi che spiegano cosa realizzare, il contesto e il risultato atteso>
 
-Acceptance Criteria
+## Acceptance Criteria
 
 [ ] <un risultato osservabile e verificabile>
 
@@ -53,7 +53,9 @@ Acceptance Criteria
 
 Regole:
 
-- mantenere le etichette `Descrizione` e `Acceptance Criteria` esattamente così;
+- produrre sempre un documento Markdown;
+- usare esattamente i titoli di livello 2 `## Descrizione` e `## Acceptance Criteria`;
+- non usare titoli di livello 1, testo semplice o titoli di livello diverso per queste sezioni;
 - lasciare una riga vuota dopo ogni etichetta e tra i criteri;
 - usare una riga `[ ] ...` per ogni criterio, senza numerazione o bullet aggiuntivi;
 - trasformare in criteri solo requisiti derivabili dalla richiesta e dalle risposte dell'utente;

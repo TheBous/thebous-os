@@ -100,6 +100,14 @@ test('shared helper exposes a provider-neutral data directory override', () => {
   assert.match(helper, /ENV_FILE="\$THEBOUS_OS_DATA_DIR\/\.env"/);
 });
 
+test('create-jira-task always uses Markdown H2 description sections', () => {
+  const skill = fs.readFileSync(path.join(skillsDir, 'create-jira-task', 'SKILL.md'), 'utf8');
+  assert.match(skill, /## Descrizione/);
+  assert.match(skill, /## Acceptance Criteria/);
+  assert.doesNotMatch(skill, /^Descrizione\s*$/m);
+  assert.doesNotMatch(skill, /^Acceptance Criteria\s*$/m);
+});
+
 test('cook asks before pulling Granola and saves a selected meeting as a ticket page', () => {
   const cook = fs.readFileSync(path.join(skillsDir, 'cook', 'SKILL.md'), 'utf8');
   assert.match(cook, /prima di iniziare|before.*coding|before.*implement/i);
