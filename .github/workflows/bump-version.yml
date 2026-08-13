@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   bump:
-    if: github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'chore: bump version')
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ubuntu-latest
 
     steps:
