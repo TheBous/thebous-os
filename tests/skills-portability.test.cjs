@@ -155,6 +155,10 @@ test('cook asks before pulling Granola and saves a selected meeting as a ticket 
   assert.match(cook, /granola-<GRANOLA_ID>\.md/);
   assert.match(cook, /granola_id.*title.*created_at.*updated_at.*granola_url.*imported_at/s);
   assert.match(cook, /\.md/);
+  assert.match(cook, /300 lines of code|300 righe di codice/i);
+  assert.match(cook, /PR stack/i);
+  assert.match(cook, /git diff --numstat/);
+  assert.match(cook, /Do not assume|non.*assum/i);
 });
 
 test('current-status covers the current-day multi-source snapshot', () => {

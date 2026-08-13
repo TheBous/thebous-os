@@ -11,6 +11,15 @@ Implement a feature or fix starting from the context of the current branch/ticke
 
 ### 1. Gather context
 
+Before changing files, record the current commit as the implementation baseline:
+
+```bash
+BASE_COMMIT=$(git rev-parse HEAD)
+```
+
+Use this baseline only to measure the changes made for the current feature or fix;
+do not count unrelated changes that were already present.
+
 Follow `references/jira-task-context.md` with:
 - `<SOURCES>` = the current branch name
 - `<REQUIRED>` = `optional`
@@ -94,6 +103,26 @@ This choice only affects how requirements are refined beforehand — implementat
 ### 4. Proceed with SDD
 
 Always use Spec-Driven Development for the implementation. Follow the SDD workflow available in the current environment.
+
+### 4a. Check the implementation size
+
+Before treating the feature as complete, measure the code changes against
+`$BASE_COMMIT`. Count added plus deleted lines only in source and test-code files;
+exclude Markdown/docs, generated files, lockfiles, vendored files, images and other
+non-code assets. Use `git diff --numstat "$BASE_COMMIT"` and classify the paths
+manually when the extension is ambiguous.
+
+If the total is greater than **300 lines of code**, always pause and ask the user:
+
+```text
+Le modifiche superano 300 righe di codice. Vuoi splittare questa feature in task più piccoli e indipendenti, organizzati in una PR stack?
+```
+
+Do not assume the answer. If the user says **yes**, propose a minimal decomposition
+into independently reviewable tasks/PRs, ordered by dependency, and wait for approval
+before continuing as a single feature. Do not create Jira tasks, branches or PRs
+automatically from this check. If the user says **no**, continue with the current
+implementation and record that the user explicitly chose not to split it.
 
 ### 5. Run the full test suite
 
