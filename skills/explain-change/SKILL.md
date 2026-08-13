@@ -1,6 +1,6 @@
 ---
 name: explain-change
-description: Explain a pull request, diff, code, implementation change, file, or arbitrary text in simple step-by-step business and technical language, using a clear visual HTML artifact instead of a wall of text. Use when the user asks what changed, how something works, why it was implemented, or requests an easy, graphical walkthrough.
+description: Explain a pull request, diff, code, implementation change, file, or arbitrary text in simple step-by-step business and technical language, using a clear visual HTML artifact instead of a wall of text, and save every produced document in the corresponding Obsidian Jira task. Use when the user asks what changed, how something works, why it was implemented, or requests an easy, graphical walkthrough.
 ---
 
 # Explain Change
@@ -89,7 +89,41 @@ L'HTML deve contenere una breve intestazione con soggetto, data, fonti consultat
 livello di certezza. Etichettare le inferenze come tali e le parti non controllate come
 `Non verificato`.
 
-## 4. Risposta finale
+## 4. Salvare tutti gli artefatti nel task Obsidian
+
+Prima della risposta finale, identificare il task Jira corrispondente (`<KEY>`) dal
+contesto della PR, del branch, del commit o della richiesta. Se il task non è
+determinabile, chiedere una sola precisazione e non inventare la chiave.
+
+Tutti i file prodotti dalla spiegazione devono essere salvati nella cartella del task,
+non solo `index.html`. Questo include eventuali pagine HTML aggiuntive, CSS, immagini,
+asset locali e altri file necessari a mantenere funzionante l'artefatto. Usare il
+percorso standard `Dev/Tickets/<KEY>` e una sottocartella unica per ogni spiegazione:
+`docs/explain-change/<slug>-<timestamp>/`. Non sovrascrivere una spiegazione precedente.
+
+Seguire `references/obsidian-log.md` per caricare la configurazione e usare gli helper
+condivisi, senza ricostruire il percorso o la logica di copia nella skill:
+
+```bash
+source "scripts/helpers.sh"
+if [ -f "$ENV_FILE" ]; then load_env; fi
+
+if [ -z "${OBSIDIAN_VAULT_PATH:-}" ] || [ ! -d "${OBSIDIAN_VAULT_PATH}" ]; then
+  echo "Impossibile salvare la spiegazione: Obsidian non è configurato o il vault non esiste."
+  # Chiedere all'utente di configurare il vault prima di dichiarare il lavoro completato.
+else
+  DEST_DIR=$(obsidian_copy_ticket_docs "${OBSIDIAN_VAULT_PATH}" "<KEY>" "explain-change/<slug>-<timestamp>" <ARTIFACT_DIR>)
+
+  PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
+  obsidian_append_section "$PLAN_FILE" "Spiegazione visuale: [apri index.html](docs/explain-change/<slug>-<timestamp>/index.html)"
+fi
+```
+
+Per gli artefatti creati da `ce-explain`, usare i percorsi restituiti da quella skill
+come `<ARTIFACT_DIR>` o come insieme di file da copiare, preservando la struttura
+relativa tra le pagine. Non dichiarare il salvataggio se la copia non è riuscita.
+
+## 5. Risposta finale
 
 Presentare in chat solo una sintesi navigabile:
 

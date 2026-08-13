@@ -32,6 +32,18 @@ VAULT=$(mktemp -d)
 
 # obsidian_ticket_dir
 assert_eq "ticket_dir path" "$VAULT/Dev/Tickets/T-200" "$(obsidian_ticket_dir "$VAULT" "T-200")"
+assert_eq "ticket_docs_dir path" "$VAULT/Dev/Tickets/T-200/docs" "$(obsidian_ticket_docs_dir "$VAULT" "T-200")"
+
+# obsidian_copy_ticket_docs — copies a complete artifact directory
+ARTIFACT_DIR=$(mktemp -d)
+echo '<html></html>' > "$ARTIFACT_DIR/index.html"
+mkdir -p "$ARTIFACT_DIR/assets"
+echo 'body {}' > "$ARTIFACT_DIR/assets/style.css"
+COPIED_DIR=$(obsidian_copy_ticket_docs "$VAULT" "T-200" "explain-change/run-1" "$ARTIFACT_DIR")
+assert_eq "copy_ticket_docs destination" "$VAULT/Dev/Tickets/T-200/docs/explain-change/run-1" "$COPIED_DIR"
+assert_file_contains "artifact html copied" "$COPIED_DIR/index.html" '<html></html>'
+assert_file_contains "artifact asset copied" "$COPIED_DIR/assets/style.css" 'body {}'
+rm -rf "$ARTIFACT_DIR"
 
 # obsidian_ensure_ticket_file — creates with frontmatter, idempotent
 FILE=$(obsidian_ensure_ticket_file "$VAULT" "T-200" "plan.md")
@@ -56,7 +68,7 @@ assert_file_contains "new section appended" "$FILE" "did a thing"
 # obsidian_append_daily — creates file, appends bullets across calls
 obsidian_append_daily "$VAULT" "[[T-200]] — branch created"
 obsidian_append_daily "$VAULT" "[[T-200]] — PR opened"
-DAILY_FILE="$VAULT/Dev/Daily/$(date +%Y-%m-%d).md"
+DAILY_FILE="$VAULT/Dev/Daily/$(date +%Y-%m-%d)/10 - Work Log.md"
 assert_file_contains "daily bullet 1" "$DAILY_FILE" "branch created"
 assert_file_contains "daily bullet 2" "$DAILY_FILE" "PR opened"
 BULLET_COUNT=$(grep -c '^- ' "$DAILY_FILE"); assert_eq "two bullets total" "2" "$BULLET_COUNT"

@@ -139,6 +139,9 @@ test('explain-change defines the visual fallback and ce-explain preference', () 
   assert.match(skill, /business/i);
   assert.match(skill, /tecnic/i);
   assert.match(skill, /non.*wall of text|wall of text/i);
+  assert.match(skill, /OBSIDIAN_VAULT_PATH/);
+  assert.match(skill, /obsidian_ticket_docs_dir|obsidian_copy_ticket_docs/);
+  assert.match(skill, /docs\/explain-change/);
 });
 
 test('cook asks before pulling Granola and saves a selected meeting as a ticket page', () => {
@@ -152,6 +155,19 @@ test('cook asks before pulling Granola and saves a selected meeting as a ticket 
   assert.match(cook, /granola-<GRANOLA_ID>\.md/);
   assert.match(cook, /granola_id.*title.*created_at.*updated_at.*granola_url.*imported_at/s);
   assert.match(cook, /\.md/);
+});
+
+test('current-status covers the current-day multi-source snapshot', () => {
+  const skill = fs.readFileSync(path.join(skillsDir, 'current-status', 'SKILL.md'), 'utf8');
+  assert.match(skill, /current situation|situazione.*giornata/i);
+  assert.match(skill, /GitHub/);
+  assert.match(skill, /Jira/);
+  assert.match(skill, /Confluence/);
+  assert.match(skill, /Calendar|calendario/i);
+  assert.match(skill, /Granola/);
+  assert.match(skill, /non committati|uncommitted/i);
+  assert.match(skill, /HTML/i);
+  assert.match(skill, /read-only|read-only/i);
 });
 
 test('core workflow skills declare their automatic trigger conditions', () => {

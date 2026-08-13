@@ -145,12 +145,10 @@ source "scripts/helpers.sh"
 load_env
 
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  TICKET_DIR=$(obsidian_ticket_dir "${OBSIDIAN_VAULT_PATH}" "<KEY>")
-  mkdir -p "$TICKET_DIR/docs"
-  cp <SDD documents> "$TICKET_DIR/docs/"
+  DOCS_DIR=$(obsidian_copy_ticket_docs "${OBSIDIAN_VAULT_PATH}" "<KEY>" "sdd" <SDD_DOCUMENTS...>)
 
   PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
-  obsidian_append_section "$PLAN_FILE" "<SDD_SUMMARY> — SDD docs in [[<KEY>/docs]]"
+  obsidian_append_section "$PLAN_FILE" "<SDD_SUMMARY> — SDD docs in [docs](docs/sdd)"
   obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — implemented via SDD"
 fi
 ```

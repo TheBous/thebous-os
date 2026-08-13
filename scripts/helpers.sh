@@ -110,6 +110,28 @@ obsidian_ticket_dir() {
   echo "$vault/Dev/Tickets/$key"
 }
 
+obsidian_ticket_docs_dir() {
+  local vault="$1" key="$2"
+  echo "$(obsidian_ticket_dir "$vault" "$key")/docs"
+}
+
+obsidian_copy_ticket_docs() {
+  local vault="$1" key="$2" relative_dir="$3" destination source
+  shift 3
+  [ "$#" -gt 0 ] || return 1
+
+  destination="$(obsidian_ticket_docs_dir "$vault" "$key")/$relative_dir"
+  mkdir -p "$destination"
+  for source in "$@"; do
+    if [ -d "$source" ]; then
+      cp -R "$source"/. "$destination"/
+    else
+      cp "$source" "$destination"/
+    fi
+  done
+  echo "$destination"
+}
+
 obsidian_ensure_ticket_file() {
   local vault="$1" key="$2" filename="$3"
   local dir file

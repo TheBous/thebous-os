@@ -30,6 +30,7 @@ Dev/
       review.md          # from review-pr
       address-review.md  # from address-review
       calls.md           # wikilinks to related Granola notes
+      docs/              # shared destination for generated documentation
   Daily/
     <YYYY-MM-DD>.md      # index for the day
 ```
@@ -42,11 +43,17 @@ Writes are additive: append a dated section or bullet, never truncate.
 | Function | Signature | Does |
 |---|---|---|
 | `obsidian_ticket_dir` | `(vault, key)` | Echoes `<vault>/Dev/Tickets/<key>` |
+| `obsidian_ticket_docs_dir` | `(vault, key)` | Echoes the shared `<vault>/Dev/Tickets/<key>/docs` directory |
+| `obsidian_copy_ticket_docs` | `(vault, key, relative_dir, sources...)` | Copies files/directories into the shared ticket docs directory and echoes the destination |
 | `obsidian_ensure_ticket_file` | `(vault, key, filename)` | Creates the ticket dir + file with frontmatter if missing, echoes the path — idempotent |
 | `obsidian_set_pr` | `(file, pr_url)` | Inserts/updates the `pr:` frontmatter line — idempotent |
 | `obsidian_append_section` | `(file, body)` | Appends a dated `## <timestamp>` section |
 | `obsidian_append_daily` | `(vault, line)` | Appends `- <line>` to today's daily note, creating it if needed |
 | `obsidian_granola_candidates` | `(vault, days=14)` | Lists `.md` files under `<vault>/Granola/` modified in the last `days` days |
+
+All workflows that generate ticket documentation must use
+`obsidian_ticket_docs_dir` or `obsidian_copy_ticket_docs`; do not rebuild the
+`Dev/Tickets/<KEY>/docs` path or copy logic inside an individual skill.
 
 ## Granola linking
 

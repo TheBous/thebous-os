@@ -36,6 +36,7 @@ Map the user's request to the matching skill:
 | "Tag a release", "cut v1.2.3" | `skills/tag/SKILL.md` |
 | "Create a Confluence page from this code" | `skills/create-doc/SKILL.md` |
 | "Update the Confluence doc for this" | `skills/update-doc/SKILL.md` |
+| "What is my current situation?", "What do I still have today?" | `skills/current-status/SKILL.md` |
 
 ## Invocation
 

@@ -37,6 +37,7 @@ Commands are immediately available:
 - `/morning-briefing` — Generate the morning briefing
 - `/morning-briefing-schedule` — Set up the daily 9 AM task
 - `/end-of-day` — Generate the end-of-day recap
+- `/current-status` — Show the current situation across today's work and agenda
 
 Canonical skills are also available through OpenCode's native `skill` tool when the plugin is loaded.
 
