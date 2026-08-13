@@ -45,6 +45,14 @@ assert_file_contains "artifact html copied" "$COPIED_DIR/index.html" '<html></ht
 assert_file_contains "artifact asset copied" "$COPIED_DIR/assets/style.css" 'body {}'
 rm -rf "$ARTIFACT_DIR"
 
+# obsidian_copy_daily_artifact — copies a generated report into today's folder
+DAILY_ARTIFACT=$(mktemp -d)
+echo '<html>status</html>' > "$DAILY_ARTIFACT/index.html"
+DAILY_COPIED=$(obsidian_copy_daily_artifact "$VAULT" "current-status-1" "$DAILY_ARTIFACT")
+assert_eq "copy_daily_artifact destination" "$VAULT/Dev/Daily/$(date +%Y-%m-%d)/current-status-1" "$DAILY_COPIED"
+assert_file_contains "daily artifact copied" "$DAILY_COPIED/index.html" '<html>status</html>'
+rm -rf "$DAILY_ARTIFACT"
+
 # obsidian_ensure_ticket_file — creates with frontmatter, idempotent
 FILE=$(obsidian_ensure_ticket_file "$VAULT" "T-200" "plan.md")
 assert_eq "ensure_ticket_file path" "$VAULT/Dev/Tickets/T-200/plan.md" "$FILE"

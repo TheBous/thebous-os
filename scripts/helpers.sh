@@ -181,6 +181,15 @@ obsidian_append_daily() {
   echo "- $line" >> "$file"
 }
 
+obsidian_copy_daily_artifact() {
+  local vault="$1" name="$2" source_dir="$3" destination
+  [ -d "$source_dir" ] || return 1
+  destination="$vault/Dev/Daily/$(date +%Y-%m-%d)/$name"
+  mkdir -p "$destination"
+  cp -R "$source_dir"/. "$destination"/
+  echo "$destination"
+}
+
 obsidian_granola_candidates() {
   local vault="$1" days="${2:-14}"
   local dir="$vault/Granola"

@@ -172,6 +172,9 @@ test('current-status covers the current-day multi-source snapshot', () => {
   assert.match(skill, /non committati|uncommitted/i);
   assert.match(skill, /HTML/i);
   assert.match(skill, /read-only|read-only/i);
+  assert.match(skill, /obsidian_copy_daily_artifact/);
+  assert.match(skill, /30 - Current Status\.md/);
+  assert.match(skill, /append_daily_note\.sh/);
 });
 
 test('core workflow skills declare their automatic trigger conditions', () => {

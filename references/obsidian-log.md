@@ -49,6 +49,7 @@ Writes are additive: append a dated section or bullet, never truncate.
 | `obsidian_set_pr` | `(file, pr_url)` | Inserts/updates the `pr:` frontmatter line — idempotent |
 | `obsidian_append_section` | `(file, body)` | Appends a dated `## <timestamp>` section |
 | `obsidian_append_daily` | `(vault, line)` | Appends `- <line>` to today's daily note, creating it if needed |
+| `obsidian_copy_daily_artifact` | `(vault, name, source_dir)` | Copies a generated artifact directory into today's `Dev/Daily/<date>` folder and echoes the destination |
 | `obsidian_granola_candidates` | `(vault, days=14)` | Lists `.md` files under `<vault>/Granola/` modified in the last `days` days |
 
 All workflows that generate ticket documentation must use

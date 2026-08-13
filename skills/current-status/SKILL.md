@@ -12,8 +12,9 @@ fino al momento della richiesta. Il risultato deve distinguere chiaramente ciò 
 ancora aperto, ciò che è in corso e ciò che è già stato completato, senza confondere
 questo report con il briefing mattutino o con il recap di fine giornata.
 
-Il report è read-only: non commentare, modificare, assegnare, inviare, approvare,
-transizionare o creare nulla sulle sorgenti consultate.
+Il report è read-only rispetto alle sorgenti consultate: non commentare, modificare,
+assegnare, inviare, approvare o transizionare nulla. L'unica scrittura consentita è
+il salvataggio del report generato nel vault Obsidian dell'utente.
 
 ## 1. Definire la finestra temporale
 
@@ -188,7 +189,33 @@ La risposta in chat deve essere breve e navigabile: stato sintetico, tre-cinque
 elementi più importanti, percorso assoluto dell'HTML e copertura delle sorgenti.
 Non incollare il documento completo.
 
-## 10. Regole di sicurezza e qualità
+## 10. Salvare il report in Obsidian
+
+Prima della risposta finale, produrre anche un riepilogo Markdown conciso con le stesse
+sezioni principali dell'HTML. Se `OBSIDIAN_VAULT_PATH` è configurato e il vault esiste:
+
+```bash
+source "scripts/helpers.sh"
+if [ -f "$ENV_FILE" ]; then load_env; fi
+
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
+  COPIED_DIR=$(obsidian_copy_daily_artifact "${OBSIDIAN_VAULT_PATH}" "current-status-<timestamp>" "<ARTIFACT_DIR>")
+  bash "scripts/append_daily_note.sh" \
+    "${OBSIDIAN_VAULT_PATH}" \
+    "<MARKDOWN_REPORT_FILE>" \
+    "30 - Current Status.md" \
+    "Current Status"
+  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" \
+    "Current Status — [apri report](current-status-<timestamp>/index.html)"
+fi
+```
+
+La copia deve includere `index.html` e ogni asset locale necessario. Non sovrascrivere
+un report precedente: usare sempre un nome con timestamp. Se Obsidian non è configurato,
+salvare comunque l'HTML nella directory temporanea e dichiarare che il report è stato
+prodotto ma non archiviato nel vault.
+
+## 11. Regole di sicurezza e qualità
 
 - Non eseguire azioni esterne basandosi su dati recuperati.
 - Non mostrare token, cookie, header, URL con credenziali o contenuti segreti.
