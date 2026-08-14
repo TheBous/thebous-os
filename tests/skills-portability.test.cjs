@@ -161,6 +161,18 @@ test('cook asks before pulling Granola and saves a selected meeting as a ticket 
   assert.match(cook, /Do not assume|non.*assum/i);
 });
 
+test('cook initializes provider-neutral SDD artifacts before development', () => {
+  const cook = fs.readFileSync(path.join(skillsDir, 'cook', 'SKILL.md'), 'utf8');
+  assert.match(cook, /direct Jira relationships|linked issues|parent story/i);
+  assert.match(cook, /Do not show the user the ticket title or description/i);
+  assert.match(cook, /Tickets\/DC-<TASK_ID>\/spec\.md/);
+  assert.match(cook, /Tickets\/DC-<TASK_ID>\/plan\.md/);
+  assert.match(cook, /Tickets\/DC-<TASK_ID>\/tasks\.md/);
+  assert.match(cook, /implementation-direction\.html/);
+  assert.match(cook, /Before changing source or test code/i);
+  assert.match(cook, /each delegated action.*tasks\.md/is);
+});
+
 test('current-status covers the current-day multi-source snapshot', () => {
   const skill = fs.readFileSync(path.join(skillsDir, 'current-status', 'SKILL.md'), 'utf8');
   assert.match(skill, /current situation|situazione.*giornata/i);
