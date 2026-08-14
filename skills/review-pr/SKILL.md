@@ -5,7 +5,7 @@ description: Use when the user asks to review, inspect, or analyze a GitHub pull
 
 ## Goal
 
-Act as the reviewer on a GitHub PR: identify the PR and linked Jira ticket, switch to an isolated worktree, delegate analysis to `ce-code-review` in report-only mode (no fixes applied), present findings by severity (P0–P3), ask the user which to post, and submit a structured review via `gh` with inline comments and committable suggestions.
+Act as the reviewer on a GitHub PR: identify the PR and linked Jira ticket, switch to an isolated worktree, delegate analysis to `ce-code-review` in report-only mode (no fixes applied), concurrently delegate a lightweight architecture walkthrough to a fast subagent, present findings by severity (P0–P3), ask the user which to post, and submit a structured review via `gh` with inline comments and committable suggestions.
 
 ## Steps
 
@@ -94,7 +94,13 @@ export REVIEW_TASK_SUMMARY="<summary>"
 export REVIEW_PREDECESSORS="<predecessor list>"
 ```
 
-### 5. Delegate analysis to ce-code-review
+### 5. Delegate the review and the architecture walkthrough in parallel
+
+After the worktree and task context are ready, start both subagents without waiting
+for either one to finish. The review subagent is the source of findings; the second
+subagent only creates documentation and must never modify code or the PR.
+
+#### 5a. Main review — ce-code-review
 
 Invoke the `ce-code-review` skill in `mode:agent` (report-only JSON output):
 
@@ -126,6 +132,37 @@ ce-code-review returns structured findings:
 **Never write P0/P1/P2/P3 in any GitHub comment or presentation.** All public comments must use the human-readable labels.
 
 **Scope discipline**: do not flag pre-existing issues as blocking this PR. Note them separately for the user's awareness.
+
+#### 5b. Lightweight PR walkthrough — fast subagent
+
+Start one separate subagent concurrently with `ce-code-review`, explicitly selecting
+the host's fastest low-cost model available. Do not hard-code a provider-specific
+model name or alias. Pass it:
+
+- PR number, title, body, head SHA, linked Jira key, and the full diff;
+- the already-created review worktree path;
+- the absolute Obsidian vault path, if configured.
+
+Its only task is to create a self-contained `index.html` that explains how the PR
+works: business goal, entry points, main components, data/control flow, changed
+files, external dependencies, and important edge cases. Use inline CSS/SVG only;
+do not use remote assets. Mark inferences and unchecked behavior as `Non verificato`.
+
+When a Jira key is available, save the artifact in:
+
+```text
+<OBSIDIAN_VAULT_PATH>/Dev/Review/DC-<TASK_ID>/index.html
+```
+
+where `<TASK_ID>` is the numeric part of the Jira key (for example, `DC-123` →
+`Dev/Review/DC-123`). Create the directory if needed. Do not overwrite an existing
+walkthrough: if `index.html` already exists, use `index-<timestamp>.html` instead.
+If the vault is not configured, keep the HTML in a temporary directory and report
+that it was not copied to Obsidian. If no Jira key can be identified, skip this
+subagent and report why. The main review must continue even if this subagent fails.
+
+Before the review workflow continues, collect the subagent result and verify that
+the HTML file exists and is non-empty. Keep its absolute path for the final report.
 
 ### 6. Present the verdict to the user
 
@@ -287,12 +324,21 @@ if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
 fi
 ```
 
+If the walkthrough subagent created an artifact in Obsidian, append its relative link
+to `review.md` using `obsidian_append_section`. Use the actual filename returned by
+the subagent (`index.html` or `index-<timestamp>.html`):
+
+```bash
+obsidian_append_section "$REVIEW_FILE" "PR #<NUMBER> — walkthrough: [open HTML](../../Review/DC-<TASK_ID>/<WALKTHROUGH_FILENAME>)"
+```
+
 ### 11. Confirmation
 
 Show the user:
 - Review submitted: `<Approved|Changes requested|Commented>`
 - Inline comments posted: `<count>`
 - Jira comment: yes/no
+- Walkthrough HTML: `<absolute path>` (or skipped with reason)
 - Obsidian: logged (or "skipped, no vault configured / no linked ticket")
 
 ## Style for review prose

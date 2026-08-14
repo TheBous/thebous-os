@@ -194,3 +194,14 @@ test('core workflow skills declare their automatic trigger conditions', () => {
   assert.match(createPr, /merge.*branch|existing pull request/i);
   assert.match(createPr, /skills\/merge-pr\/SKILL\.md/);
 });
+
+test('review-pr runs a fast walkthrough subagent and saves its HTML in the ticket review folder', () => {
+  const review = fs.readFileSync(path.join(skillsDir, 'review-pr', 'SKILL.md'), 'utf8');
+  assert.match(review, /in parallel/i);
+  assert.match(review, /fast subagent/i);
+  assert.match(review, /fastest low-cost model/i);
+  assert.doesNotMatch(review, /haiku|sonnet|gpt-\d|claude/i);
+  assert.match(review, /Dev\/Review\/DC-<TASK_ID>/);
+  assert.match(review, /index\.html/);
+  assert.match(review, /self-contained/i);
+});
