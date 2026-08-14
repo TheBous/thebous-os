@@ -160,12 +160,7 @@ If `OBSIDIAN_VAULT_PATH` is configured, follow `references/obsidian-log.md`:
 ```bash
 source "scripts/helpers.sh"
 load_env
-
-if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
-  obsidian_set_pr "$PLAN_FILE" "<PR_URL>"
-  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — PR opened: <PR_URL>"
-fi
+obsidian_log_pr "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "<PR_URL>" "[[<KEY>]] — PR opened: <PR_URL>"
 ```
 
 ### 8. Jira comment (always)

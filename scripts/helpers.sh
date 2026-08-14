@@ -181,6 +181,25 @@ obsidian_append_daily() {
   echo "- $line" >> "$file"
 }
 
+obsidian_log_ticket() {
+  local vault="$1" key="$2" filename="$3" section="${4:-}" daily_line="${5:-}"
+  local file
+  [ -n "$vault" ] && [ -d "$vault" ] && [ -n "$key" ] || return 0
+  file="$(obsidian_ensure_ticket_file "$vault" "$key" "$filename")"
+  [ -z "$section" ] || obsidian_append_section "$file" "$section"
+  [ -z "$daily_line" ] || obsidian_append_daily "$vault" "$daily_line"
+  echo "$file"
+}
+
+obsidian_log_pr() {
+  local vault="$1" key="$2" pr_url="$3" daily_line="$4"
+  local file
+  [ -n "$vault" ] && [ -d "$vault" ] && [ -n "$key" ] || return 0
+  file="$(obsidian_log_ticket "$vault" "$key" "plan.md" "" "$daily_line")"
+  obsidian_set_pr "$file" "$pr_url"
+  echo "$file"
+}
+
 obsidian_copy_daily_artifact() {
   local vault="$1" name="$2" source_dir="$3" destination
   [ -d "$source_dir" ] || return 1

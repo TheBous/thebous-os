@@ -317,11 +317,9 @@ Only if a Jira ticket was matched in step 1 (`<KEY>` is set). Follow `references
 source "scripts/helpers.sh"
 load_env
 
-if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  REVIEW_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "review.md")
-  obsidian_append_section "$REVIEW_FILE" "PR #<NUMBER> — <Approved|Changes requested|Commented>. <count> findings posted."
-  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — reviewed PR #<NUMBER>"
-fi
+REVIEW_FILE=$(obsidian_log_ticket "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "review.md" \
+  "PR #<NUMBER> — <Approved|Changes requested|Commented>. <count> findings posted." \
+  "[[<KEY>]] — reviewed PR #<NUMBER>")
 ```
 
 If the walkthrough subagent created an artifact in Obsidian, append its relative link

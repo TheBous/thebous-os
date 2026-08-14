@@ -225,12 +225,8 @@ Only if the PR's branch matched a Jira key in step 1a (`<KEY>` is set). Follow `
 ```bash
 source "scripts/helpers.sh"
 load_env
-
-if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  ADDRESS_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "address-review.md")
-  obsidian_append_section "$ADDRESS_FILE" "<RESOLUTION_SUMMARY>"
-  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — addressed review comments"
-fi
+obsidian_log_ticket "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "address-review.md" \
+  "<RESOLUTION_SUMMARY>" "[[<KEY>]] — addressed review comments"
 ```
 
 ### 14. Confirmation

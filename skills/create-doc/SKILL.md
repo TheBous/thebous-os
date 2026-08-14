@@ -117,12 +117,9 @@ Only if `<KEY>` was found in step 1a. Follow `references/obsidian-log.md`:
 ```bash
 source "scripts/helpers.sh"
 load_env
-
-if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ] && [ -n "<KEY>" ]; then
-  PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
-  obsidian_append_section "$PLAN_FILE" "Confluence page created: [<title>](<page URL>)"
-  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — Confluence page created: <title>"
-fi
+obsidian_log_ticket "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "plan.md" \
+  "Confluence page created: [<title>](<page URL>)" \
+  "[[<KEY>]] — Confluence page created: <title>"
 ```
 
 ### 8. Confirmation

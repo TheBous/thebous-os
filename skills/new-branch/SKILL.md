@@ -89,11 +89,8 @@ Only if a Jira ticket was found in step 2 (`<KEY>` is set). Follow `references/o
 ```bash
 source "scripts/helpers.sh"
 load_env
-
-if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md" >/dev/null
-  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — branch \`<branch-name>\` created"
-fi
+obsidian_log_ticket "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "plan.md" "" \
+  "[[<KEY>]] — branch \`<branch-name>\` created"
 ```
 
 ### 8. Link a Granola call (optional)

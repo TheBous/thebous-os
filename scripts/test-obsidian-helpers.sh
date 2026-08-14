@@ -81,6 +81,17 @@ assert_file_contains "daily bullet 1" "$DAILY_FILE" "branch created"
 assert_file_contains "daily bullet 2" "$DAILY_FILE" "PR opened"
 BULLET_COUNT=$(grep -c '^- ' "$DAILY_FILE"); assert_eq "two bullets total" "2" "$BULLET_COUNT"
 
+# obsidian_log_ticket / obsidian_log_pr — shared workflow logging
+LOGGED=$(obsidian_log_ticket "$VAULT" "T-201" "review.md" "reviewed" "[[T-201]] — reviewed")
+assert_eq "log_ticket path" "$VAULT/Dev/Tickets/T-201/review.md" "$LOGGED"
+assert_file_contains "log_ticket section" "$LOGGED" "reviewed"
+assert_file_contains "log_ticket daily line" "$DAILY_FILE" "[[T-201]] — reviewed"
+PR_LOGGED=$(obsidian_log_pr "$VAULT" "T-201" "https://github.com/x/y/pull/3" "[[T-201]] — PR opened")
+assert_eq "log_pr path" "$VAULT/Dev/Tickets/T-201/plan.md" "$PR_LOGGED"
+assert_file_contains "log_pr URL" "$VAULT/Dev/Tickets/T-201/plan.md" "pr: https://github.com/x/y/pull/3"
+obsidian_log_pr "" "T-202" "https://github.com/x/y/pull/4" "" >/dev/null
+echo "PASS: log_pr skips without a vault"
+
 # obsidian_granola_candidates — only lists recent .md files, empty when folder missing
 mkdir -p "$VAULT/Granola"
 cat > "$VAULT/Granola/recent.md" <<'NOTE'
