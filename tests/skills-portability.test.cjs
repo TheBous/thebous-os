@@ -130,10 +130,9 @@ test('create-jira-task always uses Markdown H2 description sections', () => {
   assert.doesNotMatch(skill, /^Acceptance Criteria\s*$/m);
 });
 
-test('explain-change defines the visual fallback and ce-explain preference', () => {
+test('explain-change defines a provider-neutral visual workflow', () => {
   const skill = fs.readFileSync(path.join(skillsDir, 'explain-change', 'SKILL.md'), 'utf8');
-  assert.match(skill, /ce-explain/);
-  assert.match(skill, /compound-engineering:ce-explain/);
+  assert.doesNotMatch(skill, /ce-explain|compound-engineering/i);
   assert.match(skill, /HTML/i);
   assert.match(skill, /SVG|diagram/i);
   assert.match(skill, /business/i);
@@ -142,6 +141,11 @@ test('explain-change defines the visual fallback and ce-explain preference', () 
   assert.match(skill, /OBSIDIAN_VAULT_PATH/);
   assert.match(skill, /obsidian_ticket_docs_dir|obsidian_copy_ticket_docs/);
   assert.match(skill, /docs\/explain-change/);
+  assert.match(skill, /domanda guida/i);
+  assert.match(skill, /Evidenza.*Inferenza.*Non verificato/s);
+  assert.match(skill, /output.*funzione.*trasformazione.*sorgente dati.*input/i);
+  assert.match(skill, /controesempio/i);
+  assert.match(skill, /Check finale/i);
 });
 
 test('cook asks before pulling Granola and saves a selected meeting as a ticket page', () => {

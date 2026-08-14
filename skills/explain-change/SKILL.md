@@ -11,16 +11,6 @@ Spiegare un argomento in modo progressivo, leggibile e visivo. L'output deve aiu
 l'utente a capire sia il risultato di business sia come funziona l'implementazione,
 senza trasformarsi in un testo lungo e non strutturato.
 
-## Skill preferenziale
-
-Prima di iniziare, verificare se nell'ambiente attivo è disponibile una skill chiamata
-`ce-explain`, anche se esposta con namespace come `compound-engineering:ce-explain`:
-
-- se è disponibile, invocarla sempre e seguirne il flusso completo;
-- se non è disponibile, usare il flusso di questa skill;
-- non eseguire entrambi i flussi in parallelo e non dichiarare di aver usato
-  `ce-explain` se non è stata effettivamente invocata.
-
 ## 1. Definire l'oggetto della spiegazione
 
 Identificare l'oggetto e raccogliere solo il contesto necessario:
@@ -34,25 +24,62 @@ Se l'oggetto è ambiguo, chiedere una sola precisazione. Non inventare intenzion
 comportamenti, dati o motivazioni: distinguere sempre tra evidenza, inferenza e
 informazione non verificata.
 
+Prima di leggere i dettagli, definire una domanda guida:
+
+- quale problema stiamo cercando di risolvere?
+- quale comportamento dobbiamo capire?
+- cosa dovrebbe succedere dall'ingresso all'uscita?
+- quali aspetti restano ancora sconosciuti?
+
+Per una codebase, costruire prima una mappa superficiale con entry point,
+componenti principali, dati in ingresso e uscita, dipendenze e responsabilità dei
+file. Non iniziare dalla sintassi o dalla lettura lineare dell'intero repository.
+
+Formulare un'ipotesi iniziale sul funzionamento e verificarla nel codice. Separare
+sempre:
+
+- **Evidenza** — direttamente visibile in codice, diff, test o documentazione;
+- **Inferenza** — interpretazione ragionevole ma non dimostrata;
+- **Non verificato** — comportamento che richiederebbe un test, un ambiente o un
+  chiarimento esterno.
+
+### 1a. Tracciare le catene di azioni
+
+Per ogni comportamento principale, partire dall'output osservabile e risalire:
+
+```text
+output → funzione che lo produce → trasformazione → sorgente dati → input/entry point
+```
+
+Seguire la catena fino all'ingresso del sistema, annotando per ogni passaggio cosa
+succede, perché e dove viene realizzato. Ripetere solo per i flussi necessari a
+spiegare il cambiamento; non leggere tutta la codebase senza una domanda precisa.
+
 ## 2. Costruire la spiegazione
 
 Organizzare il materiale in questo ordine, riducendo o unendo le sezioni quando non
 sono pertinenti:
 
-1. **In una frase** — cosa stiamo guardando e qual è il risultato principale.
-2. **Perché esiste** — problema o bisogno di business risolto.
-3. **Prima e dopo** — cosa succedeva prima e cosa cambia dopo.
-4. **Flusso step-by-step** — sequenza concreta dall'input al risultato.
-5. **Implementazione tecnica** — file, funzioni, dati, stati, API, dipendenze e
-   responsabilità coinvolte, con riferimenti `file:line` quando disponibili.
-6. **Casi limite e rischi** — errori, autorizzazioni, dati mancanti e comportamenti
-   non verificati.
-7. **Verifica** — test esistenti, controlli eseguiti e cosa resta da verificare.
-8. **Riassunto finale** — massimo tre messaggi da ricordare.
+1. **Orientamento** — domanda guida, una frase, problema e prima/dopo.
+2. **Mappa** — entry point, componenti, dati, relazioni e ipotesi verificata.
+3. **Flusso** — catena concreta dall'input all'output, con cosa succede, perché e
+   dove viene realizzato.
+4. **Implementazione** — file, funzioni, dati, stati, API, dipendenze e
+   responsabilità, con riferimenti `file:line` quando disponibili.
+5. **Comprensione** — esempio, controesempio, limiti, rischi e punti `Non verificato`.
+6. **Verifica** — test, comando, input minimo o esperimento necessario.
+7. **Check finale** — cinque domande a cui il lettore deve poter rispondere senza
+   rileggere il codice.
+8. **Riassunto** — massimo tre messaggi da ricordare.
 
 Per ogni step spiegare prima **cosa succede**, poi **perché**, poi **come viene
 realizzato tecnicamente**. Usare frasi brevi, una sola idea per blocco e liste corte.
 Espandere acronimi e termini tecnici alla prima occorrenza.
+
+Non dichiarare compreso un concetto solo perché la spiegazione è coerente: renderlo
+verificabile con un esempio, un controesempio, una previsione o un piccolo
+esperimento. Se una domanda non trova risposta nelle fonti, lasciarla esplicitamente
+come `Non verificato`.
 
 ## 3. Creare l'artefatto HTML
 
@@ -79,6 +106,8 @@ di ricevere solo una risposta in chat.
   nodi e colori coerenti;
 - mostrare separatamente il percorso business e quello tecnico, collegandoli quando
   un passaggio tecnico implementa una decisione di business;
+- rendere visibili mappa iniziale, flusso input → output, catena all'indietro,
+  esempio/controesempio e distinzione tra evidenza, inferenza e non verificato;
 - includere snippet di codice brevi e annotati solo quando chiariscono il punto;
 - mantenere una larghezza leggibile, contrasto accessibile, titoli chiari e layout
   responsive;
@@ -88,6 +117,17 @@ di ricevere solo una risposta in chat.
 L'HTML deve contenere una breve intestazione con soggetto, data, fonti consultate e
 livello di certezza. Etichettare le inferenze come tali e le parti non controllate come
 `Non verificato`.
+
+Chiudere l'artefatto con queste domande, adattandole al caso:
+
+1. Quale problema risolve il cambiamento?
+2. Qual è il percorso principale dei dati?
+3. Qual è la decisione tecnica più importante?
+4. Cosa succede nei casi limite?
+5. Come posso verificare che il comportamento sia corretto?
+
+Le risposte devono essere ricavabili dall'artefatto senza riaprire il codice, salvo
+per i punti marcati `Non verificato`.
 
 ## 4. Salvare tutti gli artefatti nel task Obsidian
 
@@ -118,10 +158,6 @@ else
   obsidian_append_section "$PLAN_FILE" "Spiegazione visuale: [apri index.html](docs/explain-change/<slug>-<timestamp>/index.html)"
 fi
 ```
-
-Per gli artefatti creati da `ce-explain`, usare i percorsi restituiti da quella skill
-come `<ARTIFACT_DIR>` o come insieme di file da copiare, preservando la struttura
-relativa tra le pagine. Non dichiarare il salvataggio se la copia non è riuscita.
 
 ## 5. Risposta finale
 
