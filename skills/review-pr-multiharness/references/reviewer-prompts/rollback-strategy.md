@@ -17,3 +17,10 @@ forward after a bad deployment.
   validation of data, dependencies, and user-visible behavior.
 - Reject a rollback claim that is only a Git revert when external side effects
   or irreversible data changes are involved.
+- Require an executed or automated rollback drill proving the previous version
+  returns healthy within the stated time limit, not only a documented step.
+- Check canary-analysis logic is tested to actually trigger automatic rollback
+  on the failure signal it claims to watch (error rate, latency, health),
+  not only that the metric is emitted.
+- Verify a rollback test covers data or schema state created during the bad
+  window, not code reversion alone.

@@ -17,3 +17,13 @@ security findings unless the failure crosses a reliability boundary.
 - Look for retry amplification and cascading failure when capacity or latency
   changes.
 - Report a concrete failure scenario and resulting state, not generic advice.
+- Require a test that injects the actual fault (dependency timeout, dropped
+  connection, 5xx burst, duplicate message) rather than only unit-testing the
+  retry/backoff/circuit-breaker config values.
+- Check that a circuit breaker or retry policy has a test proving the open
+  state stops calls and the half-open probe recovers, not just that annotations
+  exist.
+- Verify idempotency and duplicate-delivery tests assert the resulting state
+  (no double charge, no duplicate row), not just a second call returning 200.
+- Reject reliability claims backed only by mocked-away failures; require at
+  least one test that exercises the real timeout/retry/cancellation path.

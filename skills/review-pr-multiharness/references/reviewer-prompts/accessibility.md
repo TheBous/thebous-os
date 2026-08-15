@@ -18,3 +18,9 @@ motor needs.
 - Inspect both enabled and disabled/loading/error states and responsive layouts.
 - Report a specific failed user task and the affected element; do not make
   subjective visual preferences blocking.
+- Check for automated a11y test coverage (axe-core, jest-axe, Lighthouse CI)
+  on changed components, but treat a clean automated run as a floor, not
+  proof: these tools catch roughly half of WCAG issues by volume.
+- Require evidence of manual keyboard-only and screen-reader passes (or a
+  named reason one is impractical) for new or changed interactive flows;
+  reject "automated scan passed" as the sole proof of operability.

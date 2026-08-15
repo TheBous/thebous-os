@@ -17,3 +17,9 @@ performance findings.
   cost of the next change.
 - Prefer a smaller existing pattern over a new generalized layer.
 - Do not demand perfection or stylistic uniformity when code health improves.
+- For refactors claiming no behavior change, require tests that fail on the
+  pre-refactor code and pass identically after; treat unchanged coverage
+  percentage as insufficient proof.
+- Where a mutation-testing report (e.g. Stryker) is available, check whether
+  surviving mutants concentrate in the touched module; a suite with high line
+  coverage but weak mutation kill rate is not a safety net for this change.

@@ -18,3 +18,9 @@ one.
   without assuming deterministic model output.
 - Skip findings when the repository has no relevant agent surface and the diff
   does not introduce one.
+- Require a regression test or eval-harness case (golden transcript, expected
+  tool-call sequence, or scored trajectory) for changed prompts, tool schemas,
+  or agent instructions; flag prose-only prompt edits with no test that would
+  fail on a wrong tool call or dropped context.
+- Check that golden transcripts and eval assertions were written or reviewed
+  by a human against intended behavior, not generated from the current output.

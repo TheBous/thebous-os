@@ -16,3 +16,11 @@ Review cache keys, freshness, invalidation, storage, and failure behavior.
   required scope and lifetime.
 - Prefer evidence from cache hit rate, origin load, freshness, and correctness;
   do not call a cache beneficial without a workload argument.
+- Require a test that writes/deletes the underlying data and asserts the
+  cached read reflects the change (or the documented staleness window),
+  not just that a write path calls an invalidation function.
+- Require a concurrent-request test for stampede/thundering-herd risk on any
+  new expiring or shared cache key: assert single-flight/coalescing or
+  lock-based origin protection under simultaneous misses.
+- Check for a stale-read test covering the gap between write and invalidation
+  propagation, especially across multiple cache nodes or layers.

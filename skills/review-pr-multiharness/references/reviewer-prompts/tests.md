@@ -16,3 +16,5 @@ do not demand coverage percentages or tests for trivial code.
 - Reject tests that mirror a hardcoded expected list, mock away the behavior,
   or couple to implementation details.
 - Do not require aggregate coverage percentages or tests for trivial accessors.
+- Where a mutation-testing report is available, treat surviving mutants in
+  changed lines as concrete evidence of a missing test, not a style nit.

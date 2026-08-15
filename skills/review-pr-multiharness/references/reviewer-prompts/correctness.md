@@ -16,3 +16,6 @@ preferences owned by another lens.
 - Trace changed return values through callers; a new `null`, empty collection,
   or fallback must not silently gain a second meaning.
 - Report only failures supported by the diff, surrounding code, or requirements.
+- For invariant-bearing logic (parsing, math, ordering, idempotent operations),
+  check whether a property-based test asserts the invariant across generated
+  inputs rather than only a handful of fixed examples.

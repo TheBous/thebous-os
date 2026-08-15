@@ -16,3 +16,10 @@ avoidable energy use when the diff affects a hot or resource-intensive path.
 - Look for measurable energy or resource intensity signals; do not block on
   theoretical savings in a cold, non-critical path.
 - State the workload and the simpler optimization that would reduce work.
+- Check a new polling loop, background sync, or periodic wakeup has a test or
+  config asserting a bounded interval and backoff, not a fixed tight loop.
+- Require a test proving idle/no-op states do no work (no network call, no
+  re-render, no wake) when nothing changed, for battery- or wakeup-sensitive
+  paths.
+- Reject an "always-on" background task added without a test showing it
+  yields, batches, or defers work when the device or network is constrained.

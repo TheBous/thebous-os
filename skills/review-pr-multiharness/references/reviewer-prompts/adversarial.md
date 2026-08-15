@@ -18,3 +18,10 @@ gaps to their dedicated lenses.
   inputs, environment, commands, and assertions with the real path it protects.
 - Suppress scenarios requiring unsupported runtime conditions or duplicating a
   dedicated security, performance, migration, or ordinary test finding.
+- For parsers, validators, and input-handling code, require property-based
+  tests (Hypothesis, fast-check, jqwik) or a fuzz target that asserts an
+  invariant, not just hand-picked examples; flag abuse-relevant code with only
+  example-based tests as under-proven.
+- Check that malformed, oversized, adversarial, and out-of-range inputs have
+  an explicit negative-path test with an asserted rejection, not just an
+  absence of crashes.

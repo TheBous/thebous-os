@@ -17,3 +17,7 @@ this lens for generic maintainability, correctness, or style issues.
   instead of relying on memory.
 - Do not flag a file solely because of its extension or duplicate generic
   correctness, maintainability, or style findings.
+- State what test evidence this specific stack requires for the concern
+  chosen (e.g. widget/instrumentation tests for lifecycle, concurrency
+  harness for race conditions, contract tests for a framework boundary) and
+  check whether that evidence exists.

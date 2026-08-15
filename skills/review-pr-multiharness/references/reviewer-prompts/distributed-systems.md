@@ -17,3 +17,12 @@ network boundaries.
   failover behavior.
 - Report the failure sequence, consistency trade-off, and user/data impact;
   require a concrete invariant or recovery proof.
+- Require fault-injection evidence (Jepsen-style partition/kill/delay test,
+  chaos harness, or an equivalent scripted failure) for any change to
+  consensus, leader election, quorum, or cross-node coordination logic.
+- Reject a claimed partition-tolerant or split-brain-safe behavior without a
+  test that actually partitions/delays nodes and asserts the system recovers
+  without data loss or duplicate leadership, not just code inspection.
+- Check that retry/backoff/timeout changes are covered by a test that injects
+  the ambiguous-result case (dependency times out after partially succeeding)
+  and verifies the workflow doesn't double-apply or wedge.

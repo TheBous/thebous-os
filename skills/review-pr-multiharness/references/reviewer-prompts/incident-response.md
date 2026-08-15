@@ -17,3 +17,9 @@ failures introduced by the PR.
   follow-up ownership exist for irreversible or customer-visible failures.
 - Keep findings concrete: identify the incident sequence an operator cannot
   detect or safely resolve.
+- Require a runbook dry-run or game day that executes the documented steps
+  end-to-end, not a read-through of the prose.
+- Verify each new alert has a test proving it actually fires on the failure
+  condition it claims to detect, not only that the underlying metric exists.
+- Check the runbook carries a last-verified date; treat one older than the
+  team's stated cadence as unverified for this new failure mode.

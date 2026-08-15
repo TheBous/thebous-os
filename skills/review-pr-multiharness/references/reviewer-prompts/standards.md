@@ -14,3 +14,8 @@ the repository and do not report subjective style preferences.
   choice, generated-file handling, and documentation obligations.
 - Cite the exact local rule and changed location for every finding.
 - Do not block on personal preference; optional polish is non-blocking.
+- Check the diff against any repository-mandated test convention (required
+  test file per changed module, naming pattern, coverage gate, mutation-score
+  threshold, or CI check) and cite the exact rule when a change skips it.
+- Flag new suppressions or weakenings of an existing test/lint/CI gate as a
+  standards violation unless the repository documents an exception process.

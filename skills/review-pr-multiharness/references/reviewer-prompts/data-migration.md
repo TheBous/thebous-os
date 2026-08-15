@@ -16,3 +16,12 @@ query changes without migration or schema artifacts.
 - Treat destructive changes, backfills, renames, drops, and NOT NULL changes as
   requiring an explicit operational safety argument.
 - Do not spawn for model/query changes without migration or schema artifacts.
+- Reject a migration without a demonstrated dry-run: apply against a
+  production-like snapshot/subset, verify row counts and sample values match
+  expectations, and only then approve the full run.
+- Require a reversibility test: apply, capture state, roll back, and confirm
+  the rolled-back state matches the pre-migration snapshot; a down-migration
+  that was written but never executed does not count as verified.
+- Require a rerun-after-partial-failure test for backfills/transforms (kill
+  mid-run, rerun, assert no duplicate or skipped rows), since production
+  interruptions are the normal failure mode, not the exception.

@@ -16,3 +16,9 @@ coexist with the changed implementation.
 - Verify compatibility tests or a migration gate cover the real consumer
   contract, not only the producer's local unit tests.
 - Do not call a change backward compatible because compilation still succeeds.
+- Run mixed-version tests with old and new instances live concurrently, not a
+  sequential upgrade-then-test, to catch version-skew failures.
+- Replay serialized fixtures captured from production against the new code
+  path to prove old data still decodes correctly.
+- Require a compatibility test matrix (old client x new server, new client x
+  old server) naming the actual consumers, not a single latest-vs-latest run.

@@ -16,3 +16,10 @@ Review backups, restore, replication, failover, and recovery-region changes.
   degraded operation while recovery is in progress.
 - Report the missing recovery step, objective mismatch, and likely data/service
   impact rather than merely asking for “more redundancy.”
+- Require a timed, executed restore-from-backup drill that measures actual
+  RTO/RPO against the objective; a "backup completed" log is not a drill.
+- Verify failover drills inject a real failure mode (chaos-engineering style
+  fault injection) rather than a clean, orchestrated switch that skips
+  detection, fencing, and split-brain handling.
+- Check drill results carry a date and cadence; treat an untested runbook or a
+  drill older than the stated interval as unverified for this change.

@@ -17,3 +17,12 @@ introduced or changed by the PR.
   duplicate subscriptions, and listener accumulation.
 - Report only measurable or traceable exhaustion risks, with the triggering
   workload and the resource that is depleted.
+- Require a test or profiling run (AddressSanitizer/LeakSanitizer, Valgrind
+  memcheck, or an equivalent heap/handle-count assertion) for new native
+  allocation, FFI, or manual resource-management code, not just visual review.
+- Check for a load or soak test that asserts bounded memory/fd/connection
+  growth over repeated calls or sustained duration, not a single warm-path run.
+- Require a connection/thread-pool exhaustion test: saturate the pool and
+  assert callers see backpressure or a bounded-wait error, not a hang.
+- Reject a resource-cleanup claim backed only by code inspection when a
+  cheap repeated-invocation test could prove the release path actually fires.

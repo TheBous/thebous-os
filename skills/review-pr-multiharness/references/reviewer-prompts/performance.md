@@ -16,3 +16,11 @@ because they exist.
   invalidation, bundle cost, and event-loop blocking as applicable.
 - Prefer a query plan, profile, benchmark, or repository metric when available.
 - Do not flag async or caching merely because it appears in the diff.
+- Require a benchmark or load test with an explicit budget (e.g. p95 latency
+  or throughput threshold under N concurrent requests) as a regression gate
+  for a changed hot path, not a one-off local timing.
+- Check that a claimed improvement is backed by a profiler or query-plan
+  before/after comparison, not a stopwatch reading on an unrepresentative
+  input size.
+- Reject a performance fix with no repeatable benchmark checked into CI or
+  the PR description when the change is on a path already flagged as hot.

@@ -17,3 +17,12 @@ replicates, or publishes data.
   publish an event whose data is not committed.
 - Treat silent corruption, double application, orphaned records, and data loss
   as high severity; include the exact sequence that breaks the invariant.
+- Require a test that runs the actual write path concurrently (parallel
+  writers, interleaved transactions) and asserts the invariant still holds,
+  not just sequential-call unit tests of the same code.
+- Reject a claimed reconciliation/repair mechanism without a test that seeds a
+  divergence (missing event, duplicate row, orphaned foreign key) and verifies
+  detection and correction, e.g. via checksum or join-based orphan check.
+- Check that a new uniqueness/foreign-key/nullability constraint has a test
+  proving the database (not just application code) rejects the violating
+  write, since app-level checks alone can be bypassed by another writer.

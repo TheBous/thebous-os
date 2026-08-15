@@ -16,3 +16,9 @@ contract and avoid performance or style findings.
 - Preserve established HTTP semantics and one coherent machine-readable error
   contract; do not invent a second format without evidence.
 - Ignore internal refactors when the external contract is unchanged.
+- Require an automated OpenAPI/schema-diff check (oasdiff-style) in CI that
+  fails the build on removed fields, narrowed types, or new required params.
+- Check a consumer-driven contract gate (Pact Broker can-i-deploy or
+  equivalent) blocks deploy when known consumers are not yet compatible.
+- Verify tests cover the deprecation window: old and new response/request
+  shapes must both pass until the deprecated field is fully retired.

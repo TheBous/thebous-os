@@ -16,3 +16,10 @@ defense-in-depth where the changed path is already protected.
   secrets, PII, logs, errors, configuration, and deployment exposure.
 - Report the concrete attack path, affected asset, precondition, and impact.
 - Do not report generic hardening advice or duplicate another lens’s finding.
+- Require a negative test proving each fixed vulnerability class is blocked
+  (rejected payload, denied cross-tenant access, refused unsafe deserialization),
+  not only a happy-path test of the sanitized case.
+- Reject auth/authorization changes without a test for the denied case (wrong
+  tenant, missing role, expired/forged token) alongside the allowed case.
+- Check that SAST/dependency-scan findings touched by the diff have a
+  regression test, not just a suppressed or acknowledged alert.

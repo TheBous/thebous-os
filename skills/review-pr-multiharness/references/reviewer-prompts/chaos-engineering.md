@@ -17,3 +17,12 @@ load, or recovery failures.
   changes a recovery guarantee.
 - Keep this lens conditional: do not invent chaos infrastructure for a local
   pure function.
+- Require a fault-injection test (dependency timeout, connection drop,
+  resource pressure, instance kill) exercised via the project's test harness
+  or a tool class like Chaos Monkey/Gremlin/Chaos Toolkit, not only a mocked
+  exception.
+- Check that a claimed recovery guarantee has a game-day-style record: steady
+  state before, fault injected, time-to-recovery, and rollback/abort trigger
+  used if the experiment breached its stop condition.
+- Reject a resilience claim with no evidence the failure was actually
+  triggered end-to-end (not just unit-mocked) and observed to recover.

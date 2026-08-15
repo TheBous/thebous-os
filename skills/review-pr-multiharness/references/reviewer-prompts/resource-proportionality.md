@@ -16,3 +16,10 @@ dataset, tenant, or workload instead of a worst-case maximum.
 - Check small, empty, large, repeated, and changed-input workloads and the
   behavior when resources are constrained.
 - Report disproportionate work only with a concrete input-to-resource path.
+- Require a test with a small and a large/repeated input asserting work
+  (query count, allocations, elapsed time) grows sub-linearly or stays flat,
+  not just that the large-input case returns correct output.
+- Check pagination, lazy-load, and streaming paths have a test proving the
+  full dataset is never materialized when only a page or viewport is needed.
+- Reject an "it scales" claim on a new loop, fan-out, or background job with
+  no test at more than one workload size.

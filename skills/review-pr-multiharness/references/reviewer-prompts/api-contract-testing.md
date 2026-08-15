@@ -16,3 +16,9 @@ boundaries.
 - Verify version selection, provider state, authentication, schema format, and
   backward/forward compatibility during mixed-version rollout.
 - Report the exact consumer assumption that can fail and the missing gate.
+- Require a machine schema-diff (OpenAPI/Buf/Avro/Protobuf) gate that flags
+  removed fields, narrowed types, and new required fields independently of
+  hand-written contract tests.
+- Check a broker or registry (Pact Broker can-i-deploy, schema-registry
+  compatibility check) verifies every known consumer/provider version pair,
+  not only the latest.

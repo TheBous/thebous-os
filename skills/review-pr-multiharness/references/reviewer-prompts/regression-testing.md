@@ -16,3 +16,9 @@ most likely to return.
 - Detect removed assertions, weakened matchers, skipped tests, fixture drift,
   and tests that pass while the production path is disconnected.
 - Recommend the smallest regression test that proves the claimed risk.
+- Require the fix's regression test to fail against the pre-fix code and pass
+  only after the fix (red-green proof), not merely pass on the current diff.
+- For bugs with interacting inputs or flags, check a combinatorial or pairwise
+  matrix around the reported case, not only the single failing example.
+- Verify the test reproduces the exact reported trigger condition rather than
+  a nearby symptom that happens to also fail.
