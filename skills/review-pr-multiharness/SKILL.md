@@ -151,6 +151,49 @@ Always run `correctness`. Add only lenses justified by the diff:
 - `previous-feedback`: existing PR comments needing resolution/revalidation;
 - stack-specific lens when changed runtime behavior warrants it.
 
+Select the additional lenses below only when the diff exposes the named
+surface. Rank candidates before dispatching: (1) irreversible, security,
+legal, or data-loss risk; (2) direct coverage of changed code; (3) blast radius;
+(4) verification gap. If candidates exceed the score ceiling, run the highest
+ranked distinct lenses and record the skipped ones in `Coverage`.
+
+- `observability`: logs, metrics, traces, dashboards, alerts, or SLO signals;
+- `production-readiness`: health checks, deadlines, retries, startup/shutdown, or SLO-sensitive behavior;
+- `resource-management`: memory, file descriptors, sockets, threads, pools, or cleanup paths;
+- `data-integrity`: ACID boundaries, consistency, idempotent writes, invariants, or duplicate/out-of-order events;
+- `database-schema`: DDL, indexes, constraints, schema migrations, or online/zero-downtime changes;
+- `idempotency`: retry keys, deduplication, at-least-once delivery, or repeated side effects;
+- `backwards-compatibility`: changed consumers, versions, deprecations, or old/new coexistence;
+- `rollback-strategy`: feature flags, graceful degradation, rollback, roll-forward, or recovery gates;
+- `accessibility`: UI interaction, semantics, keyboard flow, focus, contrast, or assistive technology;
+- `compliance`: GDPR/PII, retention, consent, auditability, SOX-relevant control evidence, or regulated data;
+- `dependency-supply-chain`: dependency manifests, lockfiles, build provenance, plugins, or third-party code;
+- `secrets-vault`: credentials, tokens, keys, secret stores, rotation, or secret exposure in logs/config;
+- `concurrency`: shared mutable state, parallel tasks, locks, atomics, ordering, races, or deadlocks;
+- `distributed-systems`: network partitions, quorum/consensus, cross-service state, sagas, or message delivery;
+- `regression-testing`: changed behavior, bug fixes, edge cases, state combinations, or both flag states;
+- `integration-testing`: cross-module/service/database boundaries, adapters, or real dependency behavior;
+- `chaos-engineering`: resilience behavior that needs fault injection, degraded dependencies, or recovery proof;
+- `feature-flag`: flag evaluation, rollout targeting, lifecycle, cleanup, or enabled/disabled behavior;
+- `api-contract-testing`: consumer/provider interactions, OpenAPI or message contracts, or compatibility gates;
+- `schema-evolution`: serialized/event/database schema changes, versioning, or forward/backward compatibility;
+- `caching-strategy`: cache keys, invalidation, freshness, TTL, eviction, or stampede risk;
+- `latency`: P95/P99 paths, async boundaries, batching, N+1 queries, or tail-latency regressions;
+- `energy-efficiency`: polling, compute intensity, algorithmic work, payloads, or device/server energy use;
+- `resource-proportionality`: lazy loading, memoization, bounded work, allocation, or over-fetching;
+- `disaster-recovery`: backups, restore, failover, replication, RTO/RPO, or recovery-region readiness;
+- `incident-response`: runbooks, diagnostics, escalation, containment, or incident telemetry;
+- `documentation`: API docs, runbooks, ADRs, operational notes, or user-visible behavior documentation.
+
+Coalesce overlapping candidates instead of dispatching duplicates: migration
+and schema lenses; reliability, production-readiness, and observability;
+tests, regression, integration, and API-contract testing; deployment,
+rollback, feature flags, disaster recovery, and incident response; security,
+secrets, dependencies, and compliance; performance, latency, resource,
+resource-proportionality, and energy; correctness, integrity, idempotency,
+concurrency, and distributed systems. Keep the most specific lens and give it
+the shared evidence needed to cover the overlap.
+
 For a silent-pass mechanism, always include `adversarial` regardless of line
 count. Do not run irrelevant specialists just to fill the quota.
 
@@ -168,6 +211,12 @@ from the diff and name the concrete concern being checked.
 - `standard`: normal correctness, tests, standards, maintainability;
 - `deep`: security, data, API, reliability, performance, migrations;
 - `independent`: adversarial pass from a separate harness or context.
+
+Treat observability, production readiness, resource management, accessibility,
+testing, feature flags, and documentation as `standard` by default. Treat data
+integrity, schema, idempotency, compatibility, supply chain, secrets,
+concurrency, distributed systems, compliance, chaos, API contracts, disaster
+recovery, and incident response as `deep` when their trigger is present.
 
 For scores 0–8 use fast/standard. For 9–20 use standard plus relevant deep
 lenses. For 21+ add an independent reviewer only when the risk justifies it.

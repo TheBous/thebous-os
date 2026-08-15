@@ -18,6 +18,20 @@ Escalate when any of these appears:
 - a CI/test/deployment guard can produce a false green result;
 - the PR is too large to understand in one focused review session.
 
+Use the additional conditional lenses when their concrete surface is present:
+observability, production readiness, resource management, data integrity,
+database schema, idempotency, backwards compatibility, rollback strategy,
+accessibility, compliance, dependency supply chain, secrets vault,
+concurrency, distributed systems, regression testing, integration testing,
+chaos engineering, feature flags, API contract testing, schema evolution,
+caching strategy, latency, energy efficiency, resource proportionality,
+disaster recovery, incident response, and documentation.
+
+Do not run every matching name. Rank by irreversible/security/legal/data-loss
+impact, direct changed-surface coverage, blast radius, and verification gap;
+coalesce overlapping lenses and keep the score-based subagent ceiling. Record
+both selected and skipped candidates in the final `Coverage` section.
+
 ## Large PR protocol
 
 Prefer, in order:
