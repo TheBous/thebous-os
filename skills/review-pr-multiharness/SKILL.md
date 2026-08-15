@@ -120,13 +120,13 @@ Il punteggio non è il numero di subagent. Il numero è sempre compreso tra 0 e
 
 | Score | Classification | Subagents | Treatment |
 |---:|---|---:|---|
-| 0–4 | minimal | 0 | main reviewer + automated checks |
-| 5–8 | low | 1 | correctness or standards |
-| 9–12 | moderate | 2 | correctness + tests/risk lens |
-| 13–16 | significant | 3 | relevant security/API/reliability/performance lens |
-| 17–20 | high | 4 | specialist coverage + explicit residual risk |
-| 21–23 | very high | 5 | domain, adversarial, rollout/rollback |
-| 24–27 | critical | 6 | independent second-harness review when useful |
+| 0–4 | minimal | 1 | main reviewer + automated checks |
+| 5–8 | low | 2 | correctness or standards |
+| 9–12 | moderate | 3 | correctness + tests/risk lens |
+| 13–16 | significant | 4 | relevant security/API/reliability/performance lens |
+| 17–20 | high | 5 | specialist coverage + explicit residual risk |
+| 21–23 | very high | 6 | domain, adversarial, rollout/rollback |
+| 24–27 | critical | 7 | independent second-harness review when useful |
 | 28–30 | extreme | 8 | multi-harness review + human walkthrough |
 
 The count is a ceiling, not a reason to create irrelevant work. Keep one
@@ -163,7 +163,7 @@ count. Do not run irrelevant specialists just to fill the quota.
 
 For scores 0–8 use fast/standard. For 9–20 use standard plus relevant deep
 lenses. For 21+ add an independent reviewer only when the risk justifies it.
-For 24+ prefer an independent second-harness pass, but keep the total at six
+For 24+ prefer an independent second-harness pass, but keep the total at seven
 or fewer unless the score is 28–30. If no second harness is available, run
 adversarial locally and disclose the fallback. Never let a closed loop of
 agents approve itself.
