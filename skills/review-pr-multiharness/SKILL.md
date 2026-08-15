@@ -1,6 +1,6 @@
 ---
 name: review-pr-multiharness
-description: Use when reviewing, inspecting, or analyzing a GitHub pull request with risk-proportional specialist coverage, up to eight subagents, and provider-neutral multi-harness validation
+description: Use when reviewing, inspecting, or analyzing a GitHub pull request with risk-proportional specialist coverage, up to ten subagents, and provider-neutral multi-harness validation
 ---
 
 # PR Review Multiharness
@@ -116,7 +116,7 @@ from 0 to 5:
   silently pass while production is broken.
 
 Il punteggio non è il numero di subagent. Il numero è sempre compreso tra 0 e
-8: nessun caso può generare più di otto subagent.
+10: nessun caso può generare più di dieci subagent.
 
 | Score | Classification | Subagents | Treatment |
 |---:|---|---:|---|
@@ -127,7 +127,8 @@ Il punteggio non è il numero di subagent. Il numero è sempre compreso tra 0 e
 | 17–20 | high | 5 | specialist coverage + explicit residual risk |
 | 21–23 | very high | 6 | domain, adversarial, rollout/rollback |
 | 24–27 | critical | 7 | independent second-harness review when useful |
-| 28–30 | extreme | 8 | multi-harness review + human walkthrough |
+| 28–29 | extreme | 9 | multi-harness review + human walkthrough |
+| 30 | extreme | 10 | maximum specialist coverage + multi-harness review + human walkthrough |
 
 The count is a ceiling, not a reason to create irrelevant work. Keep one
 subagent per distinct lens; merge overlapping lenses. A small diff with high
