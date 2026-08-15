@@ -154,6 +154,14 @@ Always run `correctness`. Add only lenses justified by the diff:
 For a silent-pass mechanism, always include `adversarial` regardless of line
 count. Do not run irrelevant specialists just to fill the quota.
 
+Before dispatch, load the matching prompt from
+[`references/reviewer-prompts/`](references/reviewer-prompts/). Every selected
+subagent must receive exactly one lens prompt, plus the shared review scope,
+intent, relevant paths, diff, standards, and the structured output contract.
+Do not dispatch a generic “review the PR” prompt. If a stack-specific lens is
+selected, specialize `stack-specific.md` with the runtime/framework evidence
+from the diff and name the concrete concern being checked.
+
 ### 6. Assign capability tiers without naming models
 
 - `fast`: small, low-risk, deterministic lens;
@@ -170,7 +178,9 @@ agents approve itself.
 
 ### 7. Dispatch and collect
 
-Give each subagent only the relevant scope, intent, paths, diff, and standards.
+Give each subagent only the relevant scope, intent, paths, diff, standards, and
+the selected lens prompt. Keep reviewers
+independent: do not include another reviewer's findings in the initial prompt.
 Dispatch independent lenses concurrently when supported; otherwise run
 serially. Collect all results before synthesis.
 
