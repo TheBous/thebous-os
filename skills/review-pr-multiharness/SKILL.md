@@ -19,9 +19,28 @@ defended in production with the least unnecessary reviewer effort.
 
 ## Workflow
 
-### 1. Explain the PR before reviewing it
+### 1. Identify the PR and Jira task
 
-As the first operation, run the project's `explain-change` skill against the PR.
+Use `gh pr view` to get the PR metadata:
+```bash
+gh pr view --json number,title,body,author,headRefName,baseRefName,additions,deletions,changedFiles,headRefOid
+```
+
+Follow [`references/jira-task-context.md`](../../references/jira-task-context.md) with:
+- `<SOURCES>` = the PR head branch, then the PR title and body;
+- `<REQUIRED>` = `optional`;
+- `<DETAILS>` = `full`.
+
+Store the resolved Jira context (key, summary, requirements, status, priority,
+assignee, type, and linked issues) for the walkthrough and review. If no Jira
+task is found or Jira is unavailable, continue and record the missing context
+in `Coverage`; do not invent a key. If no PR is open on the current branch, ask
+the user for the PR number or URL.
+
+### 2. Explain the PR before reviewing it
+
+Before danger scoring, dispatching reviewers, or writing findings, run the
+project's `explain-change` skill against the PR.
 Pass it the PR number/URL, title, description, head SHA, full diff, changed
 files, tests, and the linked Jira key when available. Do not start danger
 scoring, dispatch reviewers, or write findings before this walkthrough has
@@ -60,7 +79,7 @@ if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ] && [ -n 
 fi
 ```
 
-### 2. Resolve scope and intent
+### 3. Resolve scope and intent
 
 Identify the PR URL/number, branch, or local base. Do not switch branches or
 mix a remote PR diff with unrelated workspace files. Capture base/head refs,
@@ -72,7 +91,7 @@ non-goals, tests, configuration, migrations, rollout, risks, and follow-ups.
 If intent is incomplete, infer it from available evidence and mark uncertainty;
 do not block on a question.
 
-### 3. Classify danger before selecting reviewers
+### 4. Classify danger before selecting reviewers
 
 Always compute a danger score before dispatching subagents. Score every axis
 from 0 to 5:
@@ -114,7 +133,7 @@ The count is a ceiling, not a reason to create irrelevant work. Keep one
 subagent per distinct lens; merge overlapping lenses. A small diff with high
 blast radius gets the high-risk roster.
 
-### 4. Select specialist lenses
+### 5. Select specialist lenses
 
 Always run `correctness`. Add only lenses justified by the diff:
 
@@ -135,7 +154,7 @@ Always run `correctness`. Add only lenses justified by the diff:
 For a silent-pass mechanism, always include `adversarial` regardless of line
 count. Do not run irrelevant specialists just to fill the quota.
 
-### 5. Assign capability tiers without naming models
+### 6. Assign capability tiers without naming models
 
 - `fast`: small, low-risk, deterministic lens;
 - `standard`: normal correctness, tests, standards, maintainability;
@@ -149,7 +168,7 @@ or fewer unless the score is 28–30. If no second harness is available, run
 adversarial locally and disclose the fallback. Never let a closed loop of
 agents approve itself.
 
-### 6. Dispatch and collect
+### 7. Dispatch and collect
 
 Give each subagent only the relevant scope, intent, paths, diff, and standards.
 Dispatch independent lenses concurrently when supported; otherwise run
@@ -164,7 +183,7 @@ Use `P0` for critical breakage/security/data loss, `P1` for high-impact defects
 or broken contracts, `P2` for meaningful edge/performance/maintainability
 issues, and `P3` for narrow advisory improvements.
 
-### 7. Review in passes
+### 8. Review in passes
 
 1. **Story:** verify the requested problem, non-goals, and absence of unrelated work.
 2. **Diff map:** locate semantic hotspots, high fan-out code, boundaries, and generated noise.
@@ -178,7 +197,7 @@ For AI-assisted changes, inspect the test diff early. Look for removed or
 weakened assertions, tautological tests, duplicated patterns, invented APIs,
 missing configuration, and code the author cannot explain.
 
-### 8. Synthesize, validate, and report
+### 9. Synthesize, validate, and report
 
 Deduplicate by root cause. Prefer one fix at the shared source over guards in
 every caller. Validate high-confidence findings against source and run the
@@ -196,7 +215,7 @@ as non-blocking. Finish with:
 Approve only when you can defend the change as if you owned its production
 behavior. Applying fixes requires an explicit user instruction.
 
-### 9. Publish to GitHub only when explicitly authorized
+### 10. Publish to GitHub only when explicitly authorized
 
 The default remains report-only. Never post to GitHub merely because the
 review is complete. When publication is explicitly authorized, first verify
