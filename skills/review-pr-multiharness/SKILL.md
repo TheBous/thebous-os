@@ -228,11 +228,19 @@ agents approve itself.
 
 ### 7. Dispatch and collect
 
-Give each subagent only the relevant scope, intent, paths, diff, standards, and
-the selected lens prompt. Keep reviewers
+Before dispatching, read
+[`references/subagent-dispatch.md`](references/subagent-dispatch.md) in full.
+It defines how to detect and use the active host's subagent primitive. Do not
+claim that subagents are unavailable merely because the skill is provider
+neutral: first try the host adapter described there.
+
+Give each subagent only the relevant scope, intent, paths, diff, standards, the
+selected lens prompt, and the shared JSON output contract. Keep reviewers
 independent: do not include another reviewer's findings in the initial prompt.
-Dispatch independent lenses concurrently when supported; otherwise run
-serially. Collect all results before synthesis.
+Dispatch the materialized roster concurrently when the host supports it,
+respect its active-agent cap, and collect every result before synthesis. If the
+host has no supported subagent primitive, run the same roster sequentially and
+record the degraded path.
 
 Each reviewer returns structured findings with:
 
@@ -309,3 +317,6 @@ push, or apply fixes unless separately authorized.
 
 Read [review-lenses.md](references/review-lenses.md) when selecting lenses,
 scoring difficult changes, or checking the final report.
+
+Read [subagent-dispatch.md](references/subagent-dispatch.md) before Stage 7;
+it is the host-adapter and collection contract for local reviewer subagents.
