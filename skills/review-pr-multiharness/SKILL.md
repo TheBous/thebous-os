@@ -229,7 +229,7 @@ agents approve itself.
 ### 7. Dispatch and collect
 
 Before dispatching, read
-[`references/subagent-dispatch.md`](references/subagent-dispatch.md) in full.
+[`../../references/subagent-dispatch.md`](../../references/subagent-dispatch.md) in full.
 It defines how to detect and use the active host's subagent primitive. Do not
 claim that subagents are unavailable merely because the skill is provider
 neutral: first try the host adapter described there.
@@ -318,5 +318,5 @@ push, or apply fixes unless separately authorized.
 Read [review-lenses.md](references/review-lenses.md) when selecting lenses,
 scoring difficult changes, or checking the final report.
 
-Read [subagent-dispatch.md](references/subagent-dispatch.md) before Stage 7;
+Read [subagent-dispatch.md](../../references/subagent-dispatch.md) before Stage 7;
 it is the host-adapter and collection contract for local reviewer subagents.
