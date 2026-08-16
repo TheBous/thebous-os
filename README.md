@@ -1,5 +1,9 @@
 # thebous-os
 
+<p align="center">
+  <img src="thebous-os.png" alt="thebous-os" width="720">
+</p>
+
 Git workflow automation for coding agents, connected to Jira, GitHub, Slack,
 Confluence, Gmail, calendar, Granola and Obsidian.
 

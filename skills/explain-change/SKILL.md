@@ -1,173 +1,144 @@
 ---
 name: explain-change
-description: Explain a pull request, diff, code, implementation change, file, or arbitrary text in simple step-by-step business and technical language, using a clear visual HTML artifact instead of a wall of text, and save every produced document in the corresponding Obsidian Jira task. Use when the user asks what changed, how something works, why it was implemented, or requests an easy, graphical walkthrough.
+description: Explain a pull request, diff, code, implementation change, file, or arbitrary text in simple step-by-step business and technical language, using a clear visual HTML artifact instead of a wall of text, and save every produced document in the corresponding Obsidian Jira task. Use when the user asks what changed, how something works, why it was implemented, or requests an easy graphical walkthrough.
 ---
 
 # Explain Change
 
-## Obiettivo
+## Goal
 
-Spiegare un argomento in modo progressivo, leggibile e visivo. L'output deve aiutare
-l'utente a capire sia il risultato di business sia come funziona l'implementazione,
-senza trasformarsi in un testo lungo e non strutturato.
+Explain the subject progressively, clearly, and visually. Help the user
+understand both the business result and the implementation without producing a
+long unstructured text.
 
-## 1. Definire l'oggetto della spiegazione
+## 1. Define the subject
 
-Identificare l'oggetto e raccogliere solo il contesto necessario:
+Identify the subject and collect only the required context:
 
-- PR: titolo, descrizione, diff, file modificati, test e commenti rilevanti;
-- diff o modifica locale: `git diff`, stato del repository, commit e file coinvolti;
-- codice o file: contenuto esatto, chiamanti, dipendenze e punti di ingresso;
-- testo o requisito: struttura, concetti, conseguenze e termini da chiarire.
+- PR: title, description, diff, changed files, tests, and relevant comments;
+- local diff or change: `git diff`, repository status, commits, and involved files;
+- code or file: exact content, callers, dependencies, and entry points;
+- text or requirement: structure, concepts, consequences, and terms to clarify.
 
-Se l'oggetto è ambiguo, chiedere una sola precisazione. Non inventare intenzioni,
-comportamenti, dati o motivazioni: distinguere sempre tra evidenza, inferenza e
-informazione non verificata.
+If the subject is ambiguous, ask one clarification. Never invent intent,
+behavior, data, or motivation: distinguish evidence, inference, and unverified
+information.
 
-Prima di leggere i dettagli, definire una domanda guida:
+Before reading details, define a guiding question:
 
-- quale problema stiamo cercando di risolvere?
-- quale comportamento dobbiamo capire?
-- cosa dovrebbe succedere dall'ingresso all'uscita?
-- quali aspetti restano ancora sconosciuti?
+- What problem are we trying to solve?
+- What behavior do we need to understand?
+- What should happen from input to output?
+- Which aspects are still unknown?
 
-Per una codebase, costruire prima una mappa superficiale con entry point,
-componenti principali, dati in ingresso e uscita, dipendenze e responsabilità dei
-file. Non iniziare dalla sintassi o dalla lettura lineare dell'intero repository.
+For a codebase, first map entry points, main components, inputs and outputs,
+dependencies, and file responsibilities. Do not start with syntax or read the
+entire repository linearly.
 
-Formulare un'ipotesi iniziale sul funzionamento e verificarla nel codice. Separare
-sempre:
+Form an initial hypothesis and verify it in the code. Always separate:
 
-- **Evidenza** — direttamente visibile in codice, diff, test o documentazione;
-- **Inferenza** — interpretazione ragionevole ma non dimostrata;
-- **Non verificato** — comportamento che richiederebbe un test, un ambiente o un
-  chiarimento esterno.
+- **Evidence** — directly visible in code, diff, tests, or documentation;
+- **Inference** — reasonable but unproven interpretation;
+- **Unverified** — behavior requiring a test, environment, or external clarification.
 
-### 1a. Tracciare le catene di azioni
+### 1a. Trace action chains
 
-Per ogni comportamento principale, partire dall'output osservabile e risalire:
+For each main behavior, start from the observable output and trace backward:
 
 ```text
-output → funzione che lo produce → trasformazione → sorgente dati → input/entry point
+output → producing function → transformation → data source → input/entry point
 ```
 
-Seguire la catena fino all'ingresso del sistema, annotando per ogni passaggio cosa
-succede, perché e dove viene realizzato. Ripetere solo per i flussi necessari a
-spiegare il cambiamento; non leggere tutta la codebase senza una domanda precisa.
+Follow the chain to the system entry point, noting what happens, why, and where
+it is implemented. Repeat only for flows needed to explain the change.
 
-## 2. Costruire la spiegazione
+## 2. Build the explanation
 
-Organizzare il materiale in questo ordine, riducendo o unendo le sezioni quando non
-sono pertinenti:
+Organize the material as:
 
-1. **Orientamento** — domanda guida, una frase, problema e prima/dopo.
-2. **Mappa** — entry point, componenti, dati, relazioni e ipotesi verificata.
-3. **Flusso** — catena concreta dall'input all'output, con cosa succede, perché e
-   dove viene realizzato.
-4. **Implementazione** — file, funzioni, dati, stati, API, dipendenze e
-   responsabilità, con riferimenti `file:line` quando disponibili.
-5. **Comprensione** — esempio, controesempio, limiti, rischi e punti `Non verificato`.
-6. **Verifica** — test, comando, input minimo o esperimento necessario.
-7. **Check finale** — cinque domande a cui il lettore deve poter rispondere senza
-   rileggere il codice.
-8. **Riassunto** — massimo tre messaggi da ricordare.
+1. **Orientation** — guiding question, problem, and before/after.
+2. **Map** — entry point, components, data, relationships, and verified hypothesis.
+3. **Flow** — concrete input-to-output chain, what happens, why, and where.
+4. **Implementation** — files, functions, data, states, APIs, dependencies, and responsibilities, with `file:line` references when available.
+5. **Understanding** — example, counterexample, limits, risks, and unverified points.
+6. **Verification** — test, command, minimal input, or experiment required.
+7. **Final check** — five questions the reader can answer without rereading code.
+8. **Summary** — at most three key messages.
 
-Per ogni step spiegare prima **cosa succede**, poi **perché**, poi **come viene
-realizzato tecnicamente**. Usare frasi brevi, una sola idea per blocco e liste corte.
-Espandere acronimi e termini tecnici alla prima occorrenza.
+For every step explain first **what happens**, then **why**, then **how it is
+implemented technically**. Use short sentences and one idea per block. Expand
+acronyms and technical terms at first use.
 
-Non dichiarare compreso un concetto solo perché la spiegazione è coerente: renderlo
-verificabile con un esempio, un controesempio, una previsione o un piccolo
-esperimento. Se una domanda non trova risposta nelle fonti, lasciarla esplicitamente
-come `Non verificato`.
+Make claims verifiable with an example, counterexample, prediction, or small
+experiment. If a question cannot be answered from the sources, mark it
+explicitly as `Unverified`.
 
-## 3. Creare l'artefatto HTML
+## 3. Create the HTML artifact
 
-Creare sempre almeno un file HTML autocontenuto, salvo richiesta esplicita dell'utente
-di ricevere solo una risposta in chat.
+Always create at least one self-contained HTML file unless the user explicitly
+asks for a chat-only answer.
 
-1. Usare una directory temporanea dedicata, per esempio:
-   `"${TMPDIR:-/tmp}/thebous-os-explain-<slug>-<timestamp>"`.
-2. Per una spiegazione piccola creare `index.html`.
-3. Per una feature grande creare `index.html` come indice e più pagine collegate,
-   una per flusso, dominio o area tecnica. Non separare arbitrariamente ogni
-   paragrafo in una pagina.
-4. Se l'utente indica una directory di destinazione, usare quella directory invece
-   della directory temporanea.
-5. Riportare sempre il percorso assoluto degli artefatti creati e, quando il provider
-   lo consente, offrire di aprire `index.html` nel browser.
+1. Use a dedicated temporary directory such as `${TMPDIR:-/tmp}/thebous-os-explain-<slug>-<timestamp>`.
+2. For a small explanation create `index.html`.
+3. For a large feature create `index.html` plus linked pages for each flow, domain, or technical area.
+4. If the user specifies a destination directory, use it.
+5. Report absolute artifact paths and, when supported, offer to open `index.html`.
 
-### Requisiti visivi
+### Visual requirements
 
-- usare CSS inline o file locali; non dipendere da CDN, font esterni o JavaScript
-  remoto;
-- usare card, timeline, step numerati, callout e tabelle brevi;
-- rappresentare flussi e relazioni con diagrammi inline SVG o HTML/CSS, usando frecce,
-  nodi e colori coerenti;
-- mostrare separatamente il percorso business e quello tecnico, collegandoli quando
-  un passaggio tecnico implementa una decisione di business;
-- rendere visibili mappa iniziale, flusso input → output, catena all'indietro,
-  esempio/controesempio e distinzione tra evidenza, inferenza e non verificato;
-- includere snippet di codice brevi e annotati solo quando chiariscono il punto;
-- mantenere una larghezza leggibile, contrasto accessibile, titoli chiari e layout
-  responsive;
-- non usare un unico blocco di testo lungo, un diagramma ornamentale o una visualizzazione
-  che nasconda le informazioni essenziali.
+- use inline CSS or local files; no CDNs, external fonts, or remote JavaScript;
+- use cards, timelines, numbered steps, callouts, and short tables;
+- represent flows and relationships with inline SVG or HTML/CSS diagrams;
+- show business and technical paths separately, connecting related decisions;
+- make the map, input → output flow, backward chain, example/counterexample, and evidence/inference/unverified distinction visible;
+- include short annotated code snippets only when useful;
+- keep readable width, accessible contrast, clear headings, and responsive layout;
+- do not use one long text block or a decorative visualization that hides essential information.
 
-L'HTML deve contenere una breve intestazione con soggetto, data, fonti consultate e
-livello di certezza. Etichettare le inferenze come tali e le parti non controllate come
-`Non verificato`.
+Include a short header with subject, date, sources, and certainty level. Label
+inferences and unchecked parts as such. End with adapted versions of:
 
-Chiudere l'artefatto con queste domande, adattandole al caso:
+1. What problem does the change solve?
+2. What is the main data path?
+3. What is the most important technical decision?
+4. What happens in edge cases?
+5. How can I verify the behavior?
 
-1. Quale problema risolve il cambiamento?
-2. Qual è il percorso principale dei dati?
-3. Qual è la decisione tecnica più importante?
-4. Cosa succede nei casi limite?
-5. Come posso verificare che il comportamento sia corretto?
+Answers must be recoverable from the artifact except for points marked
+`Unverified`.
 
-Le risposte devono essere ricavabili dall'artefatto senza riaprire il codice, salvo
-per i punti marcati `Non verificato`.
+## 4. Save all artifacts to the Obsidian task
 
-## 4. Salvare tutti gli artefatti nel task Obsidian
+Identify the Jira task (`<KEY>`) from the PR, branch, commit, or request context.
+If it cannot be determined, ask one clarification and do not invent the key.
 
-Prima della risposta finale, identificare il task Jira corrispondente (`<KEY>`) dal
-contesto della PR, del branch, del commit o della richiesta. Se il task non è
-determinabile, chiedere una sola precisazione e non inventare la chiave.
-
-Tutti i file prodotti dalla spiegazione devono essere salvati nella cartella del task,
-non solo `index.html`. Questo include eventuali pagine HTML aggiuntive, CSS, immagini,
-asset locali e altri file necessari a mantenere funzionante l'artefatto. Usare il
-percorso standard `Dev/Tickets/<KEY>` e una sottocartella unica per ogni spiegazione:
-`docs/explain-change/<slug>-<timestamp>/`. Non sovrascrivere una spiegazione precedente.
-
-Seguire `references/obsidian-log.md` per caricare la configurazione e usare gli helper
-condivisi, senza ricostruire il percorso o la logica di copia nella skill:
+Save every generated file in `Dev/Tickets/<KEY>/docs/explain-change/<slug>-<timestamp>/`,
+including linked pages, CSS, images, and local assets. Never overwrite an earlier
+explanation. Follow `references/obsidian-log.md` and use the shared helpers:
 
 ```bash
 source "scripts/helpers.sh"
 if [ -f "$ENV_FILE" ]; then load_env; fi
 
 if [ -z "${OBSIDIAN_VAULT_PATH:-}" ] || [ ! -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  echo "Impossibile salvare la spiegazione: Obsidian non è configurato o il vault non esiste."
-  # Chiedere all'utente di configurare il vault prima di dichiarare il lavoro completato.
+  echo "Cannot save the explanation: Obsidian is not configured or the vault does not exist."
+  # Ask the user to configure the vault before declaring completion.
 else
   DEST_DIR=$(obsidian_copy_ticket_docs "${OBSIDIAN_VAULT_PATH}" "<KEY>" "explain-change/<slug>-<timestamp>" <ARTIFACT_DIR>)
-
   PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
-  obsidian_append_section "$PLAN_FILE" "Spiegazione visuale: [apri index.html](docs/explain-change/<slug>-<timestamp>/index.html)"
+  obsidian_append_section "$PLAN_FILE" "Visual explanation: [open index.html](docs/explain-change/<slug>-<timestamp>/index.html)"
 fi
 ```
 
-## 5. Risposta finale
+## 5. Final response
 
-Presentare in chat solo una sintesi navigabile:
+Present only a navigable summary:
 
-- una frase di orientamento;
-- da tre a sette step principali;
-- il percorso assoluto all'artefatto HTML;
-- eventuali punti non verificati o domande aperte.
+- one orientation sentence;
+- three to seven main steps;
+- the absolute HTML artifact path;
+- unverified points or open questions.
 
-Non incollare integralmente l'HTML in chat e non produrre un wall of text. Non modificare
-il codice, la PR o documenti del repository: questa skill spiega e crea artefatti di
-spiegazione, ma non implementa correzioni.
+Do not paste the complete HTML or produce a wall of text. Do not modify code,
+PRs, or repository documents: this skill explains and creates artifacts but does
+not implement fixes.

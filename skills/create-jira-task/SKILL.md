@@ -1,92 +1,72 @@
 ---
 name: create-jira-task
-description: Create a Jira task from a user request using the repository's fixed Italian description format with the sections "Descrizione" and "Acceptance Criteria". Use when the user asks to create, open, or draft a new Jira task and the description must follow that template.
+description: Create a Jira task from a user request using the repository's fixed description format with the sections "Descrizione" and "Acceptance Criteria". Use when the user asks to create, open, or draft a new Jira task.
 ---
 
-## Obiettivo
+## Goal
 
-Creare un nuovo task Jira con una descrizione sempre composta da:
-
-```text
-## Descrizione
-
-<descrizione del lavoro>
-
-## Acceptance Criteria
-
-[ ] <criterio verificabile>
-
-[ ] <criterio verificabile>
-```
-
-Il testo dell'esempio fornito dall'utente è solo uno scheletro. Non riutilizzare il suo contenuto funzionale.
-
-## Passi
-
-### 1. Raccogliere gli input minimi
-
-Chiedere, se non sono già presenti nel messaggio:
-
-- chiave del progetto Jira;
-- summary del task;
-- richiesta o comportamento da realizzare;
-- criteri di accettazione, vincoli e casi limite già noti;
-- tipo issue, usando `Task` come default solo se l'utente ha chiesto esplicitamente un task e il progetto lo supporta.
-
-Non indovinare la chiave del progetto, il tipo issue o requisiti funzionali mancanti. Se il brief è troppo vago per produrre criteri verificabili, chiedere solo le informazioni mancanti.
-
-### 2. Scrivere la descrizione
-
-Generare la descrizione in italiano, salvo richiesta diversa dell'utente, rispettando esattamente questa struttura:
+Create a Jira task with this exact output structure. The Italian headings are a
+functional repository convention and must remain unchanged:
 
 ```text
 ## Descrizione
 
-<uno o più paragrafi concisi che spiegano cosa realizzare, il contesto e il risultato atteso>
+<work description>
 
 ## Acceptance Criteria
 
-[ ] <un risultato osservabile e verificabile>
+[ ] <verifiable criterion>
 
-[ ] <un risultato osservabile e verificabile>
+[ ] <verifiable criterion>
 ```
 
-Regole:
+The user's example is only a skeleton. Do not reuse its functional content.
 
-- produrre sempre un documento Markdown;
-- usare esattamente i titoli di livello 2 `## Descrizione` e `## Acceptance Criteria`;
-- non usare titoli di livello 1, testo semplice o titoli di livello diverso per queste sezioni;
-- lasciare una riga vuota dopo ogni etichetta e tra i criteri;
-- usare una riga `[ ] ...` per ogni criterio, senza numerazione o bullet aggiuntivi;
-- trasformare in criteri solo requisiti derivabili dalla richiesta e dalle risposte dell'utente;
-- rendere ogni criterio indipendente, testabile e non ambiguo;
-- includere errori, autorizzazioni, dati obbligatori e casi limite solo quando sono pertinenti al brief;
-- non inventare copy, URL, stati di dominio, nomi di entità, API o dettagli tecnici non forniti;
-- non lasciare placeholder, criteri vuoti o formule generiche come `[ ] Il task funziona`.
+## 1. Collect minimum inputs
 
-Il summary deve essere breve e descrivere il risultato del task; non aggiungere prefissi o chiavi Jira se l'utente non li richiede.
+Ask only for missing information:
 
-### 3. Mostrare l'anteprima e chiedere conferma
+- Jira project key;
+- task summary;
+- requested behavior or work;
+- acceptance criteria, constraints, and known edge cases;
+- issue type, using `Task` as the default only when explicitly requested and supported.
 
-Prima di scrivere su Jira, mostrare:
+Do not guess the project key, issue type, or missing requirements. If the brief is
+too vague for verifiable criteria, ask only for the missing information.
 
-- progetto;
-- tipo issue;
-- summary;
-- descrizione completa generata in un blocco di testo.
+## 2. Write the description
 
-Chiedere conferma esplicita. Se l'utente modifica il testo, rigenerare l'anteprima e chiedere nuovamente conferma. Non creare il task con requisiti ancora incerti o con placeholder.
+Generate Markdown using exactly `## Descrizione` and `## Acceptance Criteria`.
+Use one blank line after each heading and between criteria. Use one `[ ] ...`
+line per criterion, without additional numbering or bullets. Make each criterion
+independent, testable, and unambiguous. Include errors, permissions, required
+data, and edge cases only when relevant. Do not invent copy, URLs, domain states,
+entities, APIs, or technical details. Do not leave placeholders or generic
+criteria such as `[ ] Il task funziona`.
 
-### 4. Creare il task su Jira
+Keep the summary short and outcome-oriented; do not add Jira prefixes or keys
+unless requested.
 
-Preferire il server MCP Atlassian configurato:
+## 3. Show a preview and request confirmation
 
-1. risolvere il `cloudId` con `getAccessibleAtlassianResources`;
-2. se sono presenti più siti Jira, chiedere quale usare;
-3. creare l'issue con lo strumento di creazione Jira esposto dal server, passando progetto, tipo issue, summary e la descrizione completa;
-4. usare i nomi e i parametri esatti esposti dallo strumento disponibile, senza inventare campi custom.
+Before writing to Jira, show project, issue type, summary, and the complete
+description in a text block. Ask for explicit confirmation. If the user edits it,
+regenerate the preview and ask again. Do not create a task with uncertain
+requirements or placeholders.
 
-Se il MCP non è disponibile o fallisce, usare il fallback REST solo se sono configurati `JIRA_BASE_URL`, `JIRA_EMAIL` e `JIRA_API_TOKEN` nel file `.env` condiviso, risolto da `scripts/helpers.sh`:
+## 4. Create the Jira task
+
+Prefer the configured Atlassian MCP:
+
+1. Resolve `cloudId` with `getAccessibleAtlassianResources`.
+2. If multiple Jira sites exist, ask which one to use.
+3. Create the issue with the available Jira creation tool, passing project, type, summary, and full description.
+4. Use the exact parameters exposed by the available tool; do not invent custom fields.
+
+If MCP is unavailable or fails, use the REST fallback only when
+`JIRA_BASE_URL`, `JIRA_EMAIL`, and `JIRA_API_TOKEN` are configured in the shared
+`.env` loaded through `scripts/helpers.sh`:
 
 ```bash
 source "scripts/helpers.sh"
@@ -107,16 +87,12 @@ curl -sf \
   -d "$BODY"
 ```
 
-Usare sempre `jq --arg` per serializzare il testo: non costruire JSON concatenando la descrizione a mano.
+Always use `jq --arg` for serialization. Never construct JSON by concatenating
+the description. If credentials are missing, tell the user to run
+`/thebous-os:setup`; do not make partial calls or simulate creation.
 
-Se mancano le credenziali, indicare di eseguire `/thebous-os:setup`. Non eseguire chiamate Jira parziali e non simulare la creazione.
+## 5. Confirm the result
 
-### 5. Confermare il risultato
-
-Dopo una risposta positiva di Jira, mostrare:
-
-- chiave del task;
-- link `JIRA_BASE_URL/browse/<KEY>` quando `JIRA_BASE_URL` è disponibile;
-- summary creato.
-
-Non aggiungere automaticamente commenti Slack, transizioni, branch, PR, Obsidian o Confluence: non fanno parte di questa skill.
+After Jira succeeds, show the task key, `JIRA_BASE_URL/browse/<KEY>` when the base
+URL is available, and the created summary. Do not automatically add Slack
+comments, transitions, branches, PRs, Obsidian files, or Confluence pages.

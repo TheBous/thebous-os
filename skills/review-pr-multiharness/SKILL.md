@@ -115,8 +115,8 @@ from 0 to 5:
 - Minimum 24 for CI, deployment, test, coverage, or merge gates that could
   silently pass while production is broken.
 
-Il punteggio non è il numero di subagent. Il numero è sempre compreso tra 0 e
-10: nessun caso può generare più di dieci subagent.
+The score is not the number of subagents. The number is always between 0 and
+10; no case may generate more than ten subagents.
 
 | Score | Classification | Subagents | Treatment |
 |---:|---|---:|---|

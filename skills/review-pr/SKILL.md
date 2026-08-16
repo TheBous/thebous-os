@@ -301,7 +301,7 @@ gh api repos/:owner/:repo/pulls/<NUMBER>/comments \
 
 If the branch matched a Jira key in step 1, ask:
 ```
-Vuoi che lasci un commento su Jira con l'esito della review?
+Would you like me to leave a Jira comment with the review result?
 ```
 
 If yes, follow `references/jira-transition.md` for the comment call only — **do not transition the ticket**, just post:

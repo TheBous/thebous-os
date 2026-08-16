@@ -1,31 +1,31 @@
 ---
 name: end-of-day
-description: Genera il recap di fine giornata dell'utente su richiesta o quando gira come task schedulato serale - riassume il lavoro di oggi dalla daily note Obsidian (o da GitHub/Jira se la daily note non c'è), e riporta le sessioni Claude Code e OpenCode toccate oggi con titolo e progetto. Usa SEMPRE questa skill quando l'utente dice "fine giornata", "recap di oggi", "cosa ho fatto oggi", "com'è andata la giornata", "riepilogo giornaliero", "end of day", "run end of day", o quando viene invocata dal task schedulato serale - anche se non nomina esplicitamente Obsidian/GitHub/sessioni, perché il punto della skill è mettere tutto insieme.
+description: Generate the user's end-of-day recap on request or when run as the scheduled evening task. Summarize today's work from the Obsidian daily note (or GitHub/Jira when unavailable), and report Claude Code and OpenCode sessions touched today with their title and project. Always use this skill for end-of-day recaps and scheduled evening runs.
 ---
 
 # End of Day Recap
 
-Il contrario della morning-briefing: invece di guardare avanti (PR da revieware,
-scadenze), guarda indietro a cosa è successo oggi. Due dimensioni distinte, non
-confonderle nell'output:
-1. **Lavoro svolto** — cosa hai fatto (branch, PR, review, task Jira)
-2. **Attività AI** — su quali sessioni Claude Code/OpenCode hai lavorato oggi, e dove
+The opposite of the morning briefing: look back at what happened today. Keep
+two dimensions distinct:
 
-## Configurazione
+1. **Work completed** — branches, PRs, reviews, and Jira tasks.
+2. **AI activity** — Claude Code/OpenCode sessions used today and their locations.
 
-Le credenziali sono condivise con tutto il plugin thebous-os, in un solo
-`${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env` (`OBSIDIAN_VAULT_PATH` e
-`GITHUB_REPOS`, usato qui solo come fallback) — non duplicare la
-configurazione qui. Caricalo:
+## Configuration
+
+Credentials are shared by the entire plugin in
+`${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env`.
+Use `OBSIDIAN_VAULT_PATH` and `GITHUB_REPOS` only as documented here; do not
+duplicate configuration.
 
 ```bash
 source "scripts/helpers.sh"
 load_env
 ```
 
-Se il file non esiste, dì all'utente di lanciare `/thebous-os:setup` prima.
+If the file does not exist, tell the user to run `/thebous-os:setup` first.
 
-## Step 1: Finestra di oggi
+## Step 1: Today's window
 
 ```bash
 export TZ="Europe/Rome"
@@ -33,24 +33,22 @@ TODAY=$(date +%Y-%m-%d)
 TODAY_START_ISO=$(date -v0H -v0M -v0S -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -d "today 00:00" -u +%Y-%m-%dT%H:%M:%SZ)
 ```
 
-## Step 2: Lavoro di oggi — Obsidian, con fallback
+## Step 2: Today's work — Obsidian with fallback
 
-Se `OBSIDIAN_VAULT_PATH` è configurata, cerca `Dev/Daily/<TODAY>.md`:
+If `OBSIDIAN_VAULT_PATH` is configured, look for `Dev/Daily/<TODAY>.md`:
 
 ```bash
 DAILY_NOTE="${OBSIDIAN_VAULT_PATH}/Dev/Daily/${TODAY}.md"
 [ -f "$DAILY_NOTE" ] && cat "$DAILY_NOTE"
 ```
 
-Se il file esiste e ha contenuto oltre al solo header (`# <data>`), quello **è**
-il riepilogo del lavoro di oggi — i comandi thebous-os (new-branch,
-cook, review-pr, address-review, create-pr) ci scrivono già durante il giorno.
-Non serve altro: presentalo riorganizzato in un elenco leggibile, non incollarlo
-grezzo.
+If it contains more than its header (`# <date>`), reorganize it into a readable
+summary. thebous-os commands (`new-branch`, `cook`, `review-pr`, `address-review`,
+`create-pr`) already write there during the day; do not paste the note raw.
 
-**Fallback** (Obsidian non configurato, file assente, o solo l'header senza
-contenuto — significa che oggi non hai usato nessun comando thebous-os,
-non che non hai lavorato): query dirette, stesso stile di morning-briefing.
+If Obsidian is unavailable, the file is missing, or it contains only the header,
+query GitHub and Jira directly using the morning-briefing style. An empty note
+means no thebous-os command was used, not that no work was done.
 
 ```bash
 REPO_FILTER=$(source "scripts/helpers.sh"; gh_repo_filter)
@@ -58,77 +56,67 @@ gh search prs --author=@me --created=">=${TODAY}" $REPO_FILTER --json number,tit
 gh search prs --author=@me --merged-at=">=${TODAY}" $REPO_FILTER --json number,title,url,repository --limit 30
 ```
 
-Per Jira, stesso `cloudId` da risolvere come in morning-briefing
-(`getAccessibleAtlassianResources`), poi:
+For Jira, resolve the same `cloudId` as in the morning briefing
+(`getAccessibleAtlassianResources`), then query:
 
 ```
 jql: assignee = currentUser() AND updated >= startOfDay() ORDER BY updated DESC
 fields: ["summary", "status", "project"]
 ```
 
-## Step 3: Sessioni Claude Code di oggi
+## Step 3: Claude Code sessions today
 
-Usa `list_sessions` (limit alto, es. 50) e tieni solo quelle con
-`lastActivityAt` nella data di oggi (confronta solo la parte `YYYY-MM-DD` di
-`lastActivityAt` con `$TODAY` — è un timestamp ISO in UTC, per uso quotidiano
-personale il confronto sulla sola data è sufficientemente preciso, non serve
-convertire fusi orari per un recap).
+Use `list_sessions` with a high limit (for example, 50), keeping sessions whose
+`lastActivityAt` date matches `$TODAY`. Comparing the `YYYY-MM-DD` portion is
+sufficient for a daily personal recap. The current recap session is excluded by
+design and is not work completed today.
 
-**Nota**: `list_sessions` esclude sempre la sessione corrente (quella che sta
-girando il recap in questo momento) — è previsto, la sessione del recap stesso
-non è "lavoro fatto oggi" da riportare.
+For every session show `title` (or a truncated `sessionId`) and `cwd`.
 
-Per ogni sessione trovata, mostra `title` (se assente, usa `sessionId`
-troncato) e `cwd`.
+## Step 4: OpenCode sessions today
 
-## Step 4: Sessioni OpenCode di oggi
-
-Usa le API native di OpenCode (`session_list` / `session_info`) — non richiedono
-autenticazione e funzionano anche se il server OpenCode richiede bearer token per
-l'HTTP API. Le API native ti danno accesso diretto allo store delle sessioni:
+Use OpenCode's native APIs (`session_list` / `session_info`). They do not require
+authentication and work even when the HTTP API requires a bearer token:
 
 ```bash
-# Pseudo-codice (implementa con opencode CLI o API disponibile nel tuo harness)
+# Pseudo-code; use the OpenCode CLI or API available in the harness
 sessions = opencode.session_list()
 today_sessions = sessions.filter(s => s.time.updated.date() == today)
 ```
 
-Per ogni sessione trovata, mostra `title` (ricavato dal primo messaggio se
-assente come campo), `location.directory`, e se vuoi anche `cost`/`tokens` per
-un rapido senso di quanto è stata pesante. Ordina per `time.updated` decrescente
-(le più recenti prima).
+For each session show `title` (derived from the first message when absent),
+`location.directory`, and optionally `cost`/`tokens`. Sort by descending
+`time.updated`. If OpenCode is unavailable, return `[]`; it is optional and must
+not block the recap.
 
-Se OpenCode non è installato o le API non sono disponibili, ritorna `[]` — è una
-fonte opzionale, la sua assenza non deve bloccare il resto del recap.
-
-## Step 5: Componi il report
+## Step 5: Compose the report
 
 ```markdown
 # 🌙 End of Day Recap — <TODAY>
 
-## 📋 Lavoro di oggi
-<contenuto della daily note riorganizzato, oppure risultati del fallback>
+## 📋 Today's work
+<reorganized daily-note content, or fallback results>
 
-## 🤖 Sessioni Claude Code
-- <titolo o sessionId troncato> — <cwd>
+## 🤖 Claude Code sessions
+- <title or truncated sessionId> — <cwd>
 
-## 💻 Sessioni OpenCode
-- <titolo> — <location.directory>
+## 💻 OpenCode sessions
+- <title> — <location.directory>
 ```
 
-Se una sezione non ha risultati, scrivi "Nessuna" — non saltarla. Mostra in
-chat, in italiano.
+If a section has no results, write `None`; do not omit it. Show the report in
+the user's language.
 
-## Step 6: Salva nella daily note di Obsidian (solo se configurato)
+## Step 6: Save to the Obsidian daily note
 
-Stesso script bundled di morning-briefing (append, mai sovrascrive):
+When configured, append with the bundled script and never overwrite existing text:
 
 ```bash
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  bash "scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<percorso del file con il report generato allo step 5>" "30 - End of Day Recap.md" "End of Day Recap"
+  bash "scripts/append_daily_note.sh" "${OBSIDIAN_VAULT_PATH}" "<path to the report from step 5>" "30 - End of Day Recap.md" "End of Day Recap"
 fi
 ```
 
-## Step 7: Conferma finale
+## Step 7: Final confirmation
 
-Una riga sola: `📓 Salvato anche in Obsidian` o `📓 Obsidian non configurato — solo qui in chat`.
+Use one line: `📓 Also saved to Obsidian` or `📓 Obsidian not configured — chat only`.

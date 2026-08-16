@@ -28,7 +28,7 @@ wrong guess.
 Call `create_scheduled_task` with:
 - `taskId`: `morning-briefing`
 - `cronExpression`: `0 9 * * *` (or the confirmed time, `minute hour * * *`)
-- `description`: "Briefing mattutino: PR review notturne, PR in sospeso, commenti, scadenze Jira, task in partenza, call di oggi"
+- `description`: "Morning briefing: overnight PR reviews, pending PRs, comments, Jira deadlines, starting tasks, today's calls"
 - `prompt`: a fully self-contained prompt (future runs have no memory of this
   conversation) instructing Claude to:
   1. Read `skills/morning-briefing/SKILL.md` in full and

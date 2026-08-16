@@ -44,7 +44,7 @@ Show the sub-agent's report verbatim. Do not rerank or merge findings. Each issu
 
 If the current branch matches a Jira key (pattern `[A-Za-z]+-[0-9]+`), ask the user:
 ```
-Vuoi che lasci un commento su Jira con l'esito della security review?
+Would you like me to leave a Jira comment with the security review result?
 ```
 If yes, follow `references/jira-transition.md` (in the plugin root) for the comment call only — never pass a transition ID.
 

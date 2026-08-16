@@ -105,7 +105,7 @@ if [ -n "${OBSIDIAN_VAULT_PATH:-}" ]; then
 fi
 ```
 
-If it lists anything, show up to 5 candidates (filename + `title:` frontmatter) and ask: "Vuoi collegare una di queste call a `<KEY>`? (numero o 'no')". On a pick:
+If it lists anything, show up to 5 candidates (filename + `title:` frontmatter) and ask: "Would you like to link one of these calls to `<KEY>`? (number or 'no')". On a pick:
 
 ```bash
 source "scripts/helpers.sh"

@@ -136,16 +136,16 @@ test('explain-change defines a provider-neutral visual workflow', () => {
   assert.match(skill, /HTML/i);
   assert.match(skill, /SVG|diagram/i);
   assert.match(skill, /business/i);
-  assert.match(skill, /tecnic/i);
+  assert.match(skill, /technical/i);
   assert.match(skill, /non.*wall of text|wall of text/i);
   assert.match(skill, /OBSIDIAN_VAULT_PATH/);
   assert.match(skill, /obsidian_ticket_docs_dir|obsidian_copy_ticket_docs/);
   assert.match(skill, /docs\/explain-change/);
-  assert.match(skill, /domanda guida/i);
-  assert.match(skill, /Evidenza.*Inferenza.*Non verificato/s);
-  assert.match(skill, /output.*funzione.*trasformazione.*sorgente dati.*input/i);
-  assert.match(skill, /controesempio/i);
-  assert.match(skill, /Check finale/i);
+  assert.match(skill, /guiding question/i);
+  assert.match(skill, /Evidence.*Inference.*Unverified/s);
+  assert.match(skill, /output.*function.*transformation.*data source.*input/i);
+  assert.match(skill, /counterexample/i);
+  assert.match(skill, /Final check/i);
 });
 
 test('cook asks before pulling Granola and saves a selected meeting as a ticket page', () => {

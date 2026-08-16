@@ -35,7 +35,7 @@ Do not show the user the ticket title or description. Ask only for confirmation
 that the gathered scope is correct and incorporate any clarification:
 
 ```text
-Ho raccolto il contesto del task e dei suoi collegamenti Jira. Confermi che proceda con questo perimetro? Vuoi aggiungere o correggere qualcosa?
+I collected the task context and its Jira links. Shall I proceed with this scope? Would you like to add or correct anything?
 ```
 
 Wait for a reply before creating the implementation artifacts.
@@ -45,7 +45,7 @@ Wait for a reply before creating the implementation artifacts.
 Before choosing the development flow or writing any code, ask:
 
 ```text
-Vuoi che recuperi i meeting di Granola per avere più contesto sullo sviluppo? (sì/no)
+Would you like me to retrieve Granola meetings for more development context? (yes/no)
 ```
 
 If the user says **no**, continue to step 3 without pulling anything.
@@ -178,7 +178,7 @@ manually when the extension is ambiguous.
 If the total is greater than **300 lines of code**, always pause and ask the user:
 
 ```text
-Le modifiche superano 300 righe di codice. Vuoi splittare questa feature in task più piccoli e indipendenti, organizzati in una PR stack?
+The changes exceed 300 lines of code. Would you like to split this feature into smaller, independent tasks organized as a PR stack?
 ```
 
 Do not assume the answer. If the user says **yes**, propose a minimal decomposition
