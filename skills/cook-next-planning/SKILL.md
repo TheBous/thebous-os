@@ -18,6 +18,9 @@ only analysis, decisions, and planning artifacts.
     `task.md`.
 - Use `task.md` as the single checklist, updating it before and after every
   activity.
+- Keep the depth proportional to the feature: use the full model and contract
+  sections only when the feature crosses multiple capabilities, boundaries, or
+  meaningful risk areas.
 - Do not start development until the artifacts are complete and approved.
 
 ## 1. Retrieve Jira context
@@ -50,6 +53,19 @@ resolution.
 Define what `DONE` means and work backward to identify dependencies and the
 critical path. Always separate the required behavior (what) from the technical
 solution (how).
+
+If the request contains multiple independently testable capabilities, create a
+small capability map before the spec:
+
+```markdown
+| Capability | Responsibility | Depends on |
+|---|---|---|
+| account-creation | Create an account | — |
+| email-verification | Verify ownership | account-creation |
+```
+
+Give each capability a stable id and split it into client-valued feature slices
+that can be implemented, tested, and demonstrated independently.
 
 ## 3. Run the structured discovery interview
 
@@ -154,6 +170,7 @@ Use `obsidian_ticket_dir` for the Obsidian destination and create
 `docs/<KEY>/` in the project. Write `spec.html` in both destinations with:
 
 - problem, goal, user-visible value, stakeholder, scope, and out of scope;
+- capability map and client-valued feature list when the request is composite;
 - resolved planning-interview decisions and shared understanding;
 - domain vocabulary with canonical meanings and code representations;
 - verified facts, accepted assumptions, unknowns, and open questions;
@@ -162,6 +179,9 @@ Use `obsidian_ticket_dir` for the Obsidian destination and create
 - inputs, outputs, error handling, and edge cases;
 - concrete happy-path and failure-path scenarios with expected outcomes;
 - data model at rest/in transit, contracts, and component responsibilities;
+- measurable targets for performance, availability, accessibility, privacy, or cost when applicable;
+- API/event contract details (schemas, errors, auth, compatibility, examples) when a boundary changes;
+- design package: component boundaries, sequence/state/data-flow diagrams, alternatives, and review outcome;
 - requirement → criterion → test → evidence table;
 - risks, assumptions, decisions, and open questions;
 - success metrics and the post-release observation window;
@@ -176,6 +196,8 @@ diagrams. Verify that both copies exist and are non-empty.
 
 Only after creating the spec, write `plan.md` in both destinations. Include:
 
+- one plan subsection per feature slice with value, owner, priority, size, risk,
+  dependencies, touched areas, verification, PR, flag, and rollback;
 - backward path from `DONE` and the critical path;
 - chosen technical approach and rejected alternatives;
 - pseudocode/plain-English logic;
@@ -189,6 +211,14 @@ Only after creating the spec, write `plan.md` in both destinations. Include:
 - any spike/proof of concept with timebox, expected result, and decision;
 - decisions from the planning interview, including alternatives and trade-offs;
 - domain boundaries, terminology, and scenario coverage;
+- milestone gates: domain/design review, contract validated, tests ready, code
+  complete, inspection, integration, and acceptance;
+- checkpoints after every two or three tasks, each leaving the feature slice
+  buildable, testable, and demonstrable;
+- safe parallel work, sequential dependencies, required owners/reviewers, and
+  the contract that must be agreed before parallel work starts;
+- traceability from Jira requirement → capability → feature slice → spec section
+  → task → PR → test → evidence;
 - any PR stack ordered by dependency.
 
 For technical uncertainty, plan a time-boxed spike; do not turn it into
@@ -206,6 +236,7 @@ After the spec and plan, create an ordered checklist in both destinations:
 - [ ] validate happy-path and failure-path scenarios
 - [ ] resolve security, permissions, concurrency, retry, and rollback decisions
 - [ ] confirm shared understanding with the user
+- [ ] review the capability/feature map and vertical-slice boundaries
 - [ ] define the critical path, data, contracts, and interfaces
 - [ ] add diagrams if the feature is complex
 - [ ] define edge cases and the test matrix
@@ -232,6 +263,10 @@ Before handoff, check:
 - every critical scenario has an expected result;
 - the scope is small enough for one feature or is split into slices;
 - every requirement has a criterion, planned test, and expected evidence;
+- every feature slice has a value, owner, dependency order, verification,
+  rollback, and PR/flag decision when applicable;
+- measurable non-functional targets and boundary contracts are defined when relevant;
+- checkpoints and parallelization rules are explicit;
 - every risk has a mitigation;
 - spec, plan, and task are internally consistent;
 - a forecast above 400 lines includes a PR stack;
