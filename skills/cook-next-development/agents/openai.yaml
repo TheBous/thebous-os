@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cook Next Development"
+  short_description: "Implement features with tests and quality gates"
+  default_prompt: "Use $cook-next-development to implement an approved feature with tests and quality gates."

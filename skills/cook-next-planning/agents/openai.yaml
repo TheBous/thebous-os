@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cook Next Planning"
+  short_description: "Plan features with spec, plan, and tasks"
+  default_prompt: "Use $cook-next-planning to analyze the ticket and prepare the spec, plan, and task checklist."
