@@ -8,6 +8,7 @@ const { parseCommandFile } = require('../.opencode/plugins/thebous-os-frontmatte
 const root = path.resolve(__dirname, '..');
 const commandsDir = path.join(root, 'commands');
 const skillsDir = path.join(root, 'skills');
+const cursorPluginDir = path.join(root, '.cursor-plugin');
 
 function readBody(file) {
   const source = fs.readFileSync(file, 'utf8');
@@ -76,6 +77,24 @@ test('OpenCode can parse every command adapter', () => {
   }
 });
 
+test('Cursor manifest exposes the canonical skills and command adapters', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(cursorPluginDir, 'plugin.json'), 'utf8'));
+  assert.equal(manifest.name, 'thebous-os');
+  assert.equal(manifest.skills, './skills/');
+  assert.equal(manifest.commands, './commands/');
+  assert.ok(fs.existsSync(path.join(root, manifest.skills, 'cook', 'SKILL.md')));
+  assert.ok(fs.existsSync(path.join(root, manifest.commands, 'cook.md')));
+});
+
+test('Cursor marketplace points at the repository plugin', () => {
+  const marketplace = JSON.parse(
+    fs.readFileSync(path.join(cursorPluginDir, 'marketplace.json'), 'utf8'),
+  );
+  assert.equal(marketplace.plugins.length, 1);
+  assert.equal(marketplace.plugins[0].name, 'thebous-os');
+  assert.equal(marketplace.plugins[0].source, '.');
+});
+
 test('canonical skills and references do not depend on provider-specific paths', () => {
   const canonicalFiles = [
     ...fs.readdirSync(skillsDir)
@@ -118,6 +137,7 @@ test('version bump workflow keeps all manifests aligned', () => {
     JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin/marketplace.json'), 'utf8')).version,
     JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin/marketplace.json'), 'utf8')).plugins[0].version,
     JSON.parse(fs.readFileSync(path.join(root, '.codex-plugin/plugin.json'), 'utf8')).version,
+    JSON.parse(fs.readFileSync(path.join(root, '.cursor-plugin/plugin.json'), 'utf8')).version,
   ];
   assert.equal(new Set(versions).size, 1);
 });

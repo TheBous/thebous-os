@@ -9,6 +9,7 @@ const manifestPaths = [
   '.claude-plugin/plugin.json',
   '.claude-plugin/marketplace.json',
   '.codex-plugin/plugin.json',
+  '.cursor-plugin/plugin.json',
 ];
 
 function readJson(relativePath) {

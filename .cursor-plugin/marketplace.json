@@ -1,0 +1,17 @@
+{
+  "name": "thebous-os",
+  "owner": {
+    "name": "Luca Valsecchi",
+    "email": "thebous1993@gmail.com"
+  },
+  "metadata": {
+    "description": "Git workflow automation for Cursor, synced with Jira, GitHub, Slack, Confluence, Gmail and Obsidian."
+  },
+  "plugins": [
+    {
+      "name": "thebous-os",
+      "source": ".",
+      "description": "Branch, implement, review, merge and ship workflows, plus morning briefing and end-of-day recap."
+    }
+  ]
+}

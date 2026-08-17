@@ -37,6 +37,7 @@ the user has reached that step.
 | Claude Code | Native Claude Code plugin marketplace | Slash commands and plugin-scoped skills |
 | Codex | Native Codex plugin marketplace | Codex CLI and Codex desktop plugin installation |
 | OpenCode | Native local plugin adapter plus canonical skills | Local or project-level OpenCode installations |
+| Cursor | Native Cursor plugin plus canonical skills and commands | Cursor Agent and Cursor CLI |
 
 ## Installation
 
@@ -156,6 +157,22 @@ cd /absolute/path/to/thebous-os
 git pull
 ```
 
+### Cursor
+
+Install the plugin directly from this repository in Cursor Agent:
+
+```text
+/add-plugin https://github.com/TheBous/thebous-os
+```
+
+Cursor loads the canonical skills from `skills/` and workflow commands from
+`commands/`. After installation, reload Cursor. The repository also includes
+`.cursor-plugin/marketplace.json` for team marketplace imports.
+
+For local plugin development, place a clone at
+`~/.cursor/plugins/local/thebous-os/`, then reload Cursor. The plugin manifest is
+`.cursor-plugin/plugin.json`.
+
 ## First-time configuration
 
 All providers share one configuration file. Run the setup skill once from the
@@ -206,6 +223,7 @@ skills/<name>/SKILL.md       canonical provider-neutral workflow
 commands/<name>.md            thin command adapter
 .claude-plugin/               Claude Code plugin and marketplace manifests
 .codex-plugin/                Codex plugin manifest
+.cursor-plugin/               Cursor plugin and marketplace manifests
 .opencode/plugins/            OpenCode discovery adapter
 scripts/helpers.sh            shared credentials, Jira, Slack and Obsidian helpers
 references/                   shared workflow references
