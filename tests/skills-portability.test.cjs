@@ -95,6 +95,13 @@ test('Cursor marketplace points at the repository plugin', () => {
   assert.equal(marketplace.plugins[0].source, '.');
 });
 
+test('Cursor README documents the UI GitHub import flow', () => {
+  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+  assert.match(readme, /\/add-plugin/);
+  assert.match(readme, /Paste Link/);
+  assert.doesNotMatch(readme, /\/add-plugin https:\/\/github\.com\/TheBous\/thebous-os/);
+});
+
 test('canonical skills and references do not depend on provider-specific paths', () => {
   const canonicalFiles = [
     ...fs.readdirSync(skillsDir)

@@ -159,19 +159,30 @@ git pull
 
 ### Cursor
 
-Install the plugin directly from this repository in Cursor Agent:
+Import the GitHub repository from Cursor Agent:
 
 ```text
-/add-plugin https://github.com/TheBous/thebous-os
+/add-plugin
 ```
 
-Cursor loads the canonical skills from `skills/` and workflow commands from
-`commands/`. After installation, reload Cursor. The repository also includes
-`.cursor-plugin/marketplace.json` for team marketplace imports.
+Select the `Add Plugin` slash command first. Cursor opens the Plugins view;
+paste `https://github.com/TheBous/thebous-os` into `Paste Link` (or the plugin
+search field), then choose `thebous-os` and click `Add to Cursor`. Do not paste
+the URL in the chat composer while the slash-command suggestions are open.
 
-For local plugin development, place a clone at
-`~/.cursor/plugins/local/thebous-os/`, then reload Cursor. The plugin manifest is
-`.cursor-plugin/plugin.json`.
+Cursor loads the canonical skills from `skills/` and workflow commands from
+`commands/`. The repository also includes `.cursor-plugin/marketplace.json` for
+team marketplace imports.
+
+For local development or when GitHub import is unavailable:
+
+```bash
+mkdir -p ~/.cursor/plugins/local
+ln -sfn "$PWD" ~/.cursor/plugins/local/thebous-os
+```
+
+Run that from the cloned repository, then reload the Cursor window. The plugin
+manifest is `.cursor-plugin/plugin.json`.
 
 ## First-time configuration
 
