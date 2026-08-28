@@ -282,4 +282,22 @@ test('review-pr-multiharness-ponytail follows the parent workflow and always run
   assert.match(prompt, /delete:|stdlib:|native:|yagni:|shrink:/);
   assert.match(prompt, /over-engineering|complexity only/i);
   assert.match(prompt, /out of scope/i);
+  assert.match(prompt, /ponytail-core\.md/);
+  assert.match(prompt, /platform-native\.md/);
+  assert.match(prompt, /EmailValidator|Intl\.DateTimeFormat|AbstractRepository/);
+
+  const core = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness-ponytail', 'references', 'ponytail-core.md'),
+    'utf8',
+  );
+  const native = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness-ponytail', 'references', 'platform-native.md'),
+    'utf8',
+  );
+  assert.match(skill, /ponytail-core\.md/);
+  assert.match(skill, /platform-native\.md/);
+  assert.match(core, /Does this need to exist at all/);
+  assert.match(core, /When NOT to flag/);
+  assert.match(core, /ponytail:/);
+  assert.match(native, /structuredClone|Intl\.DateTimeFormat|fs\.mkdirSync/);
 });

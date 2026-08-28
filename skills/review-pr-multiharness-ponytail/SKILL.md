@@ -22,8 +22,12 @@ how it changes roster, report, and GitHub posting.
   `Coverage`.
 - Ceiling remains 10. If optional lenses would exceed the ceiling, drop the
   lowest-ranked optional lens. Never drop `correctness` or `ponytail`.
-- Before dispatch, load the ponytail prompt from
-  [`references/reviewer-prompts/ponytail.md`](references/reviewer-prompts/ponytail.md).
+- Before dispatch, load all three ponytail references and give them to the
+  ponytail subagent. The prompt is the output contract; the other two are
+  the judgment engine. Do not dispatch ponytail with the prompt alone.
+  - [`references/reviewer-prompts/ponytail.md`](references/reviewer-prompts/ponytail.md)
+  - [`references/ponytail-core.md`](references/ponytail-core.md)
+  - [`references/platform-native.md`](references/platform-native.md)
   Every other selected lens still loads its prompt from
   `skills/review-pr-multiharness/references/reviewer-prompts/`.
 - Stay report-only. Do not apply ponytail cuts unless the user explicitly
