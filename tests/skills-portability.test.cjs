@@ -281,5 +281,5 @@ test('review-pr-multiharness-ponytail follows the parent workflow and always run
 
   assert.match(prompt, /delete:|stdlib:|native:|yagni:|shrink:/);
   assert.match(prompt, /over-engineering|complexity only/i);
-  assert.doesNotMatch(prompt, /correctness bugs|report style|security holes/i);
+  assert.match(prompt, /out of scope/i);
 });
