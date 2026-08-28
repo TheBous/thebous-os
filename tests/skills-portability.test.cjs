@@ -236,6 +236,16 @@ test('core workflow skills declare their automatic trigger conditions', () => {
   const createPr = fs.readFileSync(path.join(skillsDir, 'create-pr', 'SKILL.md'), 'utf8');
   assert.match(createPr, /merge.*branch|existing pull request/i);
   assert.match(createPr, /skills\/merge-pr\/SKILL\.md/);
+  assert.match(createPr, /PULL_REQUEST_TEMPLATE/);
+  assert.match(createPr, /## Summary/);
+  assert.match(createPr, /## Test plan/);
+});
+
+test('this repository pre-fills PRs with GitHub Summary / Test plan', () => {
+  const template = fs.readFileSync(path.join(root, '.github', 'PULL_REQUEST_TEMPLATE.md'), 'utf8');
+  assert.match(template, /^## Summary$/m);
+  assert.match(template, /^## Test plan$/m);
+  assert.doesNotMatch(template, /Type of Change/);
 });
 
 test('review-pr runs a fast walkthrough subagent and saves its HTML in the ticket review folder', () => {
@@ -247,4 +257,29 @@ test('review-pr runs a fast walkthrough subagent and saves its HTML in the ticke
   assert.match(review, /Dev\/Review\/DC-<TASK_ID>/);
   assert.match(review, /index\.html/);
   assert.match(review, /self-contained/i);
+});
+
+test('review-pr-multiharness-ponytail follows the parent workflow and always runs ponytail', () => {
+  const skill = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness-ponytail', 'SKILL.md'),
+    'utf8',
+  );
+  const prompt = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness-ponytail', 'references', 'reviewer-prompts', 'ponytail.md'),
+    'utf8',
+  );
+
+  assert.match(skill, /skills\/review-pr-multiharness\/SKILL\.md/);
+  assert.doesNotMatch(skill, /danger_score = sum/);
+  assert.match(skill, /always run `correctness` and `ponytail`/i);
+  assert.match(skill, /never[\s\S]*coalesce[\s\S]*maintainability/i);
+  assert.match(skill, /Minimum roster size is 2/);
+  assert.match(skill, /Lean already\. Ship\./);
+  assert.match(skill, /net: -<N> lines possible/);
+  assert.match(skill, /delete:|stdlib:|native:|yagni:|shrink:/);
+  assert.doesNotMatch(skill, /haiku|sonnet|gpt-\d|claude/i);
+
+  assert.match(prompt, /delete:|stdlib:|native:|yagni:|shrink:/);
+  assert.match(prompt, /over-engineering|complexity only/i);
+  assert.doesNotMatch(prompt, /correctness bugs|report style|security holes/i);
 });

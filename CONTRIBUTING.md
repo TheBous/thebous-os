@@ -47,9 +47,10 @@ Never commit API tokens, app passwords or webhooks.
    one change.
 2. Run `npm test` locally. Do not open a PR that fails the suite.
 3. Push the branch and open a PR against `main` (`thebous-os:create-pr`).
-4. Fill in a real title and description. When a Jira ticket exists, the title
-   is `[KEY] <ticket title>` and the body must match the actual diff — no
-   placeholder sections.
+   GitHub pre-fills the body from [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md).
+4. Fill in a real title and description (replace every template placeholder).
+   When a Jira ticket exists, the title is `[KEY] <ticket title>`. The body
+   uses GitHub's Summary / Test plan format and must match the actual diff.
 5. Request review. Use `thebous-os:explain-change` if reviewers need a
    walkthrough of the PR or diff.
 

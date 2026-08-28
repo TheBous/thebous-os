@@ -75,46 +75,26 @@ Do not create the PR unless every item is `✅ Met` and the user confirms. If an
 
 ### 5. Auto-generate title and description
 
-**Title**: `[<KEY>] <Jira ticket title>`.
+**Title**: `[<KEY>] <Jira ticket title>`. If there is no Jira key, use a short title from the diff.
 
-**Description**: fill in the following template based on the diff analysis and Jira ticket details. Don't leave sections with generic placeholders — each section must reflect the actual changes found in the diff.
+**Description**: use GitHub's Summary / Test plan format. If the repository has
+`.github/PULL_REQUEST_TEMPLATE.md` or a file under `.github/PULL_REQUEST_TEMPLATE/`,
+fill that template. Otherwise fill the default below. If `CONTRIBUTING.md`
+exists, follow its PR title and body rules as well.
+
+Don't leave placeholder text — each section must reflect the actual diff.
 
 ```markdown
 ## Summary
-[1-3 sentences explaining what this PR does and why, based on the Jira title/description and the diff]
-
-## Changes
-- [Bulleted list of specific changes found in the diff]
-- [Group related changes together]
-- [Specify what was added, modified, or removed]
-
-## Type of Change
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Performance improvement
-- [ ] Refactoring (no functional changes)
-
-## Testing
-- [ ] [Describe the testing performed, detected from test files in the diff]
-- [ ] [List any new tests added]
-- [ ] [Notes on any manual testing steps]
-
-## Breaking Changes
-[If applicable, describe breaking changes and migration steps; otherwise write "None"]
-
-## Related Issues
+- [1–3 bullets: what this PR does and why]
 Fixes <JIRA_BASE_URL>/browse/<KEY>
 
-## Screenshots
-[If applicable, add screenshots; otherwise remove this section]
-
-## Additional Context
-[Any other context useful for reviewers, or remove this section if not needed]
+## Test plan
+- [ ] [How this was verified: tests run, new tests, or manual steps]
 ```
 
-Automatically check the correct checkbox in "Type of Change" based on the analyzed diff.
+Omit the `Fixes` line when there is no Jira key. Put screenshots under Summary
+only if step 6 collected one.
 
 ### 6. Ask for a screenshot (only if the change is visual)
 
@@ -125,11 +105,11 @@ If it's screenshot-worthy, ask the user:
 📸 This looks like a UI change — got a screenshot of the result? (paste an image URL, or say no to skip)
 ```
 
-- If they give a URL, embed it in the `## Screenshots` section: `![screenshot](<URL>)`.
-- If they say no or have none, leave the `## Screenshots` section as `_No screenshot provided._`.
+- If they give a URL, add it under Summary: `![screenshot](<URL>)`.
+- If they say no or have none, skip the image and continue.
 - If they only have a local file path, note that `gh`/the API can't upload images — tell them to drag the file into the PR description on GitHub after it's created, then move on.
 
-If the change isn't screenshot-worthy, skip this step silently and remove the `## Screenshots` section from the template.
+If the change isn't screenshot-worthy, skip this step silently.
 
 ### 7. Create the PR
 
