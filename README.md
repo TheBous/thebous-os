@@ -257,6 +257,11 @@ manifest version alignment and key workflow requirements.
 Version manifests are bumped automatically by
 `.github/workflows/bump-version.yml` after pushes to `main`.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for GitHub Flow, pull requests, review
+and merge. Do not push to `main` directly.
+
 ## Security and privacy
 
 The package can read project activity, Jira data, meeting notes and communication
@@ -266,6 +271,7 @@ hooks or external connectors before enabling them.
 
 ## Documentation
 
+- [Contributing](CONTRIBUTING.md)
 - [Claude Code plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)
 - [Codex plugins](https://developers.openai.com/codex/plugins/)
 - [OpenCode plugins](https://opencode.ai/docs/plugins/)
