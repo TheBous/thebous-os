@@ -1,6 +1,6 @@
 ---
 name: review-pr-multiharness-ponytail
-description: Use when reviewing, inspecting, or analyzing a GitHub pull request with specialist coverage plus an over-engineering deletion pass, or when the user invokes review-pr-multiharness-ponytail, asks for a ponytail PR review, or wants a merge decision and what to cut
+description: Use when the user invokes review-pr-multiharness-ponytail, asks for a ponytail PR review, or wants a merge decision plus what to cut. Same specialist coverage as review-pr-multiharness with a required over-engineering deletion pass.
 ---
 
 # PR Review Multiharness + Ponytail
@@ -10,21 +10,25 @@ The diff's best extra outcome is getting shorter.
 
 **REQUIRED SUB-SKILL:** Follow [`skills/review-pr-multiharness/SKILL.md`](../review-pr-multiharness/SKILL.md) in full.
 Do not copy that workflow here. This skill only adds the ponytail lens and
-how it changes roster, report, and GitHub posting.
+how it changes roster, report, and GitHub posting. Parent steps still run:
+explain-change, danger score, JSON dispatch contract, report-only GitHub rules.
 
 ## Overrides
 
 - Always run `correctness` and `ponytail`. They are distinct lenses: never
   coalesce `ponytail` into `maintainability`.
-- `ponytail` occupies one subagent slot. Capability tier: `fast`.
+- `ponytail` occupies one of the parent's per-score slots. Capability tier:
+  `fast`. Use parent count N. Never exceed N except the 1→2 override below.
+  Hard cap remains 10.
 - Minimum roster size is 2. If the parent danger table would dispatch 1,
   dispatch 2 (`correctness` + `ponytail`) and record the override in
   `Coverage`.
-- Ceiling remains 10. If optional lenses would exceed the ceiling, drop the
-  lowest-ranked optional lens. Never drop `correctness` or `ponytail`.
-- Before dispatch, load all three ponytail references and give them to the
-  ponytail subagent. The prompt is the output contract; the other two are
-  the judgment engine. Do not dispatch ponytail with the prompt alone.
+- If required lenses plus optionals would exceed N (or 10), drop the
+  lowest-ranked optional. Never drop `correctness` or `ponytail`.
+- Before dispatch, inline all three ponytail files into that subagent's
+  prompt (parent's one-prompt rule does not apply to this lens). The prompt
+  is the output contract; the other two are the judgment engine. Do not
+  dispatch ponytail with the prompt alone.
   - [`references/reviewer-prompts/ponytail.md`](references/reviewer-prompts/ponytail.md)
   - [`references/ponytail-core.md`](references/ponytail-core.md)
   - [`references/platform-native.md`](references/platform-native.md)

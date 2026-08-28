@@ -222,6 +222,7 @@ commit API tokens, app passwords or webhooks.
 | Show the current situation | `thebous-os:current-status` |
 | Open a pull request | `thebous-os:create-pr` |
 | Review a pull request | `thebous-os:review-pr` |
+| Review a PR (multiharness) | `thebous-os:review-pr-multiharness` |
 | Review a PR (multiharness + ponytail) | `thebous-os:review-pr-multiharness-ponytail` |
 | Merge a pull request | `thebous-os:merge-pr` |
 | Explain a change visually | `thebous-os:explain-change` |

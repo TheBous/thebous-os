@@ -36,7 +36,7 @@ Never commit API tokens, app passwords or webhooks.
 | Implement | `thebous-os:cook` | Code, tests and docs on that branch |
 | Open a PR | `thebous-os:create-pr` | PR against `main`. Title `[KEY] <ticket title>` when a Jira ticket exists |
 | Explain a PR | `thebous-os:explain-change` | Visual walkthrough of the PR, diff or implementation |
-| Review | `thebous-os:review-pr` | Structured review with inline comments |
+| Review | `thebous-os:review-pr` | Default structured review. Variants: `review-pr-multiharness`, `review-pr-multiharness-ponytail` |
 | Address review | `thebous-os:address-review` | Resolve review comments one by one |
 | Merge | `thebous-os:merge-pr` | Squash into `main` (default), then Jira → In Staging |
 | Release | `thebous-os:tag` | Create the tag, Jira → Done, notify Slack |
@@ -56,7 +56,9 @@ Never commit API tokens, app passwords or webhooks.
 
 ## Review and merge
 
-- Reviewers use `thebous-os:review-pr`. Authors resolve comments with
+- Reviewers use `thebous-os:review-pr` by default. For specialist coverage
+  use `thebous-os:review-pr-multiharness`; add a deletion pass with
+  `thebous-os:review-pr-multiharness-ponytail`. Authors resolve comments with
   `thebous-os:address-review`.
 - CI must pass. Do not skip CI. Do not force-push to `main`.
 - Prefer **squash merge** so `main` stays linear. Use a merge commit or rebase

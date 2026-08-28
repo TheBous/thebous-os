@@ -5,7 +5,9 @@ description: Use when the user asks to create or open a pull request, or to merg
 
 ## Goal
 
-Create a Pull Request for the current branch against `main`, after validating the Jira task and automatically generating the title and description from the Jira ticket and the branch diff.
+Create a Pull Request for the current branch against `main`. Generate the
+title and description from the branch diff, plus the Jira ticket when one
+exists.
 
 ## Routing
 
@@ -38,10 +40,11 @@ git push -u origin "$(git branch --show-current)"
 
 Follow `references/jira-task-context.md` with:
 - `<SOURCES>` = the current branch name
-- `<REQUIRED>` = `required`
+- `<REQUIRED>` = `optional`
 - `<DETAILS>` = `basic`
 
-The resolved `<KEY>`, `<TASK_SUMMARY>`, and `<TASK_DESCRIPTION>` are used in the PR title and description.
+If `<KEY>` is empty, continue with no Jira context. If it is set,
+`<TASK_SUMMARY>` and `<TASK_DESCRIPTION>` feed the PR title and body.
 
 ### 3. Analyze the diff against the base branch
 
@@ -60,7 +63,9 @@ Analyze the diff to identify:
 
 **Don't trust the diff hunk alone** for this — when it doesn't show the full function body, type definitions, or imports needed to judge the change, read the full file locally (it's already checked out on this branch, no need for the GitHub API).
 
-### 4. Validate the implementation against Jira (mandatory gate)
+### 4. Validate the implementation against Jira
+
+If `<KEY>` is empty, skip this step.
 
 Compare the full diff and the tests against `<TASK_REQUIREMENTS>` from `references/jira-task-context.md`.
 
@@ -83,6 +88,9 @@ fill that template. Otherwise fill the default below. If `CONTRIBUTING.md`
 exists, follow its PR title and body rules as well.
 
 Don't leave placeholder text — each section must reflect the actual diff.
+When filling a template, delete `<!-- -->` comments and replace dummy `-` /
+empty `- [ ]` with real bullets. Always pass `--body`. Add `Fixes
+<JIRA_BASE_URL>/browse/<KEY>` under Summary only when `<KEY>` is set.
 
 ```markdown
 ## Summary
@@ -113,6 +121,9 @@ If the change isn't screenshot-worthy, skip this step silently.
 
 ### 7. Create the PR
 
+If `<KEY>` is empty, show the generated title and body and wait for the user
+to confirm before creating.
+
 ```bash
 gh pr create \
   --base main \
@@ -135,7 +146,7 @@ curl -sf \
 
 ### 7a. Log the PR link to Obsidian (optional)
 
-If `OBSIDIAN_VAULT_PATH` is configured, follow `references/obsidian-log.md`:
+If `<KEY>` is empty, skip this step. If `OBSIDIAN_VAULT_PATH` is configured, follow `references/obsidian-log.md`:
 
 ```bash
 source "scripts/helpers.sh"
@@ -143,9 +154,11 @@ load_env
 obsidian_log_pr "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "<PR_URL>" "[[<KEY>]] — PR opened: <PR_URL>"
 ```
 
-### 8. Jira comment (always)
+### 8. Jira comment
 
-Always leave a comment on the Jira issue:
+If `<KEY>` is empty, skip steps 8 and 9.
+
+Leave a comment on the Jira issue:
 
 ```bash
 source "scripts/helpers.sh"
@@ -173,17 +186,26 @@ If the transition fails or `JIRA_IN_REVIEW_ID` is not configured, **continue any
 ```bash
 source "scripts/helpers.sh"
 load_env
+```
+
+If `<KEY>` is set:
+```bash
 slack_notify "🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Review*"
 ```
 
-If Slack notification fails, **continue anyway** — the PR and Jira comment were already done.
+If `<KEY>` is empty:
+```bash
+slack_notify "🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>"
+```
+
+If Slack notification fails, **continue anyway** — the PR (and Jira comment, if any) were already done.
 
 ### 11. Confirmation
 
 Show the user:
 - PR created: `<PR_URL>`
-- Jira comment: left on `<KEY>`
+- Jira comment: left on `<KEY>` (or skipped, no key)
 - Ticket `<KEY>` → In Review (if transition succeeded; otherwise note it was skipped)
 - Slack: notified (or "notification failed, but PR and comment are done")
-- Obsidian: PR link recorded (or "skipped, no vault configured")
+- Obsidian: PR link recorded (or "skipped, no vault configured / no key")
 - → Suggest the next step: `/thebous-os:review-pr` to get it reviewed

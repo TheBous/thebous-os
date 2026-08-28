@@ -239,6 +239,8 @@ test('core workflow skills declare their automatic trigger conditions', () => {
   assert.match(createPr, /PULL_REQUEST_TEMPLATE/);
   assert.match(createPr, /## Summary/);
   assert.match(createPr, /## Test plan/);
+  assert.match(createPr, /<REQUIRED>` = `optional/);
+  assert.doesNotMatch(createPr, /<REQUIRED>` = `required/);
 });
 
 test('this repository pre-fills PRs with GitHub Summary / Test plan', () => {
@@ -274,6 +276,8 @@ test('review-pr-multiharness-ponytail follows the parent workflow and always run
   assert.match(skill, /always run `correctness` and `ponytail`/i);
   assert.match(skill, /never[\s\S]*coalesce[\s\S]*maintainability/i);
   assert.match(skill, /Minimum roster size is 2/);
+  assert.match(skill, /occupies one of the parent/);
+  assert.match(skill, /1→2|1->2/);
   assert.match(skill, /Lean already\. Ship\./);
   assert.match(skill, /net: -<N> lines possible/);
   assert.match(skill, /delete:|stdlib:|native:|yagni:|shrink:/);

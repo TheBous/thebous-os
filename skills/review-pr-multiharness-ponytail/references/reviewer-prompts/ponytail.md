@@ -32,21 +32,22 @@ Climb the ladder against every changed hunk after tracing the real flow.
   it here — that belongs to another lens.
 - Do not flag the single smoke test or `assert`-based self-check that
   ponytail requires as the minimum check.
-- If there is nothing to cut, return no findings and set the summary to
-  `Lean already. Ship.`
-- End your notes with `net: -<N> lines possible.` (`net: -0` when lean).
+- If there is nothing to cut, return `"findings": []`. The orchestrator
+  writes `Lean already. Ship.`
+- Put `net: -<N> lines possible.` (`net: -0` when lean) in
+  `result.residual_risks[0]`. Keep ranges in evidence, not in `title`.
 
 ## Format examples
 
 ❌ "This EmailValidator class might be more complex than necessary, have you
 considered whether all these validation rules are needed at this stage?"
 
-✅ `L12-38: stdlib: 27-line validator class. "@" in email, 1 line, real validation is the confirmation mail.`
+✅ `email.ts:L12: stdlib: 27-line validator class. "@" in email, 1 line, real validation is the confirmation mail.`
 
-✅ `L4: native: moment.js imported for one format call. Intl.DateTimeFormat, 0 deps.`
+✅ `dates.js:L4: native: moment.js imported for one format call. Intl.DateTimeFormat, 0 deps.`
 
 ✅ `repo.py:L88: yagni: AbstractRepository with one implementation. Inline it until a second one exists.`
 
-✅ `L52-71: delete: retry wrapper around an idempotent local call. Nothing replaces it.`
+✅ `http.py:L52: delete: retry wrapper around an idempotent local call. Nothing replaces it.`
 
-✅ `L30-44: shrink: manual loop builds dict. dict(zip(keys, values)), 1 line.`
+✅ `build.py:L30: shrink: manual loop builds dict. dict(zip(keys, values)), 1 line.`
