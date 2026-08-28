@@ -75,7 +75,7 @@ thing, dead flags and config, hand-rolled stdlib.
 
 ## `ponytail:` debt in this diff (from ponytail-debt)
 
-Grep the changed files for `(#|//) ?ponytail:`. Each hit is a deliberate
+Grep the changed files for `(#|//|/\*|<!--) ?ponytail:`. Each hit is a deliberate
 shortcut. Report it as its own line if the comment names no ceiling or no
 upgrade trigger (`no-trigger` — those rot). Do not treat a well-formed
 `ponytail:` comment as a finding to delete; it is the allowed exception.

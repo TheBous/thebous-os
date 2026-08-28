@@ -59,7 +59,7 @@ Libraries people install that the runtime already ships.
 
 | You think you need | What the platform has |
 |---|---|
-| `query-string` / `qs` | `new URLSearchParams(location.search)` |
+| `query-string` / `qs` | `new URLSearchParams(location.search)` (flat queries; keep `qs` for nested/arrays) |
 | `lodash.clonedeep` | `structuredClone(obj)` |
 | `lodash.groupby` | `Object.groupBy(arr, fn)` |
 | `lodash.debounce` | see debounce one-liner below |
@@ -72,7 +72,7 @@ Libraries people install that the runtime already ships.
 | Infinite scroll library | `new IntersectionObserver(cb).observe(sentinel)` |
 | Resize listener library | `new ResizeObserver(cb).observe(element)` |
 | DOM mutation watcher | `new MutationObserver(cb).observe(el, options)` |
-| `uuid-validate` | `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)` |
+| `uuid-validate` | `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)` (UUID v4 only; keep the lib for v1–v5) |
 | `is-online` / `connectivity check` | `navigator.onLine` + `online`/`offline` events |
 | `sharesheet` library | `navigator.share({ title, text, url })` |
 | `store.js` / `localForage` (simple case) | `localStorage.setItem(key, JSON.stringify(val))` |
@@ -81,9 +81,8 @@ Libraries people install that the runtime already ships.
 
 **Debounce one-liner** (no library):
 ```js
-// ponytail: 3 lines beats a dependency
-let t;
-const debounce = (fn, ms) => (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+// ponytail: one timer per debounce(), per-key timers if one function serves many keys
+const debounce = (fn, ms) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; };
 ```
 
 ---
@@ -135,7 +134,7 @@ Packages that wrap Node built-ins.
 | `mkdirp` | `fs.mkdirSync(path, { recursive: true })` |
 | `rimraf` | `fs.rmSync(path, { recursive: true, force: true })` |
 | `make-dir` | `fs.mkdirSync(path, { recursive: true })` |
-| `slash` (win paths) | `path.posix` or `path.normalize()` |
+| `slash` (win paths) | `s.replaceAll("\\", "/")` (`path.normalize` does not convert `\\`) |
 | `uuid` (v4) | `crypto.randomUUID()` |
 | `ms` (parse duration strings) | keep `ms`, it's genuinely useful and tiny |
 | `is-stream` | `val instanceof stream.Readable` |
@@ -146,7 +145,7 @@ Packages that wrap Node built-ins.
 | `path-exists` | `fs.existsSync(path)` |
 | `load-json-file` | `JSON.parse(fs.readFileSync(path, "utf8"))` |
 | `write-json-file` | `fs.writeFileSync(path, JSON.stringify(obj, null, 2))` |
-| `pkg-dir` | `path.resolve(__dirname, "..")` / `import.meta.dirname` |
+| `pkg-dir` | walk parents until `package.json` (`path.dirname` loop); `__dirname/..` is not discovery |
 
 ---
 
@@ -166,7 +165,7 @@ Packages that wrap what Python already ships.
 | `simplejson` (basic use) | `json` (stdlib) |
 | `requests` (simple GET) | `urllib.request.urlopen(url)`, `requests` for anything real |
 | `click` (single command) | `argparse` (stdlib) |
-| `mergedeep` | `dict \| other_dict` (Python 3.9+) |
+| `mergedeep` | `dict \| other_dict` (Python 3.9+, shallow right-biased; keep `mergedeep` for nested) |
 | `more-itertools` (basic) | `itertools` (stdlib): `chain`, `islice`, `groupby`, `product` |
 | `toolz` (basic) | `functools`: `lru_cache`, `partial`, `reduce` |
 | `tabulate` (dev/debug only) | `pprint.pprint()` for quick inspection |
@@ -200,7 +199,7 @@ Things the application layer implements that the database already does.
 
 Across every layer, the pattern is the same:
 
-```
+```text
 Platform team spends years solving the problem.
 Package author wraps it.
 You install the wrapper.

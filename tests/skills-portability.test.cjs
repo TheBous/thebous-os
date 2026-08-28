@@ -280,10 +280,11 @@ test('review-pr-multiharness-ponytail follows the parent workflow and always run
   assert.match(skill, /1→2|1->2/);
   assert.match(skill, /Lean already\. Ship\./);
   assert.match(skill, /net: -<N> lines possible/);
-  assert.match(skill, /delete:|stdlib:|native:|yagni:|shrink:/);
+  for (const tag of ['delete:', 'stdlib:', 'native:', 'yagni:', 'shrink:']) {
+    assert.match(skill, new RegExp(tag));
+    assert.match(prompt, new RegExp(tag));
+  }
   assert.doesNotMatch(skill, /haiku|sonnet|gpt-\d|claude/i);
-
-  assert.match(prompt, /delete:|stdlib:|native:|yagni:|shrink:/);
   assert.match(prompt, /over-engineering|complexity only/i);
   assert.match(prompt, /out of scope/i);
   assert.match(prompt, /ponytail-core\.md/);
