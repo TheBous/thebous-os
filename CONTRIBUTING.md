@@ -57,8 +57,9 @@ Never commit API tokens, app passwords or webhooks.
 ## Review and merge
 
 - Reviewers use `thebous-os:review-pr` by default. For specialist coverage
-  use `thebous-os:review-pr-multiharness`; add a deletion pass with
-  `thebous-os:review-pr-multiharness-ponytail`. Authors resolve comments with
+  use `thebous-os:review-pr-multiharness`. When a deletion pass is required,
+  use `thebous-os:review-pr-multiharness-ponytail` instead — it already runs
+  the parent workflow. Do not run both. Authors resolve comments with
   `thebous-os:address-review`.
 - CI must pass. Do not skip CI. Do not force-push to `main`.
 - Prefer **squash merge** so `main` stays linear. Use a merge commit or rebase
