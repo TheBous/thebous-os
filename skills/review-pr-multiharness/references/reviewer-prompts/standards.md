@@ -9,7 +9,10 @@ the repository and do not report subjective style preferences.
 
 ## Review rules
 
-- Treat applicable repository instructions as the highest authority.
+- Treat applicable repository instructions as the highest authority,
+  including `CONTRIBUTING.md` and `.github/PULL_REQUEST_TEMPLATE.md` when
+  present. Flag a PR description that leaves Summary / Test plan placeholders,
+  or whose Summary / Test plan claims contradict the diff.
 - Check required structure, naming, frontmatter, references, portability, tool
   choice, generated-file handling, and documentation obligations.
 - Cite the exact local rule and changed location for every finding.

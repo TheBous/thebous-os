@@ -26,6 +26,7 @@ Full step-by-step logic for each workflow lives in `skills/*/SKILL.md` (shared h
 | `commands/create-pr.md` | Open PR against main, link Jira, notify Slack |
 | `commands/review-pr.md` | Analyze PR: correctness, naming, coverage + structured review |
 | `commands/review-pr-multiharness.md` | Analyze PR with risk-proportional multi-harness coverage and up to ten subagents |
+| `commands/review-pr-multiharness-ponytail.md` | Same as review-pr-multiharness, plus a required over-engineering deletion pass |
 | `commands/address-review.md` | Resolve review comments one-by-one, update docs |
 | `commands/verify-resolved.md` | Verify that your review comments on someone else's PR were correctly addressed |
 | `commands/merge-pr.md` | Merge PR, move ticket to In Staging, notify Slack |

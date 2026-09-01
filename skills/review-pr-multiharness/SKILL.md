@@ -86,10 +86,21 @@ mix a remote PR diff with unrelated workspace files. Capture base/head refs,
 changed and untracked paths, PR title/description/commits/prior comments,
 applicable standards, generated files, and any plan or acceptance criteria.
 
-Read the PR description before the diff. It should explain problem, solution,
-non-goals, tests, configuration, migrations, rollout, risks, and follow-ups.
-If intent is incomplete, infer it from available evidence and mark uncertainty;
-do not block on a question.
+Read the PR description before the diff. Expect GitHub's Summary / Test
+plan format (or the repository's `.github/PULL_REQUEST_TEMPLATE.md` /
+`CONTRIBUTING.md` if present): filled sections whose claims match the
+diff, with no leftover placeholders.
+When a Jira key is present in the branch, title, or body, expect
+`[KEY] <ticket title>`; otherwise a non-placeholder title is enough. A
+description that still contains template comments, an empty Summary / Test
+plan, or claims that contradict the diff is incomplete intent; record it
+in `Coverage` and raise it as `IMPORTANT` when `CONTRIBUTING.md` forbids
+placeholders or requires the body to match the diff.
+
+Infer problem, solution, non-goals, tests, configuration, migrations,
+rollout, risks, and follow-ups from the description and the diff. If intent
+is incomplete, mark uncertainty; do not block on a question unless the
+contributing rules make the missing section a merge requirement.
 
 ### 4. Classify danger before selecting reviewers
 
