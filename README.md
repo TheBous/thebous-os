@@ -222,6 +222,8 @@ commit API tokens, app passwords or webhooks.
 | Show the current situation | `thebous-os:current-status` |
 | Open a pull request | `thebous-os:create-pr` |
 | Review a pull request | `thebous-os:review-pr` |
+| Review a PR (multiharness) | `thebous-os:review-pr-multiharness` |
+| Review a PR (multiharness + ponytail) | `thebous-os:review-pr-multiharness-ponytail` |
 | Merge a pull request | `thebous-os:merge-pr` |
 | Explain a change visually | `thebous-os:explain-change` |
 | Run the morning briefing | `thebous-os:morning-briefing` |
@@ -257,6 +259,11 @@ manifest version alignment and key workflow requirements.
 Version manifests are bumped automatically by
 `.github/workflows/bump-version.yml` after pushes to `main`.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for GitHub Flow, pull requests, review
+and merge. Do not push to `main` directly.
+
 ## Security and privacy
 
 The package can read project activity, Jira data, meeting notes and communication
@@ -266,6 +273,7 @@ hooks or external connectors before enabling them.
 
 ## Documentation
 
+- [Contributing](CONTRIBUTING.md)
 - [Claude Code plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)
 - [Codex plugins](https://developers.openai.com/codex/plugins/)
 - [OpenCode plugins](https://opencode.ai/docs/plugins/)

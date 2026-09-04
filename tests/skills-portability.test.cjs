@@ -236,6 +236,22 @@ test('core workflow skills declare their automatic trigger conditions', () => {
   const createPr = fs.readFileSync(path.join(skillsDir, 'create-pr', 'SKILL.md'), 'utf8');
   assert.match(createPr, /merge.*branch|existing pull request/i);
   assert.match(createPr, /skills\/merge-pr\/SKILL\.md/);
+  assert.match(createPr, /PULL_REQUEST_TEMPLATE/);
+  assert.match(createPr, /type>.*scope>.*concrete action and outcome/is);
+  assert.match(createPr, /## Evidence/);
+  assert.match(createPr, /Mermaid.*do not add Mermaid by default/is);
+  assert.match(createPr, /<REQUIRED>` = `optional/);
+  assert.doesNotMatch(createPr, /<REQUIRED>` = `required/);
+});
+
+test('this repository pre-fills PRs with the standard review template', () => {
+  const template = fs.readFileSync(path.join(root, '.github', 'PULL_REQUEST_TEMPLATE.md'), 'utf8');
+  assert.match(template, /^## Summary$/m);
+  assert.match(template, /^## Why$/m);
+  assert.match(template, /^## How to test$/m);
+  assert.match(template, /^## Review focus$/m);
+  assert.match(template, /^## Evidence$/m);
+  assert.doesNotMatch(template, /Type of Change/);
 });
 
 test('review-pr runs a fast walkthrough subagent and saves its HTML in the ticket review folder', () => {
@@ -247,4 +263,50 @@ test('review-pr runs a fast walkthrough subagent and saves its HTML in the ticke
   assert.match(review, /Dev\/Review\/DC-<TASK_ID>/);
   assert.match(review, /index\.html/);
   assert.match(review, /self-contained/i);
+});
+
+test('review-pr-multiharness-ponytail follows the parent workflow and always runs ponytail', () => {
+  const skill = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness-ponytail', 'SKILL.md'),
+    'utf8',
+  );
+  const prompt = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness-ponytail', 'references', 'reviewer-prompts', 'ponytail.md'),
+    'utf8',
+  );
+
+  assert.match(skill, /skills\/review-pr-multiharness\/SKILL\.md/);
+  assert.doesNotMatch(skill, /danger_score = sum/);
+  assert.match(skill, /always run `correctness` and `ponytail`/i);
+  assert.match(skill, /never[\s\S]*coalesce[\s\S]*maintainability/i);
+  assert.match(skill, /Minimum roster size is 2/);
+  assert.match(skill, /occupies one of the parent/);
+  assert.match(skill, /1→2|1->2/);
+  assert.match(skill, /Lean already\. Ship\./);
+  assert.match(skill, /net: -<N> lines possible/);
+  for (const tag of ['delete:', 'stdlib:', 'native:', 'yagni:', 'shrink:']) {
+    assert.match(skill, new RegExp(tag));
+    assert.match(prompt, new RegExp(tag));
+  }
+  assert.doesNotMatch(skill, /haiku|sonnet|gpt-\d|claude/i);
+  assert.match(prompt, /over-engineering|complexity only/i);
+  assert.match(prompt, /out of scope/i);
+  assert.match(prompt, /ponytail-core\.md/);
+  assert.match(prompt, /platform-native\.md/);
+  assert.match(prompt, /EmailValidator|Intl\.DateTimeFormat|AbstractRepository/);
+
+  const core = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness-ponytail', 'references', 'ponytail-core.md'),
+    'utf8',
+  );
+  const native = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness-ponytail', 'references', 'platform-native.md'),
+    'utf8',
+  );
+  assert.match(skill, /ponytail-core\.md/);
+  assert.match(skill, /platform-native\.md/);
+  assert.match(core, /Does this need to exist at all/);
+  assert.match(core, /When NOT to flag/);
+  assert.match(core, /ponytail:/);
+  assert.match(native, /structuredClone|Intl\.DateTimeFormat|fs\.mkdirSync/);
 });

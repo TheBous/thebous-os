@@ -1,7 +1,7 @@
 {
   "name": "thebous-os",
   "displayName": "thebous-os",
-  "version": "0.2.32",
+  "version": "0.2.34",
   "description": "Git/Jira/Slack/Confluence workflow automation, plus morning briefing and end-of-day recap — logs everything to Obsidian",
   "author": {
     "name": "Luca Valsecchi",

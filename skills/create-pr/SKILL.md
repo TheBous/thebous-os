@@ -5,7 +5,9 @@ description: Use when the user asks to create or open a pull request, or to merg
 
 ## Goal
 
-Create a Pull Request for the current branch against `main`, after validating the Jira task and automatically generating the title and description from the Jira ticket and the branch diff.
+Create a Pull Request for the current branch against `main`. Generate the
+title and description from the branch diff, plus the Jira ticket when one
+exists.
 
 ## Routing
 
@@ -38,10 +40,11 @@ git push -u origin "$(git branch --show-current)"
 
 Follow `references/jira-task-context.md` with:
 - `<SOURCES>` = the current branch name
-- `<REQUIRED>` = `required`
+- `<REQUIRED>` = `optional`
 - `<DETAILS>` = `basic`
 
-The resolved `<KEY>`, `<TASK_SUMMARY>`, and `<TASK_DESCRIPTION>` are used in the PR title and description.
+If `<KEY>` is empty, continue with no Jira context. If it is set,
+`<TASK_SUMMARY>` and `<TASK_DESCRIPTION>` feed the PR title and body.
 
 ### 3. Analyze the diff against the base branch
 
@@ -60,7 +63,9 @@ Analyze the diff to identify:
 
 **Don't trust the diff hunk alone** for this — when it doesn't show the full function body, type definitions, or imports needed to judge the change, read the full file locally (it's already checked out on this branch, no need for the GitHub API).
 
-### 4. Validate the implementation against Jira (mandatory gate)
+### 4. Validate the implementation against Jira
+
+If `<KEY>` is empty, skip this step.
 
 Compare the full diff and the tests against `<TASK_REQUIREMENTS>` from `references/jira-task-context.md`.
 
@@ -94,60 +99,17 @@ Do not use generic titles such as `Fix bug`, `Update code`, `Phase 1`, or
 that conflicts with this format, preserve the repository convention while
 retaining the same concrete action-and-outcome content.
 
-**Description**: fill in the following template based on the diff analysis and Jira ticket details. Don't leave sections with generic placeholders — each section must reflect the actual changes found in the diff.
+**Description**: fill `.github/PULL_REQUEST_TEMPLATE.md` using the Jira ticket
+and the diff analysis. If `CONTRIBUTING.md` exists, follow any compatible
+repository-specific rules as well.
 
-```markdown
-## Summary
-[1-3 sentences explaining the user or system outcome and why it matters]
-
-## Why
-[Problem, context, motivation, and expected benefit.]
-
-## What changed
-- [Bulleted list of specific changes found in the diff]
-- [Group related changes together]
-- [Specify what was added, modified, or removed]
-
-## Review focus
-[What reviewers should inspect carefully, including important files or a suggested review order.]
-
-## How to test
-- [Concrete setup, commands, steps, test data, or preconditions]
-- [Expected result]
-
-## Evidence
-[Screenshots or a short demo for UI changes. Add a Mermaid diagram only when it clarifies a non-obvious flow, sequence, state transition, or architecture change; otherwise remove this section.]
-
-## Risks and rollout
-[Feature flags, migrations, compatibility, monitoring, rollout, and rollback; write "None" when not applicable.]
-
-## Type of change
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Performance improvement
-- [ ] Refactoring (no functional changes)
-
-## Breaking Changes
-[If applicable, describe breaking changes and migration steps; otherwise write "None"]
-
-## Documentation
-- [ ] Updated
-- [ ] Not needed
-
-## Checklist
-- [ ] Tests added or updated
-- [ ] Manual testing completed when applicable
-- [ ] Security and authorization considered
-- [ ] Performance impact considered
-- [ ] No secrets or sensitive data included
-
-## Related issues
-Fixes <JIRA_BASE_URL>/browse/<KEY>
-```
-
-Automatically check the correct checkbox in "Type of change" based on the analyzed diff. Remove sections that are genuinely not applicable rather than leaving empty placeholders. Keep the description focused on one purpose and do not repeat the diff mechanically.
+Don't leave placeholder text — each section must reflect the actual diff.
+When filling the template, delete HTML comments and placeholder bullets,
+always pass `--body`, and add `Fixes <JIRA_BASE_URL>/browse/<KEY>` only when
+`<KEY>` is set. Automatically check the correct checkbox in "Type of change"
+based on the analyzed diff. Remove sections that are genuinely not
+applicable. Keep the description focused on one purpose and do not repeat the
+diff mechanically.
 
 ### 6. Add visual evidence (only when useful)
 
@@ -165,6 +127,9 @@ If it's screenshot-worthy, ask the user:
 If the change isn't screenshot-worthy, skip this step silently. For non-obvious backend or architecture flows, include a small Mermaid diagram in `## Evidence`; do not add Mermaid by default.
 
 ### 7. Create the PR
+
+If `<KEY>` is empty, show the generated title and body and wait for the user
+to confirm before creating.
 
 ```bash
 gh pr create \
@@ -188,7 +153,7 @@ curl -sf \
 
 ### 7a. Log the PR link to Obsidian (optional)
 
-If `OBSIDIAN_VAULT_PATH` is configured, follow `references/obsidian-log.md`:
+If `<KEY>` is empty, skip this step. If `OBSIDIAN_VAULT_PATH` is configured, follow `references/obsidian-log.md`:
 
 ```bash
 source "scripts/helpers.sh"
@@ -196,9 +161,11 @@ load_env
 obsidian_log_pr "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "<PR_URL>" "[[<KEY>]] — PR opened: <PR_URL>"
 ```
 
-### 8. Jira comment (always)
+### 8. Jira comment
 
-Always leave a comment on the Jira issue:
+If `<KEY>` is empty, skip steps 8 and 9.
+
+Leave a comment on the Jira issue:
 
 ```bash
 source "scripts/helpers.sh"
@@ -226,17 +193,26 @@ If the transition fails or `JIRA_IN_REVIEW_ID` is not configured, **continue any
 ```bash
 source "scripts/helpers.sh"
 load_env
+```
+
+If `<KEY>` is set:
+```bash
 slack_notify "🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Review*"
 ```
 
-If Slack notification fails, **continue anyway** — the PR and Jira comment were already done.
+If `<KEY>` is empty:
+```bash
+slack_notify "🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>"
+```
+
+If Slack notification fails, **continue anyway** — the PR (and Jira comment, if any) were already done.
 
 ### 11. Confirmation
 
 Show the user:
 - PR created: `<PR_URL>`
-- Jira comment: left on `<KEY>`
+- Jira comment: left on `<KEY>` (or skipped, no key)
 - Ticket `<KEY>` → In Review (if transition succeeded; otherwise note it was skipped)
 - Slack: notified (or "notification failed, but PR and comment are done")
-- Obsidian: PR link recorded (or "skipped, no vault configured")
+- Obsidian: PR link recorded (or "skipped, no vault configured / no key")
 - → Suggest the next step: `/thebous-os:review-pr` to get it reviewed
