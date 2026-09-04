@@ -262,6 +262,19 @@ test('address-review offers to request a new review after fixes', () => {
   assert.match(skill, /already requested/i);
 });
 
+test('verify-resolved revalidates own review threads one by one', () => {
+  const skill = fs.readFileSync(path.join(skillsDir, 'verify-resolved', 'SKILL.md'), 'utf8');
+  assert.match(skill, /someone else's PR/i);
+  assert.match(skill, /get-viewer-threads/);
+  assert.match(skill, /Process one thread at a time/i);
+  assert.match(skill, /Still needs attention:/);
+  assert.match(skill, /## Verification report/);
+  assert.match(skill, /### Coverage/);
+  assert.match(skill, /### Verdict/);
+  assert.match(skill, /### Residual risk/);
+  assert.doesNotMatch(skill, /skills\/verify-resolved\/scripts/);
+});
+
 test('review-pr runs a fast walkthrough subagent and saves its HTML in the ticket review folder', () => {
   const review = fs.readFileSync(path.join(skillsDir, 'review-pr', 'SKILL.md'), 'utf8');
   assert.match(review, /in parallel/i);
