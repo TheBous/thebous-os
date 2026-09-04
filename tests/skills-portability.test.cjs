@@ -254,6 +254,14 @@ test('this repository pre-fills PRs with the standard review template', () => {
   assert.doesNotMatch(template, /Type of Change/);
 });
 
+test('address-review offers to request a new review after fixes', () => {
+  const skill = fs.readFileSync(path.join(skillsDir, 'address-review', 'SKILL.md'), 'utf8');
+  assert.match(skill, /Offer to request a new review/);
+  assert.match(skill, /Do you want me to request a new review from <REVIEWER>/);
+  assert.match(skill, /gh pr edit <NUMBER> --add-reviewer/);
+  assert.match(skill, /already requested/i);
+});
+
 test('review-pr runs a fast walkthrough subagent and saves its HTML in the ticket review folder', () => {
   const review = fs.readFileSync(path.join(skillsDir, 'review-pr', 'SKILL.md'), 'utf8');
   assert.match(review, /in parallel/i);

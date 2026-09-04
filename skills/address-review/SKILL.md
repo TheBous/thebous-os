@@ -239,6 +239,39 @@ Show the user:
 - Obsidian: logged (or "skipped, no vault configured / no linked ticket")
 - Suggest pushing the branch with `git push`
 
+### 15. Offer to request a new review
+
+After all approved fixes, tests, documentation updates, and replies are
+handled, identify the reviewer(s) who requested changes from the review data
+collected in step 4. If there is exactly one reviewer, ask:
+
+```
+🔁 The requested changes are applied. Do you want me to request a new review from <REVIEWER>?
+```
+
+If there are multiple reviewers, show them and ask which reviewer(s) should be
+notified. If there is no identifiable reviewer, ask the user to provide the
+GitHub username or team; do not guess.
+
+Wait for the user's answer. If they decline, finish without any GitHub action.
+If they agree, verify that the current branch is pushed. If it is not pushed,
+ask for confirmation before running:
+
+```bash
+git push
+```
+
+After the updated commits are available remotely, request the new review:
+
+```bash
+gh pr edit <NUMBER> --add-reviewer "<REVIEWER>"
+```
+
+For a team reviewer, pass the team slug supported by `gh`. Report whether the
+new review request succeeded or failed. If GitHub reports that the reviewer is
+already requested, report that no new request was sent and suggest using the
+GitHub re-request-review action manually.
+
 ## Style for reply prose
 
 **All public replies on GitHub must be in English** — regardless of the language used in your conversation with the user.
