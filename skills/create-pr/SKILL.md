@@ -75,20 +75,53 @@ Do not create the PR unless every item is `✅ Met` and the user confirms. If an
 
 ### 5. Auto-generate title and description
 
-**Title**: `[<KEY>] <Jira ticket title>`.
+**Title**: `<type>(<scope>): <concrete action and outcome> [<KEY>]`.
+
+Use a short, concrete imperative title that is understandable without opening
+the PR. Choose `<type>` from `feat`, `fix`, `refactor`, `perf`, `docs`,
+`test`, `build`, `ci`, or `chore`; use a meaningful component for `<scope>`.
+Keep the Jira key at the end so the title remains searchable without making
+the ticket identifier the only useful context. Examples:
+
+```text
+feat(auth): add passwordless login with email links [AUTH-142]
+fix(api): prevent duplicate invoice creation [BILL-87]
+refactor(checkout): centralize payment validation [PAY-31]
+```
+
+Do not use generic titles such as `Fix bug`, `Update code`, `Phase 1`, or
+`Various improvements`. If the repository has an established title convention
+that conflicts with this format, preserve the repository convention while
+retaining the same concrete action-and-outcome content.
 
 **Description**: fill in the following template based on the diff analysis and Jira ticket details. Don't leave sections with generic placeholders — each section must reflect the actual changes found in the diff.
 
 ```markdown
 ## Summary
-[1-3 sentences explaining what this PR does and why, based on the Jira title/description and the diff]
+[1-3 sentences explaining the user or system outcome and why it matters]
 
-## Changes
+## Why
+[Problem, context, motivation, and expected benefit.]
+
+## What changed
 - [Bulleted list of specific changes found in the diff]
 - [Group related changes together]
 - [Specify what was added, modified, or removed]
 
-## Type of Change
+## Review focus
+[What reviewers should inspect carefully, including important files or a suggested review order.]
+
+## How to test
+- [Concrete setup, commands, steps, test data, or preconditions]
+- [Expected result]
+
+## Evidence
+[Screenshots or a short demo for UI changes. Add a Mermaid diagram only when it clarifies a non-obvious flow, sequence, state transition, or architecture change; otherwise remove this section.]
+
+## Risks and rollout
+[Feature flags, migrations, compatibility, monitoring, rollout, and rollback; write "None" when not applicable.]
+
+## Type of change
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
@@ -96,27 +129,27 @@ Do not create the PR unless every item is `✅ Met` and the user confirms. If an
 - [ ] Performance improvement
 - [ ] Refactoring (no functional changes)
 
-## Testing
-- [ ] [Describe the testing performed, detected from test files in the diff]
-- [ ] [List any new tests added]
-- [ ] [Notes on any manual testing steps]
-
 ## Breaking Changes
 [If applicable, describe breaking changes and migration steps; otherwise write "None"]
 
-## Related Issues
+## Documentation
+- [ ] Updated
+- [ ] Not needed
+
+## Checklist
+- [ ] Tests added or updated
+- [ ] Manual testing completed when applicable
+- [ ] Security and authorization considered
+- [ ] Performance impact considered
+- [ ] No secrets or sensitive data included
+
+## Related issues
 Fixes <JIRA_BASE_URL>/browse/<KEY>
-
-## Screenshots
-[If applicable, add screenshots; otherwise remove this section]
-
-## Additional Context
-[Any other context useful for reviewers, or remove this section if not needed]
 ```
 
-Automatically check the correct checkbox in "Type of Change" based on the analyzed diff.
+Automatically check the correct checkbox in "Type of change" based on the analyzed diff. Remove sections that are genuinely not applicable rather than leaving empty placeholders. Keep the description focused on one purpose and do not repeat the diff mechanically.
 
-### 6. Ask for a screenshot (only if the change is visual)
+### 6. Add visual evidence (only when useful)
 
 Based on the diff analysis from step 3, decide whether this change is screenshot-worthy: new or modified UI (components, pages, styles, layouts) — yes; pure backend/core logic, refactoring, config, or non-visual bug fixes — no.
 
@@ -125,11 +158,11 @@ If it's screenshot-worthy, ask the user:
 📸 This looks like a UI change — got a screenshot of the result? (paste an image URL, or say no to skip)
 ```
 
-- If they give a URL, embed it in the `## Screenshots` section: `![screenshot](<URL>)`.
-- If they say no or have none, leave the `## Screenshots` section as `_No screenshot provided._`.
+- If they give a URL, embed it in the `## Evidence` section: `![screenshot](<URL>)`.
+- If they say no or have none, remove the visual-evidence subsection and continue.
 - If they only have a local file path, note that `gh`/the API can't upload images — tell them to drag the file into the PR description on GitHub after it's created, then move on.
 
-If the change isn't screenshot-worthy, skip this step silently and remove the `## Screenshots` section from the template.
+If the change isn't screenshot-worthy, skip this step silently. For non-obvious backend or architecture flows, include a small Mermaid diagram in `## Evidence`; do not add Mermaid by default.
 
 ### 7. Create the PR
 
