@@ -266,12 +266,59 @@ test('verify-resolved revalidates own review threads one by one', () => {
   assert.match(skill, /someone else's PR/i);
   assert.match(skill, /get-viewer-threads/);
   assert.match(skill, /Process one thread at a time/i);
+  assert.match(skill, /Reply to every thread regardless of verdict/i);
   assert.match(skill, /Still needs attention:/);
   assert.match(skill, /## Verification report/);
   assert.match(skill, /### Coverage/);
   assert.match(skill, /### Verdict/);
   assert.match(skill, /### Residual risk/);
   assert.doesNotMatch(skill, /skills\/verify-resolved\/scripts/);
+});
+
+test('verify-resolved requires fresh evidence before assigning a verdict', () => {
+  const skill = fs.readFileSync(path.join(skillsDir, 'verify-resolved', 'SKILL.md'), 'utf8');
+  const contract = fs.readFileSync(
+    path.join(root, 'references', 'review-evidence-contract.md'),
+    'utf8',
+  );
+
+  assert.match(skill, /references\/review-evidence-contract\.md/);
+  assert.match(skill, /fixed.*current-code evidence/is);
+  assert.match(skill, /partial.*not-fixed.*concrete remaining gap/is);
+  assert.match(skill, /needs-look.*not a defect/is);
+  assert.match(contract, /current-code anchor/i);
+  assert.match(contract, /author.*reply.*not.*evidence|reply alone.*evidence/is);
+  assert.match(contract, /try to falsify|falsif/i);
+  assert.match(contract, /missing.*evidence.*needs-look/is);
+  assert.match(contract, /uncertainty.*defect|not.*proof/i);
+});
+
+test('review workflows share one evidence contract reference', () => {
+  const referencePath = path.join(root, 'references', 'review-evidence-contract.md');
+  assert.equal(fs.existsSync(referencePath), true);
+
+  const reference = fs.readFileSync(referencePath, 'utf8');
+  assert.match(reference, /current-code anchor/i);
+  assert.match(reference, /preconditions/i);
+  assert.match(reference, /execution[_ ]path/i);
+  assert.match(reference, /absence of .*evidence.*not.*proof/is);
+  assert.match(reference, /try to falsify|falsif/i);
+
+  for (const name of ['review-pr-multiharness', 'verify-resolved']) {
+    const skill = fs.readFileSync(path.join(skillsDir, name, 'SKILL.md'), 'utf8');
+    assert.match(skill, /references\/review-evidence-contract\.md/);
+  }
+
+  const multiharness = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness', 'SKILL.md'),
+    'utf8',
+  );
+  const verifyResolved = fs.readFileSync(
+    path.join(skillsDir, 'verify-resolved', 'SKILL.md'),
+    'utf8',
+  );
+  assert.doesNotMatch(multiharness, /Before a candidate becomes a finding/);
+  assert.doesNotMatch(verifyResolved, /Record these fields for every thread/);
 });
 
 test('standard review workflow is removed while multiharness variants remain', () => {
@@ -281,6 +328,27 @@ test('standard review workflow is removed while multiharness variants remain', (
   assert.equal(fs.existsSync(path.join(skillsDir, 'review-pr-multiharness-ponytail', 'SKILL.md')), true);
   assert.equal(fs.existsSync(path.join(commandsDir, 'review-pr-multiharness.md')), true);
   assert.equal(fs.existsSync(path.join(commandsDir, 'review-pr-multiharness-ponytail.md')), true);
+});
+
+test('multiharness review gates findings on evidence instead of uncertainty', () => {
+  const skill = fs.readFileSync(
+    path.join(skillsDir, 'review-pr-multiharness', 'SKILL.md'),
+    'utf8',
+  );
+  const contract = fs.readFileSync(
+    path.join(root, 'references', 'review-evidence-contract.md'),
+    'utf8',
+  );
+
+  assert.match(skill, /references\/review-evidence-contract\.md/);
+  assert.match(skill, /confirmed/i);
+  assert.match(skill, /coverage-gap/i);
+  assert.match(skill, /preconditions/i);
+  assert.match(skill, /execution[_ ]path/i);
+  assert.match(skill, /reproduc|failing[_ ]test/i);
+  assert.match(contract, /exact changed-line anchor/i);
+  assert.match(contract, /absence of .*evidence.*not.*proof|missing .*safeguard.*not.*evidence/is);
+  assert.match(contract, /try to falsify|falsif/i);
 });
 
 test('review-pr-multiharness-ponytail follows the parent workflow and always runs ponytail', () => {

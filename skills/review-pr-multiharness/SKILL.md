@@ -13,6 +13,7 @@ defended in production with the least unnecessary reviewer effort.
 - Stay report-only by default. Never edit, merge, push, open PRs, or create tickets unless explicitly authorized.
 - Never approve from green CI alone. CI proves only what its checks cover.
 - Do not invent requirements, conventions, or findings. Report evidence and coverage gaps.
+- Treat every reviewer output as a candidate until it passes the Finding contract.
 - Automate deterministic checks; reserve human/subagent attention for intent, behavior, contracts, risk, and trade-offs.
 - Never name a concrete model, vendor, or harness. Use capability tiers so the workflow works across Codex, OpenCode, and other environments.
 - If subagents are unavailable, run the same lenses sequentially and disclose degraded coverage.
@@ -245,6 +246,10 @@ It defines how to detect and use the active host's subagent primitive. Do not
 claim that subagents are unavailable merely because the skill is provider
 neutral: first try the host adapter described there.
 
+Read [`../../references/review-evidence-contract.md`](../../references/review-evidence-contract.md)
+before dispatching and again during synthesis. It defines the shared evidence
+standard for every candidate finding.
+
 Give each subagent only the relevant scope, intent, paths, diff, standards, the
 selected lens prompt, and the shared JSON output contract. Keep reviewers
 independent: do not include another reviewer's findings in the initial prompt.
@@ -256,7 +261,13 @@ record the degraded path.
 Each reviewer returns structured findings with:
 
 `severity`, `category`, `title`, `file`, `line`, `evidence`, `impact`,
-`suggested_fix`, `confidence`, `requires_verification`.
+`suggested_fix`, `confidence`, `requires_verification`, `scope`,
+`preconditions`, `execution_path`, `reproduction_or_failing_test`,
+`requirement`, `validation_status`.
+
+Reviewers may return candidates, but the synthesis stage must assign exactly one
+`validation_status`: `confirmed`, `coverage-gap`, `question`, `out-of-scope`, or
+`duplicate`. Only `confirmed` candidates may become P0–P2 findings.
 
 Use `P0` for critical breakage/security/data loss, `P1` for high-impact defects
 or broken contracts, `P2` for meaningful edge/performance/maintainability
@@ -278,9 +289,19 @@ missing configuration, and code the author cannot explain.
 
 ### 9. Synthesize, validate, and report
 
-Deduplicate by root cause. Prefer one fix at the shared source over guards in
-every caller. Validate high-confidence findings against source and run the
-smallest relevant check. Never manufacture comments to appear thorough.
+Apply [`../../references/review-evidence-contract.md`](../../references/review-evidence-contract.md)
+to every candidate. A candidate without an exact changed-line anchor cannot be
+`confirmed`; assign `coverage-gap` and keep it out of `Actionable Findings`.
+Only `confirmed` candidates may become P0-P2 findings.
+
+For P0/P1 candidates and all security or correctness candidates, use an
+independent verifier or a separate context when available. The verifier must
+try to disprove the candidate, not merely repeat it. If independent review is
+unavailable, run the adversarial check locally and disclose the degraded path.
+
+Deduplicate confirmed candidates by root cause. Prefer one fix at the shared
+source over guards in every caller. Never manufacture comments to appear
+thorough or to satisfy a comment quota.
 
 Write comments that state behavior, risk, and action. Prefix them with
 `BLOCKER`, `IMPORTANT`, `SUGGESTION`, `QUESTION`, or `PRAISE`; mark suggestions
@@ -290,6 +311,10 @@ as non-blocking. Finish with:
 - `Coverage`: scope, score, classification, subagents run, skipped lenses and reasons, checks;
 - `Verdict`: `Not ready`, `Ready with fixes`, or `Ready to merge`;
 - `Residual risk`: what was not verified and why.
+
+If no candidates reach `confirmed`, write `Actionable Findings: none.` Put
+unverified concerns in `Coverage` or `Residual risk`, not in the actionable
+finding list.
 
 Approve only when you can defend the change as if you owned its production
 behavior. Applying fixes requires an explicit user instruction.

@@ -1,13 +1,13 @@
 ---
 name: verify-resolved
-description: Verify that review comments you left on someone else's pull request were correctly addressed, revalidate each thread, and reply only when a fix is partial or missing
+description: Use when revalidating review comments you left on someone else's pull request after new commits or author replies
 ---
 
 ## Goal
 
 Revalidate every review thread where you commented on someone else's PR after
 the author pushed changes. Check the current code and the author's response,
-classify each concern, and communicate unresolved problems one thread at a time.
+classify each concern, and communicate every verdict one thread at a time.
 
 **Do not use this workflow if:**
 - You are fixing feedback on your own PR — use `address-review`.
@@ -20,7 +20,12 @@ classify each concern, and communicate unresolved problems one thread at a time.
 - Read the full relevant function, interface, or caller chain before deciding.
 - Trust a technically valid alternative implementation even when it differs
   from your original suggestion.
-- Never reply when the concern is correctly fixed or genuinely outdated.
+- Treat the author's reply as context, not as evidence that the concern is fixed.
+- Try to falsify the original concern before assigning `not-fixed` or `partial`.
+- Reply to every thread regardless of verdict: `fixed`, `partial`, `not-fixed`,
+  `needs-look`, and `outdated`.
+- Never reopen a thread merely to reply to a `fixed`, `needs-look`, or `outdated`
+  verdict.
 - Keep each verdict and public reply tied to one review thread.
 - All public GitHub replies are in English; the report to the user uses their
   language.
@@ -87,16 +92,25 @@ Process one thread at a time. For each thread:
 4. Run the smallest relevant check when code execution is needed to decide.
 5. Record one verdict and its evidence before moving to the next thread.
 
+Read [`../../references/review-evidence-contract.md`](../../references/review-evidence-contract.md)
+before assigning a verdict. Apply its required record and evidence rules:
+
+- `fixed` requires current-code evidence that the concern is satisfied.
+- `partial` or `not-fixed` requires a concrete remaining gap tied to the original concern.
+- Missing evidence, an unrun check, or unverified external behavior is `needs-look`, not a defect.
+- The author's reply alone is not evidence.
+- If the current anchor cannot be established, use `outdated` only when the original behavior anchor is gone; otherwise use `needs-look`.
+
 Use [`../../references/evaluation-rubric.md`](../../references/evaluation-rubric.md)
 for the verdict definitions:
 
 | Verdict | Meaning | Action |
 |---------|---------|--------|
-| ✅ `fixed` | The concern is correctly addressed | Report only |
+| ✅ `fixed` | The concern is correctly addressed | Reply confirming the evidence |
 | ⚠️ `partial` | Part of the concern is addressed, but a concrete gap remains | Reply with the gap |
 | ❌ `not-fixed` | The concern remains or the fix is incorrect | Reply with what is needed |
-| ❓ `needs-look` | Code alone cannot establish correctness | Report to user, no reply |
-| 🔇 `outdated` | The old location and behavior anchor no longer exist | Report only |
+| ❓ `needs-look` | Code alone cannot establish correctness | Reply with the missing evidence or check |
+| 🔇 `outdated` | The old location and behavior anchor no longer exist | Reply explaining why the concern is outdated |
 
 Use this per-thread record internally:
 
@@ -104,16 +118,19 @@ Use this per-thread record internally:
 🔍 Thread <N> — <path>:<line> — <author>
 Original concern: <specific concern>
 Current evidence: <what the latest code does>
+Check: <command, test, trace, or "not run">
 Verdict: <emoji> <verdict>
+Confidence: <high|medium|low>
 Action: <reported / replied / reopened and replied>
 ```
 
-### 5. Reply to unresolved concerns
+### 5. Reply to every thread
 
-For `partial` or `not-fixed` threads:
+Reply once on the existing thread for every verdict, even when the concern is
+fixed, outdated, or cannot be established from code alone.
 
-- If unresolved, reply on the existing thread.
-- If resolved but demonstrably wrong, reopen it first, then reply.
+- For `partial` or `not-fixed`, if the thread is resolved but demonstrably wrong,
+  reopen it first, then reply.
 - Never reopen a thread merely because the implementation differs from your
   suggestion.
 
@@ -129,15 +146,20 @@ Reply in English, quoting only the specific original concern:
 ```markdown
 > [specific sentence from the original review comment]
 
-Still needs attention: [what is missing or incorrect, with concrete evidence]
+fixed: Confirmed resolved because [concrete evidence].
+partial: Still needs attention: [what is missing, with concrete evidence].
+not-fixed: Still needs attention: [what remains incorrect, with concrete evidence].
+needs-look: Unable to verify from the current evidence; [specific check or evidence needed].
+outdated: This concern is outdated because [current code or behavior anchor].
 ```
 
-Post one reply per thread. Keep it concise, explain the impact, and state the
-next correction or verification needed. Record the reply URL or failure.
+Post exactly one reply per thread. Keep it concise, explain the evidence or
+limitation, and state the next correction or verification needed when relevant.
+Record the reply URL or failure.
 
 ### 6. Final verification report
 
-After all threads are evaluated and eligible replies are posted, report in this
+After all threads are evaluated and replies are posted, report in this
 format:
 
 ```markdown
