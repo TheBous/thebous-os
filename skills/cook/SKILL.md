@@ -159,6 +159,10 @@ The HTML is a planning artifact, not a report of completed work. Verify that it
 exists and is non-empty before proceeding. If Obsidian is not configured, stop
 before development and ask the user to configure it: this artifact is mandatory.
 
+**REQUIRED SUB-SKILL:** Use `architecture-first-development` before changing
+source or test code. It governs design and code structure; this skill continues
+to govern Jira context, SDD artifacts, verification, and documentation.
+
 ### 6. Proceed with SDD implementation
 
 Always use Spec-Driven Development. Execute the tasks in `tasks.md` in order,
@@ -259,4 +263,4 @@ Show the user:
 - ✅ SDD bundle: `Tickets/DC-<TASK_ID>/spec.md`, `plan.md`, `tasks.md`, and `implementation-direction.html`
 - ✅ Obsidian log: updated (or "skipped, no vault configured")
 - ✅ Granola context page: `<path>` (if imported, otherwise "skipped")
-- → Suggest the next step: `/thebous-os:serve-up` to try it in a browser, or `/thebous-os:create-pr` to open the PR
+- → Suggest the next step: `/thebous-os:create-pr` to open the PR
