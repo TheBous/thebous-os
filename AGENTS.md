@@ -24,7 +24,6 @@ Full step-by-step logic for each workflow lives in `skills/*/SKILL.md` (shared h
 | `commands/serve-up.md` | Detect the runtime (compose/Dockerfile/package.json) and start the app detached on localhost |
 | `commands/serve-down.md` | Stop and clean up the local service started by serve-up |
 | `commands/create-pr.md` | Open PR against main, link Jira, notify Slack |
-| `commands/review-pr.md` | Analyze PR: correctness, naming, coverage + structured review |
 | `commands/review-pr-multiharness.md` | Analyze PR with risk-proportional multi-harness coverage and up to ten subagents |
 | `commands/review-pr-multiharness-ponytail.md` | Same as review-pr-multiharness, plus a required over-engineering deletion pass |
 | `commands/address-review.md` | Resolve review comments one-by-one, update docs |

@@ -27,7 +27,7 @@ Dev/
   Tickets/
     <KEY>/
       plan.md            # from cook's SDD chain
-      review.md          # from review-pr
+      review.md          # from review-pr-multiharness
       address-review.md  # from address-review
       calls.md           # wikilinks to related Granola notes
       docs/              # shared destination for generated documentation

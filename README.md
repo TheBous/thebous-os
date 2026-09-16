@@ -62,7 +62,7 @@ The skills are namespaced with the plugin name, for example:
 /thebous-os:setup
 /thebous-os:new-branch
 /thebous-os:cook
-/thebous-os:review-pr
+/thebous-os:review-pr-multiharness
 ```
 
 To update a previously installed marketplace:
@@ -147,8 +147,8 @@ Add the adapter to the other project's `opencode.json`:
 ```
 
 Restart OpenCode. The compatibility commands become available as `/cook`,
-`/create-pr`, `/review-pr`, `/current-status`, and so on. The canonical skills are
-also registered with OpenCode's native skill discovery.
+`/create-pr`, `/review-pr-multiharness`, `/current-status`, and so on. The
+canonical skills are also registered with OpenCode's native skill discovery.
 
 To update, pull the repository and restart OpenCode:
 
@@ -221,7 +221,6 @@ commit API tokens, app passwords or webhooks.
 | Implement a feature or fix | `thebous-os:cook` |
 | Show the current situation | `thebous-os:current-status` |
 | Open a pull request | `thebous-os:create-pr` |
-| Review a pull request | `thebous-os:review-pr` |
 | Review a PR (multiharness) | `thebous-os:review-pr-multiharness` |
 | Review a PR (multiharness + ponytail) | `thebous-os:review-pr-multiharness-ponytail` |
 | Merge a pull request | `thebous-os:merge-pr` |

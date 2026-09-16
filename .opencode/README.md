@@ -1,7 +1,7 @@
 # thebous-os OpenCode Plugin
 
 This directory contains the OpenCode adapter for thebous-os — a single unified package covering:
-- Git/Jira/Slack/Confluence workflow (new-branch, cook, create-pr, review-pr, etc.)
+- Git/Jira/Slack/Confluence workflow (new-branch, cook, create-pr, PR review, etc.)
 - Morning briefing (PR reviews, Jira, email, calendar, priority ranking)
 - End-of-day recap (today's work, Claude Code/OpenCode sessions)
 
@@ -33,7 +33,7 @@ Add to your `opencode.json`:
 Or install directly from GitHub/npm — see the root `README.md` / `package.json`.
 
 Commands are immediately available:
-- `/create-jira-task`, `/new-branch`, `/create-pr`, `/review-pr`, etc. (the git/Jira/Slack/Confluence workflow)
+- `/create-jira-task`, `/new-branch`, `/create-pr`, `/review-pr-multiharness`, etc. (the git/Jira/Slack/Confluence workflow)
 - `/morning-briefing` — Generate the morning briefing
 - `/morning-briefing-schedule` — Set up the daily 9 AM task
 - `/end-of-day` — Generate the end-of-day recap

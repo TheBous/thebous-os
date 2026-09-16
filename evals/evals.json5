@@ -48,19 +48,7 @@
         "Confirms the branch is pushed to origin before opening the PR",
         "PR is created against main via gh pr create",
         "A comment linking the PR is added to the corresponding Jira ticket",
-        "A Slack notification is sent suggesting review-pr as next step"
-      ]
-    },
-    {
-      id: 5,
-      command: "review-pr",
-      prompt: "Review PR #128",
-      expected_output: "Reads the full diff in file context, checks correctness/test-coverage/naming conventions, presents a verdict, and only submits the structured review after user confirmation",
-      expectations: [
-        "Fetches PR #128 metadata via gh pr view before analyzing",
-        "Presents a verdict to the user before submitting anything",
-        "Does not call gh to submit the review until the user explicitly confirms",
-        "Inline comments reference this repo's naming-convention references when relevant"
+         "A Slack notification is sent suggesting review-pr-multiharness as next step"
       ]
     },
     {
@@ -194,16 +182,6 @@
       expectations: [
         "The Obsidian section is a short summary, not the full SDD documents",
         "Skips silently when OBSIDIAN_VAULT_PATH is unset"
-      ]
-    },
-    {
-      id: 17,
-      command: "review-pr",
-      prompt: "Review PR #128 on branch dc-600-x, OBSIDIAN_VAULT_PATH configured",
-      expected_output: "After the review is submitted, appends the verdict summary to Dev/Tickets/DC-600/review.md and a daily note entry",
-      expectations: [
-        "Only logs after the user has confirmed and the review was actually submitted",
-        "Skips silently when no Jira key was matched from the branch"
       ]
     },
     {

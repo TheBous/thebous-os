@@ -225,7 +225,6 @@ test('core workflow skills declare their automatic trigger conditions', () => {
     cook: /Use when.*(develop|implement|plan).*(feature|fix)|Use when.*(feature|fix).*(develop|implement|plan)/is,
     'new-branch': /Use when.*(create|start|open).*branch/is,
     'create-pr': /Use when.*(create|open).*(PR|pull request).*merge|Use when.*merge.*branch/is,
-    'review-pr': /Use when.*review.*(PR|pull request)/is,
   };
 
   for (const [name, pattern] of Object.entries(triggers)) {
@@ -275,15 +274,13 @@ test('verify-resolved revalidates own review threads one by one', () => {
   assert.doesNotMatch(skill, /skills\/verify-resolved\/scripts/);
 });
 
-test('review-pr runs a fast walkthrough subagent and saves its HTML in the ticket review folder', () => {
-  const review = fs.readFileSync(path.join(skillsDir, 'review-pr', 'SKILL.md'), 'utf8');
-  assert.match(review, /in parallel/i);
-  assert.match(review, /fast subagent/i);
-  assert.match(review, /fastest low-cost model/i);
-  assert.doesNotMatch(review, /haiku|sonnet|gpt-\d|claude/i);
-  assert.match(review, /Dev\/Review\/DC-<TASK_ID>/);
-  assert.match(review, /index\.html/);
-  assert.match(review, /self-contained/i);
+test('standard review workflow is removed while multiharness variants remain', () => {
+  assert.equal(fs.existsSync(path.join(skillsDir, 'review-pr', 'SKILL.md')), false);
+  assert.equal(fs.existsSync(path.join(commandsDir, 'review-pr.md')), false);
+  assert.equal(fs.existsSync(path.join(skillsDir, 'review-pr-multiharness', 'SKILL.md')), true);
+  assert.equal(fs.existsSync(path.join(skillsDir, 'review-pr-multiharness-ponytail', 'SKILL.md')), true);
+  assert.equal(fs.existsSync(path.join(commandsDir, 'review-pr-multiharness.md')), true);
+  assert.equal(fs.existsSync(path.join(commandsDir, 'review-pr-multiharness-ponytail.md')), true);
 });
 
 test('review-pr-multiharness-ponytail follows the parent workflow and always runs ponytail', () => {

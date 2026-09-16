@@ -11,8 +11,8 @@ classify each concern, and communicate unresolved problems one thread at a time.
 
 **Do not use this workflow if:**
 - You are fixing feedback on your own PR — use `address-review`.
-- You are performing the first full review of a PR — use `review-pr` or
-  `review-pr-multiharness`.
+- You are performing the first full review of a PR — use `review-pr-multiharness`
+  or `review-pr-multiharness-ponytail`.
 
 ## Rules
 

@@ -43,7 +43,7 @@ DAILY_NOTE="${OBSIDIAN_VAULT_PATH}/Dev/Daily/${TODAY}.md"
 ```
 
 If it contains more than its header (`# <date>`), reorganize it into a readable
-summary. thebous-os commands (`new-branch`, `cook`, `review-pr`, `address-review`,
+ summary. thebous-os commands (`new-branch`, `cook`, `review-pr-multiharness`, `address-review`,
 `create-pr`) already write there during the day; do not paste the note raw.
 
 If Obsidian is unavailable, the file is missing, or it contains only the header,

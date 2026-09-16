@@ -11,7 +11,7 @@ Shared helpers and references, loaded only when the selected workflow requires t
 
 - `references/jira-transition.md` — standard Jira transition and comment pattern
 - `references/run-tests.md` — how to find and run this project's test suite
-- `references/naming-conventions-{code,db,nextjs}.md` — naming rules applied during `cook` and `review-pr`
+- `references/naming-conventions-{code,db,nextjs}.md` — naming rules applied during `cook` and PR review
 - `scripts/helpers.sh` — credential loading, Jira REST, Slack, slugification
 
 Credentials are shared with the rest of thebous-os and live in `${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env`. If the file is missing, tell the user to run `/thebous-os:setup` first.
@@ -29,7 +29,7 @@ Map the user's request to the matching skill:
 | "Run it locally", "start the app", "spin up the service" | `skills/serve-up/SKILL.md` |
 | "Stop the service", "tear it down", "shut it off" | `skills/serve-down/SKILL.md` |
 | "Open a PR", "create pull request" | `skills/create-pr/SKILL.md` |
-| "Review this PR", "look at PR #N" | `skills/review-pr/SKILL.md` |
+| "Review this PR", "look at PR #N" | `skills/review-pr-multiharness/SKILL.md` |
 | "Address review comments", "fix the review feedback" | `skills/address-review/SKILL.md` |
 | "Verify resolved comments", "check if feedback was fixed" | `skills/verify-resolved/SKILL.md` |
 | "Merge the PR", "ship it" | `skills/merge-pr/SKILL.md` |
