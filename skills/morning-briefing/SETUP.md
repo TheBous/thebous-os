@@ -16,7 +16,7 @@ This skill is part of the unified **thebous-os** plugin — see the root `README
 opencode plugin install github:TheBous/thebous-os
 ```
 
-Restart OpenCode. Commands are immediately available, including `/morning-briefing` and `/morning-briefing-schedule`.
+Restart OpenCode. Commands are immediately available, including `/morning-briefing`.
 
 ## Configuration (first run only, shared with the rest of thebous-os)
 
@@ -41,14 +41,6 @@ Saved to `~/.config/thebous-os/.env`, shared across every command and skill in t
 This uses plain IMAP under the hood — no OAuth app registration, no per-harness setup. It works identically regardless of which harness calls it, since it's just a stored secret and a stdlib IMAP connection.
 
 ## Daily Scheduling
-
-### Claude Code (automatic)
-
-```bash
-/thebous-os:morning-briefing-schedule
-```
-
-Creates a daily cron task at 9:00 AM (local time), using Claude Code's built-in scheduled tasks. Task runs automatically when the app is open; if closed at 9:00 AM, it runs on next app launch.
 
 ### OpenCode / Codex / Command Line (manual cron fallback)
 

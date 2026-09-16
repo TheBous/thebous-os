@@ -26,8 +26,6 @@ Map the user's request to the matching skill:
 | "Create a Jira task", "open a task with the standard template" | `skills/create-jira-task/SKILL.md` |
 | "Start this ticket", "create a branch for T-200" | `skills/new-branch/SKILL.md` |
 | "Implement this", "cook the feature", "fix the bug" | `skills/cook/SKILL.md` |
-| "Run it locally", "start the app", "spin up the service" | `skills/serve-up/SKILL.md` |
-| "Stop the service", "tear it down", "shut it off" | `skills/serve-down/SKILL.md` |
 | "Open a PR", "create pull request" | `skills/create-pr/SKILL.md` |
 | "Review this PR", "look at PR #N" | `skills/review-pr-multiharness/SKILL.md` |
 | "Address review comments", "fix the review feedback" | `skills/address-review/SKILL.md` |

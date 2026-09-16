@@ -137,33 +137,6 @@
       ]
     },
     {
-      id: 13,
-      command: "serve-up",
-      prompt: "Start the app locally so I can test what we just built",
-      expected_output: "Detects the runtime from docker-compose/Dockerfile/package.json, resolves the port, starts the service detached, polls until it responds, and reports the local and LAN URLs",
-      expectations: [
-        "Detection prefers a compose file over a bare Dockerfile when both exist",
-        "The port is read from the project (compose ports / EXPOSE / script flag / .env), not assumed",
-        "The service is started detached — no foreground blocking process",
-        "Readiness is confirmed by polling the port, not by the start command's exit code",
-        "Both the localhost URL and the LAN IP URL are reported",
-        "An already-occupied port is reported to the user rather than having its process killed"
-      ]
-    },
-    {
-      id: 14,
-      command: "serve-down",
-      prompt: "Stop the local service",
-      expected_output: "Detects whether a compose stack, the jira-git-sync-serve container, or a pid-file dev process is running, stops it, and verifies the port is free",
-      expectations: [
-        "All three sources are checked (compose stack, named container, pid file)",
-        "The pid is checked with kill -0 before signalling, to avoid killing a recycled pid",
-        "The port is re-checked after teardown to confirm it is actually free",
-        "docker compose down -v is only run after explicit user confirmation about deleting volumes",
-        "A process on the port that serve-up did not start is reported, not killed"
-      ]
-    },
-    {
       id: 15,
       command: "new-branch",
       prompt: "Create a new branch for ticket T-200, OBSIDIAN_VAULT_PATH configured and Granola/ has 2 recent notes",

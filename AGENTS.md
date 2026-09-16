@@ -21,8 +21,6 @@ Full step-by-step logic for each workflow lives in `skills/*/SKILL.md` (shared h
 | `commands/current-status.md` | Show the user's current situation today across work, agenda, communication, and coding activity |
 | `commands/new-branch.md` | Create branch from Jira ticket, move ticket to In Progress, notify Slack |
 | `commands/cook.md` | Implement feature/fix: write code, run tests, update docs |
-| `commands/serve-up.md` | Detect the runtime (compose/Dockerfile/package.json) and start the app detached on localhost |
-| `commands/serve-down.md` | Stop and clean up the local service started by serve-up |
 | `commands/create-pr.md` | Open PR against main, link Jira, notify Slack |
 | `commands/review-pr-multiharness.md` | Analyze PR with risk-proportional multi-harness coverage and up to ten subagents |
 | `commands/review-pr-multiharness-ponytail.md` | Same as review-pr-multiharness, plus a required over-engineering deletion pass |
@@ -33,7 +31,6 @@ Full step-by-step logic for each workflow lives in `skills/*/SKILL.md` (shared h
 | `commands/create-doc.md` | Generate new Confluence page from code |
 | `commands/update-doc.md` | Update existing Confluence page with latest changes |
 | `commands/morning-briefing.md` | Generate the morning briefing (PR reviews, Jira, email, calendar, priority ranking) |
-| `commands/morning-briefing-schedule.md` | Set up the daily 9 AM scheduled task for the morning briefing |
 | `commands/end-of-day.md` | Generate the end-of-day recap (today's work + Claude Code/OpenCode sessions) |
 
 Version manifests are bumped automatically by `.github/workflows/bump-version.yml` after each push to `main`. The workflow keeps `package.json`, Claude manifests, and the Codex manifest aligned.
