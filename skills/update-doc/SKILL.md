@@ -25,11 +25,18 @@ provider-neutral task source:
 
 ```bash
 source "scripts/helpers.sh"
-TASK_REF=$(resolve_work_item_ref "$(git branch --show-current)" 2>/dev/null || true)
+if ! TASK_REF=$(resolve_work_item_ref "$(git branch --show-current)" 2>/tmp/resolve.err); then
+  if grep -q "ambiguous" /tmp/resolve.err; then
+    # ask user whether Jira or Notion is the source of truth, then re-resolve with `jira:...` or `notion:...`
+  else
+    TASK_REF=""
+  fi
+fi
 ```
 
 Store the `TaskRef` if found. Jira and Notion remain independent providers;
-if no task resolves, skip the task-linked Obsidian step.
+if the resolver reports an ambiguous reference, ask which one is the source
+of truth; if no task resolves, skip the task-linked Obsidian step.
 
 ### 2. Identify the page
 

@@ -38,7 +38,13 @@ PR branch, title and body:
 
 ```bash
 source "scripts/helpers.sh"
-TASK_REF=$(resolve_work_item_ref "<headRefName, title, or body>" 2>/dev/null || true)
+if ! TASK_REF=$(resolve_work_item_ref "<headRefName, title, or body>" 2>/tmp/resolve.err); then
+  if grep -q "ambiguous" /tmp/resolve.err; then
+    # ask user whether Jira or Notion is the source of truth, then re-resolve with `jira:...` or `notion:...`
+  else
+    TASK_REF=""
+  fi
+fi
 ```
 
 Store the resulting `TaskRef` if non-empty. Jira and Notion are independent
