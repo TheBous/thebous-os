@@ -92,6 +92,23 @@ assert_file_contains "log_pr URL" "$VAULT/Dev/Tickets/T-201/plan.md" "pr: https:
 obsidian_log_pr "" "T-202" "https://github.com/x/y/pull/4" "" >/dev/null
 echo "PASS: log_pr skips without a vault"
 
+# Provider-aware task logging — preserves Jira identity and adds Notion paths.
+JIRA_REF='{"provider":"jira","external_id":"T-203","url":"https://company.atlassian.net/browse/T-203"}'
+NOTION_REF='{"provider":"notion","external_id":"6f3b2c1a-1234-4567-89ab-0123456789ab","url":"https://www.notion.so/example/6f3b2c1a1234456789ab0123456789ab"}'
+assert_eq "Jira task_dir path" "$VAULT/Dev/Tickets/T-203" "$(obsidian_task_dir "$VAULT" "$JIRA_REF")"
+assert_eq "Notion task_dir path" "$VAULT/Dev/Tickets/notion-6f3b2c1a-1234-4567-89ab-0123456789ab" "$(obsidian_task_dir "$VAULT" "$NOTION_REF")"
+NOTION_FILE=$(obsidian_ensure_task_file "$VAULT" "$NOTION_REF" "plan.md")
+assert_eq "Notion task file path" "$VAULT/Dev/Tickets/notion-6f3b2c1a-1234-4567-89ab-0123456789ab/plan.md" "$NOTION_FILE"
+assert_file_contains "Notion frontmatter provider" "$NOTION_FILE" "provider: notion"
+assert_file_contains "Notion frontmatter external ID" "$NOTION_FILE" "external_id: 6f3b2c1a-1234-4567-89ab-0123456789ab"
+assert_file_contains "Notion frontmatter URL" "$NOTION_FILE" "https://www.notion.so/example/6f3b2c1a1234456789ab0123456789ab"
+NOTION_LOGGED=$(obsidian_log_task "$VAULT" "$NOTION_REF" "review.md" "reviewed" "Notion task reviewed")
+assert_eq "Notion log path" "$VAULT/Dev/Tickets/notion-6f3b2c1a-1234-4567-89ab-0123456789ab/review.md" "$NOTION_LOGGED"
+assert_file_contains "Notion log daily line" "$DAILY_FILE" "Notion task reviewed"
+NOTION_PR=$(obsidian_log_pr_task "$VAULT" "$NOTION_REF" "https://github.com/x/y/pull/5" "Notion PR opened")
+assert_eq "Notion PR path" "$VAULT/Dev/Tickets/notion-6f3b2c1a-1234-4567-89ab-0123456789ab/plan.md" "$NOTION_PR"
+assert_file_contains "Notion PR URL" "$NOTION_PR" "pr: https://github.com/x/y/pull/5"
+
 # obsidian_granola_candidates — only lists recent .md files, empty when folder missing
 mkdir -p "$VAULT/Granola"
 cat > "$VAULT/Granola/recent.md" <<'NOTE'

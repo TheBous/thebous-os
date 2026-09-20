@@ -235,6 +235,87 @@ slugify() {
 }
 
 # ── Obsidian ─────────────────────────────────────────────────────
+obsidian_task_storage_key() {
+  local ref_json="$1" provider external_id
+  provider=$(jq -r '.provider // empty' <<<"$ref_json")
+  external_id=$(jq -r '.external_id // empty' <<<"$ref_json")
+
+  case "$provider" in
+    jira)
+      external_id=$(extract_jira_key "$external_id" 2>/dev/null || true)
+      [ -n "$external_id" ] || return 1
+      printf '%s\n' "$external_id"
+      ;;
+    notion)
+      external_id=$(format_notion_page_id "$external_id" 2>/dev/null || true)
+      [ -n "$external_id" ] || return 1
+      printf 'notion-%s\n' "$external_id"
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+obsidian_task_dir() {
+  local vault="$1" ref_json="$2" key
+  key=$(obsidian_task_storage_key "$ref_json") || return 1
+  echo "$vault/Dev/Tickets/$key"
+}
+
+obsidian_task_docs_dir() {
+  local dir
+  dir=$(obsidian_task_dir "$1" "$2") || return 1
+  echo "$dir/docs"
+}
+
+obsidian_ensure_task_file() {
+  local vault="$1" ref_json="$2" filename="$3"
+  local provider external_id url dir file
+  provider=$(jq -r '.provider // empty' <<<"$ref_json")
+  external_id=$(jq -r '.external_id // empty' <<<"$ref_json")
+  url=$(jq -r '.url // empty' <<<"$ref_json")
+  dir=$(obsidian_task_dir "$vault" "$ref_json") || return 1
+  [ -n "$filename" ] || return 1
+  file="$dir/$filename"
+  mkdir -p "$dir"
+  if [ ! -f "$file" ]; then
+    {
+      echo "---"
+      [ "$provider" = "jira" ] && echo "ticket: $external_id"
+      echo "provider: $provider"
+      echo "external_id: $external_id"
+      if [ -n "$url" ]; then
+        printf 'url: "%s"\n' "$(printf '%s' "$url" | sed 's/"/\\"/g')"
+      else
+        echo "url: null"
+      fi
+      echo "status: open"
+      echo "date: $(date +%Y-%m-%d)"
+      echo "---"
+      echo
+    } > "$file"
+  fi
+  echo "$file"
+}
+
+obsidian_log_task() {
+  local vault="$1" ref_json="$2" filename="$3" section="${4:-}" daily_line="${5:-}"
+  local file
+  [ -n "$vault" ] && [ -d "$vault" ] && [ -n "$ref_json" ] || return 0
+  file="$(obsidian_ensure_task_file "$vault" "$ref_json" "$filename")"
+  [ -z "$section" ] || obsidian_append_section "$file" "$section"
+  [ -z "$daily_line" ] || obsidian_append_daily "$vault" "$daily_line"
+  echo "$file"
+}
+
+obsidian_log_pr_task() {
+  local vault="$1" ref_json="$2" pr_url="$3" daily_line="$4"
+  local file
+  [ -n "$vault" ] && [ -d "$vault" ] && [ -n "$ref_json" ] || return 0
+  file="$(obsidian_log_task "$vault" "$ref_json" "plan.md" "" "$daily_line")"
+  obsidian_set_pr "$file" "$pr_url"
+  echo "$file"
+}
+
 obsidian_ticket_dir() {
   local vault="$1" key="$2"
   echo "$vault/Dev/Tickets/$key"
@@ -287,7 +368,7 @@ obsidian_set_pr() {
   if grep -q '^pr: ' "$file"; then
     sed "s|^pr: .*|pr: $pr|" "$file" > "$tmp"
   else
-    awk -v pr="$pr" '{ print } /^ticket: / && !inserted { print "pr: " pr; inserted=1 }' "$file" > "$tmp"
+    awk -v pr="$pr" '{ print } !inserted && (/^ticket: / || /^external_id: /) { print "pr: " pr; inserted=1 } END { if (!inserted) print "pr: " pr }' "$file" > "$tmp"
   fi
   mv "$tmp" "$file"
 }
