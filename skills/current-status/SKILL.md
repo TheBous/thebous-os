@@ -29,7 +29,8 @@ state coverage at the end.
 |---|---|
 | Local Git | uncommitted files, current branch, branches created today, today's commits and pushes |
 | GitHub | PRs opened today, reviews requested, reviews performed, comments, failed CI, open PRs |
-| Jira | tasks created, commented, updated, assigned, transitioned, notifications, and deadlines |
+| Jira | normalized tasks through `list`, activity through `list_activity`, notifications, and deadlines |
+| Notion | normalized tasks through `scripts/notion.sh notion_list_tasks`; activity through `notion_list_activity` when supported |
 | Confluence | pages created or updated, comments, and documents awaiting review |
 | Calendar | past, current, and remaining events today |
 | Meetings/Granola | meetings actually held, title, participants, and available notes |
@@ -63,14 +64,21 @@ reviews/comments/approvals made today, PRs opened today, unresolved feedback,
 failed CI, blocked merges, and PRs awaiting action. Open each candidate's detail
 before classifying it. Preserve URL, repository, author, state, and last update.
 
-## 5. Collect Jira and Confluence
+## 5. Collect task providers and Confluence
 
-Use the shared account configuration. For Jira, find issues created, commented,
-assigned, updated, or transitioned today; notifications and mentions; deadlines;
-and tasks in `In Progress`, `In Review`, or equivalent states. For Confluence,
-find pages created or updated today, comments, and pending approvals. Link each
-item to its Jira task when a key is available. If a query is unsupported, state
-the exact category that was not verified instead of inventing results.
+Use the shared account configuration and query each configured task provider
+independently. For Jira, use the existing issue queries and normalize each item
+to the provider-neutral task contract. For Notion, source `scripts/notion.sh`,
+call `notion_list_tasks` with the date/status filters, and use its `items`,
+`next_cursor`, `ref.url`, and canonical `status` fields. Call each provider's
+`list_activity` for comments, updates, assignments, and transitions. Keep
+provider and external ID on every item: a Jira-only run, a Notion-only run, and
+a run with both providers are valid; never merge distinct tasks merely because
+their titles match. If Notion activity is unsupported, credentials are missing,
+or `next_cursor` remains, add a coverage gap naming the provider and category;
+never turn the unavailable result into `None`. For Confluence, find pages
+created or updated today, comments, and pending approvals. Link each item to
+its provider task when a reference is available.
 
 ## 6. Collect agenda, meetings, and communications
 
@@ -84,14 +92,17 @@ request as open and exclude noise, duplicates, and resolved messages.
 ## 7. Collect Obsidian and coding sessions
 
 Load the shared configuration through `scripts/helpers.sh`. When configured,
-read today's daily note and `Dev/Tickets/<KEY>` logs, but never overwrite or
-modify notes. For today's coding sessions show title, project/path, and latest
-activity. If the current session is not exposed, state that only in coverage.
+read today's daily note and provider-aware `Dev/Tickets/<storage-key>` logs,
+where `obsidian_task_storage_key` maps Jira keys and Notion page IDs without
+collisions, but never overwrite or modify notes. For today's coding sessions
+show title, project/path, and latest activity. If the current session is not
+exposed, state that only in coverage.
 
 ## 8. Classify results
 
-Deduplicate events across sources while keeping the most useful link and linked
-sources. Classify in this order:
+Deduplicate repeated observations of the same provider reference across sources
+while keeping the most useful link and linked sources. Jira and Notion items
+remain separate even when titles or descriptions match. Classify in this order:
 
 1. **Now** — blockers, overdue requests, reviews, imminent meetings, uncommitted files, or red CI requiring immediate attention.
 2. **In progress** — branches, PRs, tasks, or documents started but unfinished.
@@ -142,5 +153,7 @@ temporary directory and state that it was produced but not archived.
 - Never use local modification time as proof of a remote push, review, or event.
 - Never call work completed merely because a commit or PR exists.
 - Always distinguish `Verified`, `Inferred`, and `Unverified`.
-- If a source fails, continue with the others and disclose the failure.
+- If a source fails, continue with the others and disclose the failure as a
+  coverage gap, including missing credentials, unsupported activity, and
+  incomplete pagination; never present a failed provider as an empty result.
 - If no source is available, produce a minimal report with the limitation and suggest `/thebous-os:setup`.

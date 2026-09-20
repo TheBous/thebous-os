@@ -21,6 +21,23 @@ notion_config_validate() {
   fi
 }
 
+notion_data_source_id() {
+  local configured="${NOTION_DATA_SOURCE_ID:-}" response data_source_id
+
+  if [ -n "$configured" ]; then
+    data_source_id=$(format_notion_page_id "$configured" 2>/dev/null || true)
+  else
+    response=$(notion_api_request GET "/v1/databases/$NOTION_DATABASE_ID")
+    data_source_id=$(jq -r '.data_sources[0].id // empty' <<<"$response")
+    data_source_id=$(format_notion_page_id "$data_source_id" 2>/dev/null || true)
+  fi
+  if [ -z "$data_source_id" ]; then
+    echo "ERROR: VALIDATION_ERROR: Notion database has no usable data source" >&2
+    return 2
+  fi
+  printf '%s' "$data_source_id"
+}
+
 notion_status() {
   local value
   value=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
@@ -37,8 +54,9 @@ notion_status() {
 notion_normalize_page() {
   local page_json="${1:-}"
   local expected_database="${2:-${NOTION_DATABASE_ID:-}}"
-  local page_id page_url title description raw_status status assignee due_at start_at updated_at parent_id
-  local normalized_id normalized_parent normalized_expected
+  local expected_data_source="${3:-${NOTION_DATA_SOURCE_ID:-}}"
+  local page_id page_url title description raw_status status assignee due_at start_at updated_at parent_database_id parent_data_source_id
+  local normalized_id normalized_parent normalized_expected normalized_source normalized_expected_source
 
   if ! jq -e '
     .object == "page" and
@@ -62,10 +80,13 @@ notion_normalize_page() {
   fi
 
   if [ -n "$expected_database" ]; then
-    parent_id=$(jq -r '.parent.database_id // .parent.data_source_id // empty' <<<"$page_json")
-    normalized_parent=$(format_notion_page_id "$parent_id" 2>/dev/null || true)
+    parent_database_id=$(jq -r '.parent.database_id // empty' <<<"$page_json")
+    parent_data_source_id=$(jq -r '.parent.data_source_id // empty' <<<"$page_json")
+    normalized_parent=$(format_notion_page_id "$parent_database_id" 2>/dev/null || true)
     normalized_expected=$(format_notion_page_id "$expected_database" 2>/dev/null || true)
-    if [ -z "$normalized_expected" ] || [ "$normalized_parent" != "$normalized_expected" ]; then
+    normalized_source=$(format_notion_page_id "$parent_data_source_id" 2>/dev/null || true)
+    normalized_expected_source=$(format_notion_page_id "$expected_data_source" 2>/dev/null || true)
+    if [ -z "$normalized_expected" ] || { [ "$normalized_parent" != "$normalized_expected" ] && { [ -z "$normalized_expected_source" ] || [ "$normalized_source" != "$normalized_expected_source" ]; }; }; then
       echo "ERROR: VALIDATION_ERROR: Notion page is outside the configured database" >&2
       return 2
     fi
@@ -199,6 +220,73 @@ notion_get_page() {
 
   response=$(notion_api_request GET "/v1/pages/$normalized_id")
   notion_normalize_page "$response" "$NOTION_DATABASE_ID"
+}
+
+notion_list_tasks() {
+  local filters_json="${1:-}" data_source_id response filter payload page_size cursor items next_cursor status_names
+
+  notion_config_validate
+  [ -n "$filters_json" ] || filters_json='{}'
+  if ! jq -e 'type == "object"' <<<"$filters_json" >/dev/null 2>&1; then
+    echo "ERROR: VALIDATION_ERROR: Notion task filters must be a JSON object" >&2
+    return 2
+  fi
+  page_size=$(jq -r '(.limit // 100)' <<<"$filters_json")
+  if ! [[ "$page_size" =~ ^[0-9]+$ ]] || [ "$page_size" -lt 1 ] || [ "$page_size" -gt 100 ]; then
+    echo "ERROR: VALIDATION_ERROR: Notion task limit must be between 1 and 100" >&2
+    return 2
+  fi
+  cursor=$(jq -r '.cursor // empty' <<<"$filters_json")
+  status_names=$(jq -r '(.status // empty) | if type == "array" then .[] else . end' <<<"$filters_json" \
+    | while IFS= read -r status; do
+        [ -n "$status" ] && notion_status_name "$status"
+      done \
+    | jq -R -s 'split("\n") | map(select(length > 0))')
+  filter=$(jq -c --argjson status_names "$status_names" '
+    [
+      (if ($status_names | length) == 0 then empty
+       elif ($status_names | length) == 1 then {property:"Status",status:{equals:$status_names[0]}}
+       else {or:($status_names | map({property:"Status",status:{equals:.}}))}
+       end),
+      (if (.due_from // "") == "" then empty else {property:"Due date",date:{on_or_after:.due_from}} end),
+      (if (.due_to // "") == "" then empty else {property:"Due date",date:{on_or_before:.due_to}} end),
+      (if (.start_from // "") == "" then empty else {property:"Start date",date:{on_or_after:.start_from}} end),
+      (if (.start_to // "") == "" then empty else {property:"Start date",date:{on_or_before:.start_to}} end),
+      (if (.updated_from // "") == "" then empty else {timestamp:"last_edited_time",last_edited_time:{on_or_after:.updated_from}} end),
+      (if (.updated_to // "") == "" then empty else {timestamp:"last_edited_time",last_edited_time:{on_or_before:.updated_to}} end)
+    ] as $filters
+    | if ($filters | length) == 0 then null
+      elif ($filters | length) == 1 then $filters[0]
+      else {and:$filters}
+      end
+  ' <<<"$filters_json")
+  data_source_id=$(notion_data_source_id)
+  payload=$(jq -n \
+    --arg cursor "$cursor" \
+    --argjson page_size "$page_size" \
+    --argjson filter "$filter" \
+    '{page_size:$page_size}
+     | if $cursor == "" then . else .start_cursor = $cursor end
+     | if $filter == null then . else .filter = $filter end')
+  response=$(notion_api_request POST "/v1/data_sources/$data_source_id/query" "$payload")
+  if ! jq -e '.object == "list" and (.results | type == "array")' <<<"$response" >/dev/null 2>&1; then
+    echo "ERROR: VALIDATION_ERROR: Notion task list response is malformed" >&2
+    return 2
+  fi
+  items=$(while IFS= read -r page; do
+    notion_normalize_page "$page" "$NOTION_DATABASE_ID" "$data_source_id"
+  done < <(jq -c '.results[]' <<<"$response") | jq -s '.')
+  next_cursor=$(jq -r 'if .has_more then (.next_cursor // "") else "" end' <<<"$response")
+  jq -n \
+    --argjson items "$items" \
+    --arg next_cursor "$next_cursor" \
+    '{items:$items,next_cursor:(if $next_cursor == "" then null else $next_cursor end)}'
+}
+
+notion_list_activity() {
+  notion_config_validate
+  echo "ERROR: UNSUPPORTED_OPERATION: Notion activity needs per-page comment traversal; use list for normalized task coverage" >&2
+  return 2
 }
 
 notion_status_name() {

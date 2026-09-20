@@ -19,8 +19,11 @@ load_env
 
 If the file or required `GITHUB_REPOS`, `OBSIDIAN_VAULT_PATH`, `GMAIL_ADDRESS`,
 or `GMAIL_APP_PASSWORD` values are missing, tell the user to run
-`/thebous-os:setup`. Gmail credentials are only a fallback when no native Gmail
-connector is available.
+`/thebous-os:setup`. Jira and Notion are independently optional task providers:
+query every configured provider and disclose the one that is not configured.
+Gmail credentials are only a fallback when no native Gmail connector is
+available. Notion coverage is enabled when `NOTION_API_TOKEN` and
+`NOTION_DATABASE_ID` are present in the loaded environment.
 
 ## Step 1: Calculate time windows
 
@@ -105,17 +108,23 @@ For each recent PR, inspect issue comments, review comments, and submitted
 reviews in the overnight window, excluding the authenticated user. Keep only PRs
 with at least one result.
 
-## Step 5: Jira deadlines
+## Step 5: Task deadlines
 
-Resolve `cloudId` once with `getAccessibleAtlassianResources`; if multiple sites
-exist, ask which one to use. Then query:
+For Jira, resolve `cloudId` once with `getAccessibleAtlassianResources`; if
+multiple sites exist, ask which one to use. Then query:
 
 ```
 jql: assignee = currentUser() AND duedate >= startOfDay() AND duedate <= "<DUE_END> 23:59" AND statusCategory != Done ORDER BY duedate ASC
 fields: ["summary", "duedate", "status", "project"]
 ```
 
-## Step 6: Jira tasks starting today
+For Notion, source `scripts/notion.sh` and call `notion_list_tasks` with
+`due_from=TODAY`, `due_to=DUE_END`, and the provider-neutral equivalent of
+`status != done`. Use normalized `due_at`, `status`, `ref.url`, and
+`ref.external_id`; follow `next_cursor` until complete. Keep Jira-only,
+Notion-only, and both-provider results separate.
+
+## Step 6: Tasks starting today
 
 ```
 jql: assignee = currentUser() AND "Start date" = startOfDay() ORDER BY key ASC
@@ -126,10 +135,13 @@ fields: ["summary", "status", "project"]
 `getJiraIssueTypeMetaWithFields`, ask which field represents the start date, and
 update this skill once the correct name is known.
 
-## Step 7: Overnight Jira activity
+For Notion, call `notion_list_tasks` with `start_from=TODAY` and
+`start_to=TODAY`; use normalized `start_at`, `status`, and the Notion page link.
 
-Jira Cloud does not expose the UI notification feed through the API. Use this
-proxy for real activity on the user's tickets:
+## Step 7: Overnight task activity
+
+For Jira, Jira Cloud does not expose the UI notification feed through the API.
+Use this proxy for real activity on the user's tickets:
 
 ```
 jql: (assignee = currentUser() OR reporter = currentUser()) AND updated >= "<NIGHT_START in YYYY-MM-DD HH:MM>" ORDER BY updated DESC
@@ -138,6 +150,13 @@ fields: ["summary", "status", "project", "comment"]
 
 Report comments created or updated in the overnight window and flag comments
 that mention the user.
+
+For Notion, call `notion_list_activity` with `from=NIGHT_START_ISO` and
+`to=NOW_ISO`. Normalize `kind`, `ref`, `at`, `actor`, `summary`, and `url`.
+The current shell adapter may report `UNSUPPORTED_OPERATION` because Notion's
+comments endpoint is page-scoped; report that as a Notion activity coverage gap,
+not as `None`, and continue with task list results. If any provider returns a
+cursor, disclose incomplete pagination until all pages are collected.
 
 ## Step 8: Confluence changes and mentions
 
@@ -175,7 +194,7 @@ Report title, start/end, and conference URL when present.
 
 ## Step 11: Prioritize
 
-- **🔴 Critical**: due today/overdue Jira work or a direct mention clearly awaiting a response.
+- **🔴 Critical**: due today/overdue Jira or Notion work or a direct mention clearly awaiting a response.
 - **🟠 High**: overnight review request, response to the user's review, connected PR state change, new feedback on the user's PR, or overnight activity on their ticket.
 - **🟡 Medium**: review pending for days, deadline tomorrow/day after, or task starting today.
 - **⚪ Low/FYI**: informative non-urgent email and passive reminders.
@@ -195,9 +214,9 @@ Use this structure and never omit an empty section; write `None` instead:
 ## 🌙 PR reviews requested overnight
 ## ⏳ PR reviews pending from before
 ## 💬 New comments on your PRs
-## 📅 Jira tasks due today–the day after tomorrow
-## 🚀 Jira tasks starting today
-## 🔔 Overnight Jira activity
+## 📅 Tasks due today–the day after tomorrow
+## 🚀 Tasks starting today
+## 🔔 Overnight task activity
 ## 📧 Important overnight email
 ## 📞 Today's calls
 ```

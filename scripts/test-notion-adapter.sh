@@ -142,24 +142,32 @@ FIXTURE_MODE=""
 FIXTURE_LOG=$(mktemp)
 FIXTURE_METHOD_FILE=$(mktemp)
 FIXTURE_BODY_FILE=$(mktemp)
-trap 'rm -f "$FIXTURE_LOG" "$FIXTURE_METHOD_FILE" "$FIXTURE_BODY_FILE"' EXIT
+FIXTURE_URL_FILE=$(mktemp)
+trap 'rm -f "$FIXTURE_LOG" "$FIXTURE_METHOD_FILE" "$FIXTURE_BODY_FILE" "$FIXTURE_URL_FILE"' EXIT
 UPDATED_PAGE_JSON=$(jq '.properties.Status.status.name = "Done" | .last_edited_time = "2026-09-20T10:00:00.000Z"' <<<"$PAGE_JSON")
+DATABASE_RESPONSE=$(jq -n --arg id "$NOTION_DATABASE_ID" '{object:"database",id:$id,data_sources:[{id:"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"}]}')
+QUERY_RESPONSE=$(jq -n --argjson page "$PAGE_JSON" '{object:"list",has_more:true,next_cursor:"cursor-2",results:[$page]}')
 
 curl() {
-  local output_file="" method="GET" body=""
+  local output_file="" method="GET" body="" url=""
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -o) output_file="$2"; shift 2 ;;
       -X) method="$2"; shift 2 ;;
       --data|-d) body="$2"; shift 2 ;;
       -w|-H) shift 2 ;;
-      *) shift ;;
+      *) url="$1"; shift ;;
     esac
   done
   printf '%s\n' "$method" >>"$FIXTURE_LOG"
   printf '%s' "$method" >"$FIXTURE_METHOD_FILE"
   printf '%s' "$body" >"$FIXTURE_BODY_FILE"
-  if [ "$method" = "GET" ]; then
+  printf '%s' "$url" >"$FIXTURE_URL_FILE"
+  if [ "$FIXTURE_MODE" = "list" ] && [ "$method" = "GET" ]; then
+    printf '%s' "$DATABASE_RESPONSE" >"$output_file"
+  elif [ "$FIXTURE_MODE" = "list" ] && [ "$method" = "POST" ]; then
+    printf '%s' "$QUERY_RESPONSE" >"$output_file"
+  elif [ "$method" = "GET" ]; then
     printf '%s' "$PAGE_JSON" >"$output_file"
   elif [ "$method" = "PATCH" ]; then
     printf '%s' "$UPDATED_PAGE_JSON" >"$output_file"
@@ -170,6 +178,26 @@ curl() {
   fi
   printf '%s' "$FIXTURE_HTTP_STATUS"
 }
+
+FIXTURE_HTTP_STATUS=200
+FIXTURE_MODE=list
+: >"$FIXTURE_LOG"
+LIST_PAGE=$(notion_list_tasks '{"status":"in_progress","cursor":"cursor-1","limit":25}')
+FIXTURE_CALLS=$(wc -l <"$FIXTURE_LOG" | tr -d ' ')
+FIXTURE_METHOD=$(<"$FIXTURE_METHOD_FILE")
+FIXTURE_REQUEST_BODY=$(<"$FIXTURE_BODY_FILE")
+FIXTURE_URL=$(<"$FIXTURE_URL_FILE")
+assert_eq "list resolves data source and queries once" "2" "$FIXTURE_CALLS"
+assert_eq "list uses data source endpoint" "https://api.notion.com/v1/data_sources/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/query" "$FIXTURE_URL"
+assert_eq "list uses POST" "POST" "$FIXTURE_METHOD"
+assert_eq "list forwards page size" "25" "$(jq -r '.page_size' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "list forwards cursor" "cursor-1" "$(jq -r '.start_cursor' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "list maps canonical status" "In progress" "$(jq -r '.filter.status.equals' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "list normalizes task" "Implement OAuth login" "$(jq -r '.items[0].title' <<<"$LIST_PAGE")"
+assert_eq "list preserves pagination" "cursor-2" "$(jq -r '.next_cursor' <<<"$LIST_PAGE")"
+OUTPUT=$(notion_list_activity '{}' 2>&1)
+STATUS=$?
+assert_error "unsupported Notion activity is explicit" "UNSUPPORTED_OPERATION" "$OUTPUT" "$STATUS"
 
 : >"$FIXTURE_LOG"
 FIXTURE_MODE=create
