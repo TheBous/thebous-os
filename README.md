@@ -17,6 +17,7 @@ recap.
 
 - Jira task creation with a fixed Italian description and acceptance-criteria template
 - Notion task tracking through a configured database with the same provider-neutral contract
+- Provider-neutral task creation with per-task Jira or Notion selection
 - Jira → Git branch workflow with status transitions and Slack notifications
 - Feature/fix implementation with optional Granola context and Obsidian logging
 - PR creation, review, review-feedback resolution and merge workflows
@@ -222,6 +223,7 @@ and optionally `Assignee`, `Due date` and `Start date`.
 | Intent | Skill |
 |---|---|
 | Configure all integrations | `thebous-os:setup` |
+| Create a Jira or Notion task | `thebous-os:create-task` |
 | Create a Jira task | `thebous-os:create-jira-task` |
 | Create a branch from a ticket | `thebous-os:new-branch` |
 | Implement a feature or fix | `thebous-os:cook` |
