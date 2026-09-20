@@ -88,6 +88,136 @@ extract_jira_key() {
     | tr '[:lower:]' '[:upper:]'
 }
 
+format_notion_page_id() {
+  local compact
+  compact=$(printf '%s' "$1" | tr -d '-' | tr '[:upper:]' '[:lower:]')
+  if [[ ! "$compact" =~ ^[0-9a-f]{32}$ ]]; then
+    return 1
+  fi
+  printf '%s-%s-%s-%s-%s\n' \
+    "${compact:0:8}" "${compact:8:4}" "${compact:12:4}" \
+    "${compact:16:4}" "${compact:20:12}"
+}
+
+extract_notion_page_id() {
+  local input="$1"
+  local pattern='([0-9A-Fa-f]{8}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{12})'
+
+  case "$input" in
+    notion:*|*notion.so*|*notion.site*|*ntn-*) ;;
+    *) return 1 ;;
+  esac
+
+  if [[ "$input" =~ $pattern ]]; then
+    format_notion_page_id "${BASH_REMATCH[1]}"
+  else
+    return 1
+  fi
+}
+
+extract_notion_url() {
+  local input="$1"
+  local pattern='https?://(www\.)?notion\.(so|site)/[^[:space:]]+'
+  local url
+
+  if [[ "$input" =~ $pattern ]]; then
+    url="${BASH_REMATCH[0]}"
+    url=$(printf '%s' "$url" | sed 's/[.,;:!?)]$//')
+    printf '%s\n' "$url"
+  else
+    return 1
+  fi
+}
+
+extract_jira_url() {
+  local input="$1"
+  local pattern='https?://[^[:space:]]+/browse/[A-Za-z]+-[0-9]+'
+  local url
+
+  if [[ "$input" =~ $pattern ]]; then
+    url="${BASH_REMATCH[0]}"
+    url=$(printf '%s' "$url" | sed 's/[.,;:!?)]$//')
+    printf '%s\n' "$url"
+  else
+    return 1
+  fi
+}
+
+resolve_work_item_ref() {
+  local input="${1:-}"
+  local provider="" candidate="$input" jira_key="" notion_id="" url=""
+  local jira_source="$input" notion_url=""
+  local notion_branch_pattern='^[^[:space:]]+/ntn-[0-9A-Fa-f]{32}(-[[:alnum:]-]+)?$'
+
+  if [ -z "$input" ]; then
+    echo "ERROR: task reference is empty" >&2
+    return 2
+  fi
+
+  case "$input" in
+    jira:*)
+      provider="jira"
+      candidate="${input#jira:}"
+      ;;
+    notion:*)
+      provider="notion"
+      candidate="${input#notion:}"
+      ;;
+    *)
+      notion_id=$(extract_notion_page_id "$input" 2>/dev/null || true)
+      if [ -n "$notion_id" ]; then
+        notion_url=$(extract_notion_url "$input" 2>/dev/null || true)
+        if [[ "$input" =~ $notion_branch_pattern ]]; then
+          jira_source=""
+        elif [ -n "$notion_url" ]; then
+          jira_source="${input//$notion_url/}"
+        else
+          jira_source=$(printf '%s' "$input" | sed -E 's/ntn-[0-9A-Fa-f]{32}//g')
+        fi
+      fi
+      jira_key=$(extract_jira_key "$jira_source" 2>/dev/null || true)
+      if [ -n "$jira_key" ] && [ -n "$notion_id" ]; then
+        echo "ERROR: ambiguous task reference: Jira and Notion references found" >&2
+        return 2
+      elif [ -n "$jira_key" ]; then
+        provider="jira"
+      elif [ -n "$notion_id" ]; then
+        provider="notion"
+      else
+        echo "ERROR: unsupported task reference" >&2
+        return 2
+      fi
+      ;;
+  esac
+
+  if [ "$provider" = "jira" ]; then
+    jira_key=$(extract_jira_key "$candidate" 2>/dev/null || true)
+    if [ -z "$jira_key" ]; then
+      echo "ERROR: invalid Jira task reference" >&2
+      return 2
+    fi
+    url=$(extract_jira_url "$candidate" 2>/dev/null || true)
+    jq -n \
+      --arg provider "$provider" \
+      --arg external_id "$jira_key" \
+      --arg url "$url" \
+      '{provider: $provider, external_id: $external_id, url: (if $url == "" then null else $url end)}'
+    return 0
+  fi
+
+  notion_id=$(extract_notion_page_id "notion:$candidate" 2>/dev/null || true)
+  if [ -z "$notion_id" ]; then
+    echo "ERROR: invalid Notion page reference" >&2
+    return 2
+  fi
+  url=$(extract_notion_url "$candidate" 2>/dev/null || true)
+  jq -n \
+    --arg provider "$provider" \
+    --arg external_id "$notion_id" \
+    --arg url "$url" \
+    '{provider: $provider, external_id: $external_id, url: (if $url == "" then null else $url end)}'
+}
+
 extract_jira_keys() {
   # Same pattern as extract_jira_key, but returns every unique uppercase key
   # found in the text (one per line) — for scanning commit ranges/release notes.
