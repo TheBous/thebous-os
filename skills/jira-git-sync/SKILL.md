@@ -9,6 +9,8 @@ Use this skill as an index for the Jira/Git/Slack/Confluence workflows. The comp
 
 Shared helpers and references, loaded only when the selected workflow requires them:
 
+- `references/task-context.md` — provider-neutral task resolution and normalization
+- `references/jira-task-context.md` — Jira compatibility adapter for existing workflows
 - `references/jira-transition.md` — standard Jira transition and comment pattern
 - `references/run-tests.md` — how to find and run this project's test suite
 - `references/naming-conventions-{code,db,nextjs}.md` — naming rules applied during `cook` and PR review

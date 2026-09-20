@@ -1,5 +1,9 @@
 # Jira transition + comment (standard pattern)
 
+This is a Jira-specific adapter kept for compatibility. Provider-neutral
+workflows must route status changes and comments through the selected provider;
+do not use this reference for Notion tasks.
+
 Whenever a step needs to transition a Jira ticket and leave a comment, follow this pattern exactly. Always do both — never merge/branch/PR without leaving the Jira comment, even on the fallback path.
 
 Inputs needed from the calling step: `<KEY>` (the Jira ticket key), `<TRANSITION_ID>` (the `.env` variable to use, e.g. `$JIRA_IN_PROGRESS_ID`), `<COMMENT_TEXT>` (the comment body).
