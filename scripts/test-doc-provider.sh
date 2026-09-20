@@ -12,7 +12,7 @@ for skill in create-doc update-doc; do
   grep -q 'references/task-context.md' "$FILE"
   grep -q 'resolve_work_item_ref' "$FILE"
   grep -q 'obsidian_log_task' "$FILE"
-  ! grep -q 'extract_jira_key' "$FILE"
+  grep -q 'extract_jira_key' "$FILE" && exit 1
 done
 
 echo "Provider-aware documentation checks passed."
