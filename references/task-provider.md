@@ -198,8 +198,11 @@ incomplete coverage when the provider cannot supply the required data.
 The current Notion adapter supports status/date/cursor filters and resolves an
 `assignee` email through the paginated workspace-user list before applying the
 Notion people filter. The integration needs user-information capability for this
-lookup. It still reports `list_activity` as `UNSUPPORTED_OPERATION` until
-page-scoped comment traversal is added.
+lookup. `list_activity` traverses configured task pages for page updates and
+comments, including comment pagination; without explicit refs it discovers pages
+updated in the requested window. Notion does not expose historical status or
+assignment transitions through this path, so those categories remain a
+documented coverage gap.
 
 The shared list filters are:
 

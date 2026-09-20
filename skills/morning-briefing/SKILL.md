@@ -158,10 +158,11 @@ that mention the user.
 
 For Notion, call `notion_list_activity` with `from=NIGHT_START_ISO` and
 `to=NOW_ISO`. Normalize `kind`, `ref`, `at`, `actor`, `summary`, and `url`.
-The current shell adapter may report `UNSUPPORTED_OPERATION` because Notion's
-comments endpoint is page-scoped; report that as a Notion activity coverage gap,
-not as `None`, and continue with task list results. If any provider returns a
-cursor, disclose incomplete pagination until all pages are collected.
+The adapter traverses comments for pages updated in the window and reports page
+updates. Notion does not expose historical status or assignment transitions in
+this path; disclose those categories as a coverage gap, not as `None`. If any
+provider returns a cursor, disclose incomplete pagination until all pages are
+collected.
 
 ## Step 8: Confluence changes and mentions
 

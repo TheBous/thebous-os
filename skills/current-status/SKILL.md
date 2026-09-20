@@ -30,7 +30,7 @@ state coverage at the end.
 | Local Git | uncommitted files, current branch, branches created today, today's commits and pushes |
 | GitHub | PRs opened today, reviews requested, reviews performed, comments, failed CI, open PRs |
 | Jira | normalized tasks through `list`, activity through `list_activity`, notifications, and deadlines |
-| Notion | normalized tasks through `scripts/notion.sh notion_list_tasks`; activity through `notion_list_activity` when supported |
+| Notion | normalized tasks through `scripts/notion.sh notion_list_tasks`; activity through `notion_list_activity` |
 | Confluence | pages created or updated, comments, and documents awaiting review |
 | Calendar | past, current, and remaining events today |
 | Meetings/Granola | meetings actually held, title, participants, and available notes |

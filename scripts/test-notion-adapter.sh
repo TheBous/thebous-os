@@ -154,6 +154,8 @@ DATABASE_RESPONSE=$(jq -n --arg id "$NOTION_DATABASE_ID" '{object:"database",id:
 USERS_RESPONSE=$(jq -n '{object:"list",has_more:false,next_cursor:null,results:[{object:"user",id:"cccccccc-dddd-eeee-ffff-000000000000",type:"person",person:{email:"marco@example.com"}}]}')
 QUERY_RESPONSE=$(jq -n --argjson page "$PAGE_JSON" '{object:"list",has_more:true,next_cursor:"cursor-2",results:[$page]}')
 MALFORMED_QUERY_RESPONSE=$(jq -n --argjson page "$PAGE_JSON" '{object:"list",has_more:false,next_cursor:null,results:[{object:"page",id:"not-a-page"},$page]}')
+ACTIVITY_QUERY_RESPONSE=$(jq -n --argjson page "$PAGE_JSON" '{object:"list",has_more:false,next_cursor:null,results:[$page]}')
+COMMENTS_RESPONSE=$(jq -n --arg page_id "6f3b2c1a-1234-4567-89ab-0123456789ab" '{object:"list",has_more:false,next_cursor:null,results:[{object:"comment",id:"comment-activity",parent:{type:"page_id",page_id:$page_id},created_time:"2026-09-20T09:45:00.000Z",last_edited_time:"2026-09-20T09:45:00.000Z",created_by:{id:"cccccccc-dddd-eeee-ffff-000000000000"},rich_text:[{plain_text:"OAuth login is ready."}]}]}')
 
 curl() {
   local output_file="" method="GET" body="" url=""
@@ -172,12 +174,18 @@ curl() {
   printf '%s' "$url" >"$FIXTURE_URL_FILE"
   if [ "$FIXTURE_MODE" = "list" ] && [ "$method" = "GET" ] && [[ "$url" = *"/v1/users"* ]]; then
     printf '%s' "$USERS_RESPONSE" >"$output_file"
+  elif [ "$FIXTURE_MODE" = "activity" ] && [ "$method" = "GET" ] && [[ "$url" = *"/v1/comments"* ]]; then
+    printf '%s' "$COMMENTS_RESPONSE" >"$output_file"
+  elif [ "$FIXTURE_MODE" = "activity" ] && [ "$method" = "GET" ]; then
+    printf '%s' "$DATABASE_RESPONSE" >"$output_file"
   elif { [ "$FIXTURE_MODE" = "list" ] || [ "$FIXTURE_MODE" = "malformed-list" ]; } && [ "$method" = "GET" ]; then
     printf '%s' "$DATABASE_RESPONSE" >"$output_file"
   elif [ "$FIXTURE_MODE" = "list" ] && [ "$method" = "POST" ]; then
     printf '%s' "$QUERY_RESPONSE" >"$output_file"
   elif [ "$FIXTURE_MODE" = "malformed-list" ] && [ "$method" = "POST" ]; then
     printf '%s' "$MALFORMED_QUERY_RESPONSE" >"$output_file"
+  elif [ "$FIXTURE_MODE" = "activity" ] && [ "$method" = "POST" ]; then
+    printf '%s' "$ACTIVITY_QUERY_RESPONSE" >"$output_file"
   elif [ "$FIXTURE_MODE" = "multi-list" ] && [ "$method" = "GET" ]; then
     printf '%s' "$(jq '.data_sources += [{id:\"bbbbbbbb-cccc-dddd-eeee-ffffffffffff\"}]' <<<"$DATABASE_RESPONSE")" >"$output_file"
   elif [ "$FIXTURE_MODE" = "multi-list" ] && [ "$method" = "POST" ]; then
@@ -255,9 +263,13 @@ OUTPUT=$(notion_list_tasks '{}' 2>&1)
 STATUS=$?
 assert_error "malformed task page is rejected" "VALIDATION_ERROR" "$OUTPUT" "$STATUS"
 
-OUTPUT=$(notion_list_activity '{}' 2>&1)
-STATUS=$?
-assert_error "unsupported Notion activity is explicit" "UNSUPPORTED_OPERATION" "$OUTPUT" "$STATUS"
+FIXTURE_MODE=activity
+ACTIVITY=$(notion_list_activity '{"from":"2026-09-20T00:00:00.000Z","to":"2026-09-20T23:59:59.000Z","limit":20}')
+assert_eq "activity includes page update" "1" "$(jq '[.items[] | select(.kind == "updated")] | length' <<<"$ACTIVITY")"
+assert_eq "activity includes comment" "1" "$(jq '[.items[] | select(.kind == "commented")] | length' <<<"$ACTIVITY")"
+assert_eq "activity normalizes task ref" "6f3b2c1a-1234-4567-89ab-0123456789ab" "$(jq -r '.items[0].ref.external_id' <<<"$ACTIVITY")"
+assert_eq "activity preserves comment summary" "OAuth login is ready." "$(jq -r '.items[] | select(.kind == "commented") | .summary' <<<"$ACTIVITY")"
+assert_eq "activity has no next cursor" "null" "$(jq -r '.next_cursor' <<<"$ACTIVITY")"
 
 : >"$FIXTURE_LOG"
 FIXTURE_MODE=create

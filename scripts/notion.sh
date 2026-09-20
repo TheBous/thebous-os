@@ -366,9 +366,128 @@ notion_list_tasks() {
 }
 
 notion_list_activity() {
+  local filters_json="${1:-}" from to cursor limit refs task_filters task_page task_json task_ref page_id updated_at
+  local comment_cursor comment_path encoded_cursor comment_response next_cursor items event
+  local -a task_items=() activity_items=()
+
   notion_config_validate
-  echo "ERROR: UNSUPPORTED_OPERATION: Notion activity needs per-page comment traversal; use list for normalized task coverage" >&2
-  return 2
+  [ -n "$filters_json" ] || filters_json='{}'
+  if ! jq -e 'type == "object"' <<<"$filters_json" >/dev/null 2>&1; then
+    echo "ERROR: VALIDATION_ERROR: Notion activity filters must be a JSON object" >&2
+    return 2
+  fi
+  from=$(jq -r '.from // empty' <<<"$filters_json")
+  to=$(jq -r '.to // empty' <<<"$filters_json")
+  if [ -z "$from" ] || [ -z "$to" ]; then
+    echo "ERROR: VALIDATION_ERROR: Notion activity requires from and to timestamps" >&2
+    return 2
+  fi
+  limit=$(jq -r '(.limit // 100)' <<<"$filters_json")
+  if ! [[ "$limit" =~ ^[0-9]+$ ]] || [ "$limit" -lt 1 ] || [ "$limit" -gt 100 ]; then
+    echo "ERROR: VALIDATION_ERROR: Notion activity limit must be between 1 and 100" >&2
+    return 2
+  fi
+  cursor=$(jq -r '.cursor // empty' <<<"$filters_json")
+  refs=$(jq -c '.refs // []' <<<"$filters_json")
+  if ! jq -e 'type == "array"' <<<"$refs" >/dev/null 2>&1; then
+    echo "ERROR: VALIDATION_ERROR: Notion activity refs must be an array" >&2
+    return 2
+  fi
+
+  if [ "$(jq 'length' <<<"$refs")" -gt 0 ]; then
+    if [ -n "$cursor" ]; then
+      echo "ERROR: VALIDATION_ERROR: Notion activity cursor cannot be combined with refs" >&2
+      return 2
+    fi
+    while IFS= read -r ref; do
+      if ! jq -e '.provider == "notion" and (.external_id | type == "string")' <<<"$ref" >/dev/null 2>&1; then
+        echo "ERROR: VALIDATION_ERROR: Notion activity ref is invalid" >&2
+        return 2
+      fi
+      if ! task_json=$(notion_get_page "$(jq -r '.external_id' <<<"$ref")"); then
+        return 2
+      fi
+      task_items+=("$task_json")
+    done < <(jq -c '.[]' <<<"$refs")
+    next_cursor=""
+  else
+    task_filters=$(jq -n \
+      --arg from "$from" \
+      --arg to "$to" \
+      --arg cursor "$cursor" \
+      --argjson limit "$limit" \
+      '{updated_from:$from,updated_to:$to,limit:$limit}
+       | if $cursor == "" then . else .cursor = $cursor end')
+    if ! task_page=$(notion_list_tasks "$task_filters"); then
+      return 2
+    fi
+    while IFS= read -r task_json; do
+      task_items+=("$task_json")
+    done < <(jq -c '.items[]' <<<"$task_page")
+    next_cursor=$(jq -r '.next_cursor // empty' <<<"$task_page")
+  fi
+
+  for task_json in "${task_items[@]}"; do
+    task_ref=$(jq -c '.ref' <<<"$task_json")
+    page_id=$(jq -r '.ref.external_id' <<<"$task_json")
+    updated_at=$(jq -r '.updated_at // empty' <<<"$task_json")
+    if [ -n "$updated_at" ] \
+      && { [[ "$updated_at" == "$from" || "$updated_at" > "$from" ]]; } \
+      && { [[ "$updated_at" == "$to" || "$updated_at" < "$to" ]]; }; then
+      activity_items+=("$(jq -n \
+        --argjson ref "$task_ref" \
+        --arg at "$updated_at" \
+        '{kind:"updated",ref:$ref,at:$at,actor:null,summary:"Task updated",url:$ref.url}')")
+    fi
+
+    comment_cursor=""
+    while :; do
+      comment_path="/v1/comments?block_id=$page_id&page_size=100"
+      if [ -n "$comment_cursor" ]; then
+        encoded_cursor=$(jq -rn --arg cursor "$comment_cursor" '$cursor | @uri')
+        comment_path="$comment_path&start_cursor=$encoded_cursor"
+      fi
+      if ! comment_response=$(notion_api_request GET "$comment_path"); then
+        return 2
+      fi
+      if ! jq -e '.object == "list" and (.results | type == "array")' <<<"$comment_response" >/dev/null 2>&1; then
+        echo "ERROR: VALIDATION_ERROR: Notion comment list response is malformed" >&2
+        return 2
+      fi
+      while IFS= read -r event; do
+        [ -n "$event" ] && activity_items+=("$event")
+      done < <(jq -c \
+        --arg from "$from" \
+        --arg to "$to" \
+        --argjson ref "$task_ref" \
+        '.results[]
+         | . as $comment
+         | ([.rich_text[]? | (.plain_text // .text.content // "")] | join("")) as $summary
+         | [
+             (if .created_time >= $from and .created_time <= $to then
+               {kind:"commented",ref:$ref,at:.created_time,actor:(.display_name.resolved_name // .created_by.id // null),summary:(if $summary == "" then "Notion comment" else $summary end),url:$ref.url}
+              else empty end),
+             (if .last_edited_time != .created_time and .last_edited_time >= $from and .last_edited_time <= $to then
+               {kind:"updated",ref:$ref,at:.last_edited_time,actor:(.display_name.resolved_name // .created_by.id // null),summary:(if $summary == "" then "Notion comment updated" else "Comment updated: " + $summary end),url:$ref.url}
+              else empty end)
+           ][]' <<<"$comment_response")
+      if [ "$(jq -r '.has_more // false' <<<"$comment_response")" != "true" ]; then
+        break
+      fi
+      comment_cursor=$(jq -r '.next_cursor // empty' <<<"$comment_response")
+      [ -n "$comment_cursor" ] || break
+    done
+  done
+
+  if [ "${#activity_items[@]}" -eq 0 ]; then
+    items='[]'
+  else
+    items=$(printf '%s\n' "${activity_items[@]}" | jq -s --argjson limit "$limit" 'sort_by(.at) | .[:$limit]')
+  fi
+  jq -n \
+    --argjson items "$items" \
+    --arg next_cursor "$next_cursor" \
+    '{items:$items,next_cursor:(if $next_cursor == "" then null else $next_cursor end)}'
 }
 
 notion_status_name() {
