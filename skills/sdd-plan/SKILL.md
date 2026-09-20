@@ -286,8 +286,9 @@ Stop and wait for:
 approve-plan changes/{CHG_ID}
 ```
 
-Record the exact approval in the change package. Only after this command may a
-separate execution skill release tasks to TDD implementation.
+Record the exact approval in `changes/{CHG_ID}/approval.md`, including the
+literal line `approve-plan changes/{CHG_ID}`. Only after this marker exists may
+a separate execution skill release tasks to TDD implementation.
 
 ## Quick Reference
 
