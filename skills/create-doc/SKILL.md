@@ -1,6 +1,6 @@
 ---
 name: create-doc
-description: Create a new documentation page in Confluence linked to an optional Jira or Notion task
+description: Create a new documentation page in Confluence
 ---
 
 ## Goal
@@ -18,18 +18,14 @@ load_env
 
 If the file doesn't exist or `CONFLUENCE_PARENT_URL` is missing, tell the user to run `/thebous-os:setup` first.
 
-### 1a. Resolve a linked task (optional)
-
-Use `references/task-context.md` with the current branch as an optional
-provider-neutral task source:
+### 1a. Detect a linked Jira ticket (optional)
 
 ```bash
 source "scripts/helpers.sh"
-TASK_REF=$(resolve_work_item_ref "$(git branch --show-current)" 2>/dev/null || true)
+KEY=$(extract_jira_key "$(git branch --show-current)")
 ```
 
-Store the `TaskRef` if found. Jira and Notion remain independent providers;
-if no task resolves, skip the task-linked Obsidian step.
+Store it as `<KEY>` if found — used later to link this doc into Obsidian. If no key is found, `<KEY>` stays empty and the Obsidian step at the end is skipped.
 
 ### 2. Identify the target
 
@@ -116,19 +112,18 @@ Use the MCP tool `createConfluencePage` with:
 
 ### 7a. Log to Obsidian (optional)
 
-Only if `TASK_REF` was found in step 1a. Follow `references/obsidian-log.md`
-and use the provider-aware helper:
+Only if `<KEY>` was found in step 1a. Follow `references/obsidian-log.md`:
 
 ```bash
 source "scripts/helpers.sh"
 load_env
-obsidian_log_task "${OBSIDIAN_VAULT_PATH:-}" "<TASK_REF>" "plan.md" \
+obsidian_log_ticket "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "plan.md" \
   "Confluence page created: [<title>](<page URL>)" \
-  "<PROVIDER>:<EXTERNAL_ID> — Confluence page created: <title>"
+  "[[<KEY>]] — Confluence page created: <title>"
 ```
 
 ### 8. Confirmation
 
 Show the user:
 - Page created: `<title>` → `<page URL>`
-- Obsidian: logged (or "skipped, no vault configured / no linked task")
+- Obsidian: logged (or "skipped, no vault configured / no linked ticket")

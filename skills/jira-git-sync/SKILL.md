@@ -1,15 +1,14 @@
 ---
 name: jira-git-sync
-description: Git → Jira/Notion → Slack → Confluence workflow automation. Use when the user wants to start a task from a Jira or Notion task, create a branch, open/review/merge a PR, tag a release, or sync Confluence docs with code. Route the request to the matching workflow skill instead of reading command adapters.
+description: Git → Jira → Slack → Confluence workflow automation. Use when the user wants to start a task from a Jira ticket, create a branch, open/review/merge a PR, tag a release, or sync Confluence docs with code. Route the request to the matching workflow skill instead of reading command adapters.
 ---
 
 # jira-git-sync
 
-Use this skill as an index for the Jira/Notion/Git/Slack/Confluence workflows. The complete workflow instructions live in the matching canonical skill under `skills/`; root `commands/*.md` files are compatibility adapters only.
+Use this skill as an index for the Jira/Git/Slack/Confluence workflows. The complete workflow instructions live in the matching canonical skill under `skills/`; root `commands/*.md` files are compatibility adapters only.
 
 Shared helpers and references, loaded only when the selected workflow requires them:
 
-- `references/task-provider.md` — provider-neutral task contract and semantic operations
 - `references/task-context.md` — provider-neutral task resolution and normalization
 - `references/jira-task-context.md` — Jira compatibility adapter for existing workflows
 - `references/jira-transition.md` — standard Jira transition and comment pattern
@@ -17,7 +16,7 @@ Shared helpers and references, loaded only when the selected workflow requires t
 - `references/naming-conventions-{code,db,nextjs}.md` — naming rules applied during `cook` and PR review
 - `scripts/helpers.sh` — credential loading, Jira REST, Slack, slugification
 
-Credentials are shared with the rest of thebous-os and live in `${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env`. If the file is missing, tell the user to run `/thebous-os:setup` first. Jira and Notion are selected per task; they are not synchronized.
+Credentials are shared with the rest of thebous-os and live in `${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env`. If the file is missing, tell the user to run `/thebous-os:setup` first.
 
 ## Workflow index
 
@@ -25,10 +24,9 @@ Map the user's request to the matching skill:
 
 | User intent | Skill |
 |---|---|
-| Configure Jira/Notion/Slack/Confluence/Obsidian/GitHub/Gmail credentials (first run) | `skills/setup/SKILL.md` |
-| "Create a task", "open a Jira or Notion task with the standard template" | `skills/create-task/SKILL.md` |
-| "Create a Jira task" (compatibility entry point) | `skills/create-jira-task/SKILL.md` |
-| "Start this task", "create a branch for T-200 or a Notion page" | `skills/new-branch/SKILL.md` |
+| Configure Jira/Slack/Confluence/Obsidian/GitHub/Gmail credentials (first run) | `skills/setup/SKILL.md` |
+| "Create a Jira task", "open a task with the standard template" | `skills/create-jira-task/SKILL.md` |
+| "Start this ticket", "create a branch for T-200" | `skills/new-branch/SKILL.md` |
 | "Implement this", "cook the feature", "fix the bug" | `skills/cook/SKILL.md` |
 | "Open a PR", "create pull request" | `skills/create-pr/SKILL.md` |
 | "Review this PR", "look at PR #N" | `skills/review-pr-multiharness/SKILL.md` |

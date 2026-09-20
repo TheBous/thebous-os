@@ -1,6 +1,6 @@
 ---
 name: morning-briefing
-description: Generate the user's morning briefing on request or as the scheduled 9:00 task. Cover GitHub PR reviews, open feedback, Jira/Notion deadlines and start dates, overnight Jira/Notion activity, Confluence changes and mentions, important overnight email, today's calendar calls, and a priority ranking. Always use this skill for morning briefings and scheduled daily runs.
+description: Generate the user's morning briefing on request or as the scheduled 9:00 task. Cover GitHub PR reviews, open feedback, Jira deadlines and start dates, overnight Jira activity, Confluence changes and mentions, important overnight email, today's calendar calls, and a priority ranking. Always use this skill for morning briefings and scheduled daily runs.
 ---
 
 # Morning Briefing

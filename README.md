@@ -18,10 +18,10 @@ recap.
 - Jira task creation with a fixed Italian description and acceptance-criteria template
 - Notion task tracking through a configured database with the same provider-neutral contract
 - Provider-neutral task creation with per-task Jira or Notion selection
-- Jira/Notion → Git branch workflow with provider status updates and Slack notifications
+- Jira → Git branch workflow with status transitions and Slack notifications
 - Feature/fix implementation with optional Granola context and Obsidian logging
 - PR creation, review, review-feedback resolution and merge workflows
-- Release tagging and provider status updates
+- Release tagging and Jira transitions
 - Confluence document creation and update
 - Morning briefing, current-day status and end-of-day recap
 - Visual explanations of PRs, diffs, code and implementation changes

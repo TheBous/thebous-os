@@ -1,6 +1,6 @@
 ---
 name: explain-change
-description: Explain a pull request, diff, code, implementation change, file, or arbitrary text in simple step-by-step business and technical language, using a clear visual HTML artifact instead of a wall of text, and save every produced document in the corresponding Obsidian Jira or Notion task. Use when the user asks what changed, how something works, why it was implemented, or requests an easy graphical walkthrough.
+description: Explain a pull request, diff, code, implementation change, file, or arbitrary text in simple step-by-step business and technical language, using a clear visual HTML artifact instead of a wall of text, and save every produced document in the corresponding Obsidian Jira task. Use when the user asks what changed, how something works, why it was implemented, or requests an easy graphical walkthrough.
 ---
 
 # Explain Change
@@ -107,20 +107,12 @@ inferences and unchecked parts as such. End with adapted versions of:
 Answers must be recoverable from the artifact except for points marked
 `Unverified`.
 
-## 4. Save all artifacts to the provider task
+## 4. Save all artifacts to the Obsidian task
 
-Use `references/task-context.md` to resolve a single provider-neutral `TaskRef`
-from the PR, branch, commit, or request context.
-If no task resolves, ask one clarification and do not invent a task key.
+Identify the Jira task (`<KEY>`) from the PR, branch, commit, or request context.
+If it cannot be determined, ask one clarification and do not invent the key.
 
-```bash
-source "scripts/helpers.sh"
-TASK_REF=$(resolve_work_item_ref "<PR, branch, commit, or request context>")
-TASK_STORAGE_KEY=$(obsidian_task_storage_key "$TASK_REF")
-```
-
-Jira and Notion are independent providers. Save every generated file in
-`Dev/Tickets/<TASK_STORAGE_KEY>/docs/explain-change/<slug>-<timestamp>/`,
+Save every generated file in `Dev/Tickets/<KEY>/docs/explain-change/<slug>-<timestamp>/`,
 including linked pages, CSS, images, and local assets. Never overwrite an earlier
 explanation. Follow `references/obsidian-log.md` and use the shared helpers:
 
@@ -132,8 +124,8 @@ if [ -z "${OBSIDIAN_VAULT_PATH:-}" ] || [ ! -d "${OBSIDIAN_VAULT_PATH}" ]; then
   echo "Cannot save the explanation: Obsidian is not configured or the vault does not exist."
   # Ask the user to configure the vault before declaring completion.
 else
-  DEST_DIR=$(obsidian_copy_ticket_docs "${OBSIDIAN_VAULT_PATH}" "$TASK_STORAGE_KEY" "explain-change/<slug>-<timestamp>" <ARTIFACT_DIR>)
-  PLAN_FILE=$(obsidian_ensure_task_file "${OBSIDIAN_VAULT_PATH}" "$TASK_REF" "plan.md")
+  DEST_DIR=$(obsidian_copy_ticket_docs "${OBSIDIAN_VAULT_PATH}" "<KEY>" "explain-change/<slug>-<timestamp>" <ARTIFACT_DIR>)
+  PLAN_FILE=$(obsidian_ensure_ticket_file "${OBSIDIAN_VAULT_PATH}" "<KEY>" "plan.md")
   obsidian_append_section "$PLAN_FILE" "Visual explanation: [open index.html](docs/explain-change/<slug>-<timestamp>/index.html)"
 fi
 ```
