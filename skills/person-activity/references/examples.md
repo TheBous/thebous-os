@@ -13,7 +13,7 @@ person-activity
 
 **User Input:**
 ```
-Enter work item ID (Jira key, GitHub PR #, or git commit hash): T-200
+Enter work item ID (Jira key, Notion page URL/ID, GitHub PR #, or git commit hash): T-200
 Enter person's name or email: marco@company.com
 ```
 
@@ -71,7 +71,7 @@ person-activity
 
 **User Input:**
 ```
-Enter work item ID (Jira key, GitHub PR #, or git commit hash): PR #250
+Enter work item ID (Jira key, Notion page URL/ID, GitHub PR #, or git commit hash): PR #250
 Enter person's name or email: Sarah Chen
 ```
 
@@ -130,7 +130,7 @@ person-activity
 
 **User Input:**
 ```
-Enter work item ID (Jira key, GitHub PR #, or git commit hash): abc123def789
+Enter work item ID (Jira key, Notion page URL/ID, GitHub PR #, or git commit hash): abc123def789
 Enter person's name or email: john@company.com
 ```
 
@@ -188,7 +188,7 @@ person-activity
 
 **User Input:**
 ```
-Enter work item ID (Jira key, GitHub PR #, or git commit hash): PROJ-856
+Enter work item ID (Jira key, Notion page URL/ID, GitHub PR #, or git commit hash): PROJ-856
 Enter person's name or email: Alex Kumar
 ```
 
@@ -246,7 +246,7 @@ person-activity
 
 **User Input:**
 ```
-Enter work item ID (Jira key, GitHub PR #, or git commit hash): #1920
+Enter work item ID (Jira key, Notion page URL/ID, GitHub PR #, or git commit hash): #1920
 Enter person's name or email: Jordan Lee
 ```
 

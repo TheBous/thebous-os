@@ -40,13 +40,18 @@ Show the sub-agent's report verbatim. Do not rerank or merge findings. Each issu
 - **Exploit Scenario:** How an attacker would abuse it
 - **Remediation:** Specific fix recommendation
 
-### 4. Optional Jira comment
+### 4. Optional task-provider comment
 
-If the current branch matches a Jira key (pattern `[A-Za-z]+-[0-9]+`), ask the user:
+Read `references/task-context.md` and resolve the current branch, PR, commit, or
+request with `resolve_work_item_ref`. If it resolves to a Jira or Notion task,
+ask the user:
 ```
-Would you like me to leave a Jira comment with the security review result?
+Would you like me to leave a comment on the linked Jira or Notion task with the security review result?
 ```
-If yes, follow `references/jira-transition.md` (in the plugin root) for the comment call only — never pass a transition ID.
+If yes, route the comment by provider. For Jira, follow `references/jira-transition.md`
+(in the plugin root) for the comment call only — never pass a transition ID. For
+Notion, source `scripts/notion.sh` and call `notion_add_comment` with the resolved
+page ID. If no task resolves, skip the comment offer.
 
 ## Skill Definition
 
