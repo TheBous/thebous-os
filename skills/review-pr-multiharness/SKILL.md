@@ -20,30 +20,40 @@ defended in production with the least unnecessary reviewer effort.
 
 ## Workflow
 
-### 1. Identify the PR and Jira task
+### 1. Identify the PR and linked task
 
 Use `gh pr view` to get the PR metadata:
 ```bash
 gh pr view --json number,title,body,author,headRefName,baseRefName,additions,deletions,changedFiles,headRefOid
 ```
 
-Follow [`references/jira-task-context.md`](../../references/jira-task-context.md) with:
+Follow [`references/task-context.md`](../../references/task-context.md) with:
 - `<SOURCES>` = the PR head branch, then the PR title and body;
 - `<REQUIRED>` = `optional`;
 - `<DETAILS>` = `full`.
 
-Store the resolved Jira context (key, summary, requirements, status, priority,
-assignee, type, and linked issues) for the walkthrough and review. If no Jira
-task is found or Jira is unavailable, continue and record the missing context
-in `Coverage`; do not invent a key. If no PR is open on the current branch, ask
-the user for the PR number or URL.
+Resolve the provider-neutral task reference and normalized task when available;
+A Jira or Notion task may be linked from the branch, PR title, or PR body;
+store `TASK_REF`, `TASK_JSON`, `TASK_REQUIREMENTS`, and the provider source link
+for the walkthrough and review. Jira and Notion are independent providers: if
+no task is found or the selected provider is unavailable, continue and record
+the exact coverage gap; do not invent a task. If Jira and Notion references are
+both present, stop and ask which one is the source of truth. If no PR is open on
+the current branch, ask the user for the PR number or URL.
+
+Use the shared resolver for each candidate and keep only one unambiguous result:
+
+```bash
+source "scripts/helpers.sh"
+TASK_REF=$(resolve_work_item_ref "<branch, title, or body candidate>" 2>/dev/null || true)
+```
 
 ### 2. Explain the PR before reviewing it
 
 Before danger scoring, dispatching reviewers, or writing findings, run the
 project's `explain-change` skill against the PR.
 Pass it the PR number/URL, title, description, head SHA, full diff, changed
-files, tests, and the linked Jira key when available. Do not start danger
+files, tests, and the linked provider-neutral task reference when available. Do not start danger
 scoring, dispatch reviewers, or write findings before this walkthrough has
 been generated.
 
@@ -53,17 +63,17 @@ edge cases, verification steps, and explicit `Evidenza`, `Inferenza`, and `Non
 verificato` labels. It must be a self-contained HTML artifact using local
 CSS/SVG only, not a wall of text.
 
-If a Jira key is available, save every generated walkthrough artifact in the
-same review Obsidian root used for PR walkthroughs:
+If a task reference is available, save every generated walkthrough artifact in
+the same review Obsidian root used for PR walkthroughs:
 
 ```text
-<OBSIDIAN_VAULT_PATH>/Dev/Review/DC-<TASK_ID>/explain-change/<slug>-<timestamp>/
+<OBSIDIAN_VAULT_PATH>/Dev/Review/<TASK_STORAGE_KEY>/explain-change/<slug>-<timestamp>/
 ```
 
 Do not overwrite an existing explanation. If the vault is not configured or
-the Jira key cannot be determined, keep the artifact in its temporary
+the task storage key cannot be determined, keep the artifact in its temporary
 directory, mark the persistence as skipped in the final report, and never
-invent a key. Record the absolute artifact path in `Coverage` and in the final
+invent a task key. Record the absolute artifact path in `Coverage` and in the final
 confirmation.
 
 Use the shared environment loader before writing and create the destination
@@ -73,8 +83,9 @@ only after validating both the vault and the key:
 source "scripts/helpers.sh"
 if [ -f "$ENV_FILE" ]; then load_env; fi
 
-if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ] && [ -n "${REVIEW_JIRA_KEY:-}" ]; then
-  DEST_DIR="${OBSIDIAN_VAULT_PATH}/Dev/Review/DC-<TASK_ID>/explain-change/<slug>-<timestamp>"
+TASK_STORAGE_KEY=$(obsidian_task_storage_key "$TASK_REF" 2>/dev/null || true)
+if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ] && [ -n "${TASK_STORAGE_KEY:-}" ]; then
+  DEST_DIR="${OBSIDIAN_VAULT_PATH}/Dev/Review/$TASK_STORAGE_KEY/explain-change/<slug>-<timestamp>"
   mkdir -p "$DEST_DIR"
   cp -R "<ARTIFACT_DIR>/." "$DEST_DIR/"
 fi
@@ -91,8 +102,10 @@ Read the PR description before the diff. Expect GitHub's Summary / Test
 plan format (or the repository's `.github/PULL_REQUEST_TEMPLATE.md` /
 `CONTRIBUTING.md` if present): filled sections whose claims match the
 diff, with no leftover placeholders.
-When a Jira key is present in the branch, title, or body, expect
-`[KEY] <ticket title>`; otherwise a non-placeholder title is enough. A
+When a task reference is present in the branch, title, or body, expect the
+provider reference and concrete task title in the PR context. Preserve the
+existing `[KEY] <ticket title>` convention for Jira; for Notion, retain the
+resolved page reference. Otherwise a non-placeholder title is enough. A
 description that still contains template comments, an empty Summary / Test
 plan, or claims that contradict the diff is incomplete intent; record it
 in `Coverage` and raise it as `IMPORTANT` when `CONTRIBUTING.md` forbids

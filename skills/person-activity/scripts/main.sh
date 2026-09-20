@@ -30,9 +30,10 @@ echo "👤 Matching person across systems..." >&2
 source "${SCRIPT_DIR}/match-person.sh"
 
 # ── Stage 3: Query All Sources in Parallel ──────────────────────────
-echo "🔎 Querying sources (Jira, GitHub, Slack, Email, Calendar)..." >&2
+echo "🔎 Querying sources (Jira, Notion, GitHub, Slack, Email, Calendar)..." >&2
 
 JIRA_RESULTS=$(bash "${SCRIPT_DIR}/query-jira.sh" 2>/dev/null || echo "[]")
+NOTION_RESULTS=$(bash "${SCRIPT_DIR}/query-notion.sh" 2>/dev/null || echo "[]")
 GITHUB_RESULTS=$(bash "${SCRIPT_DIR}/query-github.sh" 2>/dev/null || echo "[]")
 SLACK_RESULTS=$(bash "${SCRIPT_DIR}/query-slack.sh" 2>/dev/null || echo "[]")
 EMAIL_RESULTS=$(bash "${SCRIPT_DIR}/query-email.sh" 2>/dev/null || echo "[]")
@@ -42,6 +43,7 @@ CALENDAR_RESULTS=$(bash "${SCRIPT_DIR}/query-calendar.sh" 2>/dev/null || echo "[
 # Merge all arrays into one, tagging each result with its source
 COMBINED=$(jq -n \
   --argjson jira "$JIRA_RESULTS" \
+  --argjson notion "$NOTION_RESULTS" \
   --argjson github "$GITHUB_RESULTS" \
   --argjson slack "$SLACK_RESULTS" \
   --argjson email "$EMAIL_RESULTS" \
@@ -49,6 +51,7 @@ COMBINED=$(jq -n \
   '
   (
     (($jira // []) | map(. + {source: "jira"})),
+    (($notion // []) | map(. + {source: "notion"})),
     (($github // []) | map(. + {source: "github"})),
     (($slack // []) | map(. + {source: "slack"})),
     (($email // []) | map(. + {source: "email"})),

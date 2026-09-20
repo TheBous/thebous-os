@@ -1,11 +1,12 @@
 ---
 name: tag
-description: Create a release tag, transition all involved Jira tickets to Done, and notify Slack
+description: Create a release tag, transition all involved Jira or Notion tasks to Done, and notify Slack
 ---
 
 ## Goal
 
-Create a git tag for the production deploy, find all Jira tickets included in the release, transition them to Done, notify Slack.
+Create a git tag for the production deploy, find all Jira or Notion tasks included
+in the release, transition them to `done`, and notify Slack.
 
 ## Steps
 
@@ -26,7 +27,7 @@ git branch --show-current
 git pull origin main --ff-only
 ```
 
-### 2. Find the Jira tickets in the release
+### 2. Find task references in the release
 
 Fetch the commit diff since the last tag:
 ```bash
@@ -38,12 +39,16 @@ else
 fi
 ```
 
-Extract all unique Jira keys from commit messages and merged branch names:
+Inspect commit messages, merged branch names, and PR bodies for provider-qualified
+references. Read `references/task-context.md` and apply its provider-neutral
+resolution rules, then resolve each candidate with the task context helper:
 ```bash
 source "scripts/helpers.sh"
-extract_jira_keys "<commit log from above>"
+resolve_work_item_ref "<one candidate Jira key, Notion URL, or Notion branch>"
 ```
-Show the list to the user.
+Collect unique `{provider, external_id}` pairs, preserve each provider source and
+source link, and show the list to the user. Jira-only, Notion-only, and mixed releases are valid;
+never merge tasks by title or assume every release contains Jira.
 
 ### 3. Create and push the tag
 
@@ -65,33 +70,46 @@ gh release create "<TAG>" \
 
 Capture the release URL.
 
-### 5. Jira transition and comment for each ticket
+### 5. Complete each task through its selected provider
 
-For each Jira key found, follow `references/jira-transition.md` (in the plugin root) with:
+For each resolved task, use the provider-specific adapter while keeping the
+status and comment operations separate. For Jira, follow
+`references/jira-transition.md` with:
 - `<TRANSITION_ID>` = `$JIRA_DONE_ID`
 - `<COMMENT_TEXT>` = `"🚀 Deployed to production with tag \`<TAG>\`."`
 
-Run in sequence for all tickets found. If a ticket fails (e.g. already Done), log the error and continue.
+For Notion, source `scripts/notion.sh` and run:
+
+```bash
+notion_set_status "<EXTERNAL_ID>" "done"
+notion_add_comment "<EXTERNAL_ID>" "🚀 Deployed to production with tag \`<TAG>\`."
+```
+
+Run in sequence for all tasks found. If a task fails (for example it is already
+done or the provider is unavailable), log the semantic error and continue. Do
+not claim the comment succeeded when only the status update succeeded.
 
 ### 6. Slack notification
 
-Build the list of tickets as Jira links:
+Build the list of tasks as provider-labeled source links:
 
 ```bash
 source "scripts/helpers.sh"
 load_env
 DEPLOYER=$(git config user.name 2>/dev/null || echo "unknown")
 
-# Message with all tickets as links
-slack_notify "🚀 *Deploy Production* — Tag \`<TAG>\`\n👤 $DEPLOYER\n🎫 Tickets: <TICKET_LIST_WITH_LINKS>\n<RELEASE_URL_IF_PRESENT>"
+# Message with all provider task links
+slack_notify "🚀 *Deploy Production* — Tag \`<TAG>\`\n👤 $DEPLOYER\n🎫 Tasks: <TASK_LIST_WITH_SOURCE_LINKS>\n<RELEASE_URL_IF_PRESENT>"
 ```
 
-Ticket format in the message: `<JIRA_BASE_URL/browse/T-200|T-200>` for each ticket, separated by a space.
+Use the direct source link for each task and include its provider label, for
+example `<JIRA_BASE_URL/browse/T-200|jira:T-200>` or
+`<NOTION_PAGE_URL|notion:<EXTERNAL_ID>>`, separated by spaces.
 
 ### 7. Confirmation
 
 Show the user:
 - Tag `<TAG>` created and pushed
-- Tickets transitioned to Done: `<list>`
+- Tasks transitioned to Done: `<list>` with provider labels and links
 - GitHub Release: `<URL>` (if created)
 - Slack: notified

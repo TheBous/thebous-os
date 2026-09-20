@@ -29,6 +29,7 @@ PERSON_DISPLAY="$(get_person_display_name)"
 # ── Count activities by source ──────────────────────────────────────
 TOTAL_ACTIVITIES=$(echo "$COMBINED_JSON" | jq 'length // 0' | tr -d ' \n')
 JIRA_COUNT=$(echo "$COMBINED_JSON" | jq '[.[] | select(.source == "jira")] | length // 0' | tr -d ' \n')
+NOTION_COUNT=$(echo "$COMBINED_JSON" | jq '[.[] | select(.source == "notion")] | length // 0' | tr -d ' \n')
 GITHUB_COUNT=$(echo "$COMBINED_JSON" | jq '[.[] | select(.source == "github")] | length // 0' | tr -d ' \n')
 SLACK_COUNT=$(echo "$COMBINED_JSON" | jq '[.[] | select(.source == "slack")] | length // 0' | tr -d ' \n')
 EMAIL_COUNT=$(echo "$COMBINED_JSON" | jq '[.[] | select(.source == "email")] | length // 0' | tr -d ' \n')
@@ -144,6 +145,17 @@ STATUS=$(determine_status "$COMBINED_JSON")
     JIRA_URL=$(echo "$COMBINED_JSON" | jq -r '.[] | select(.source == "jira") | .url' 2>/dev/null | head -1 | sed 's/#.*//')
     if [ ! -z "$JIRA_URL" ]; then
       echo "  [View on Jira]($JIRA_URL)"
+    fi
+    echo
+  fi
+
+  # Notion
+  if [ "$NOTION_COUNT" -gt 0 ]; then
+    echo "### Notion Activity"
+    echo "$COMBINED_JSON" | jq -r '.[] | select(.source == "notion") | "- \(.timestamp | split("T")[0]): \(.author) — \(.body // "Activity")"' 2>/dev/null
+    NOTION_URL=$(echo "$COMBINED_JSON" | jq -r '.[] | select(.source == "notion") | .url' 2>/dev/null | head -1)
+    if [ -n "$NOTION_URL" ]; then
+      echo "  [View on Notion]($NOTION_URL)"
     fi
     echo
   fi

@@ -8,7 +8,7 @@ description: Generate the user's end-of-day recap on request or when run as the 
 The opposite of the morning briefing: look back at what happened today. Keep
 two dimensions distinct:
 
-1. **Work completed** — branches, PRs, reviews, and Jira tasks.
+1. **Work completed** — branches, PRs, reviews, and tasks from Jira or Notion.
 2. **AI activity** — Claude Code/OpenCode sessions used today and their locations.
 
 ## Configuration
@@ -24,6 +24,9 @@ load_env
 ```
 
 If the file does not exist, tell the user to run `/thebous-os:setup` first.
+Jira and Notion are independent optional task providers. Query every configured
+provider and disclose missing credentials or incomplete coverage; Notion is
+available when `NOTION_API_TOKEN` and `NOTION_DATABASE_ID` are configured.
 
 ## Step 1: Today's window
 
@@ -47,8 +50,9 @@ If it contains more than its header (`# <date>`), reorganize it into a readable
 `create-pr`) already write there during the day; do not paste the note raw.
 
 If Obsidian is unavailable, the file is missing, or it contains only the header,
-query GitHub and Jira directly using the morning-briefing style. An empty note
-means no thebous-os command was used, not that no work was done.
+query GitHub and each configured task provider directly using the morning-briefing
+style. An empty note means no thebous-os command was used, not that no work was
+done.
 
 ```bash
 REPO_FILTER=$(source "scripts/helpers.sh"; gh_repo_filter)
@@ -63,6 +67,15 @@ For Jira, resolve the same `cloudId` as in the morning briefing
 jql: assignee = currentUser() AND updated >= startOfDay() ORDER BY updated DESC
 fields: ["summary", "status", "project"]
 ```
+
+For Notion, source `scripts/notion.sh` and call `notion_list_tasks` with
+`updated_from=TODAY_START_ISO`, `updated_to=NOW_ISO`, and
+`assignee=NOTION_USER_EMAIL` when configured. Follow `next_cursor` until all
+pages are collected. Call `notion_list_activity` for the same window and retain
+the provider label, `ref.external_id`, and direct page link on every item.
+Keep Jira-only, Notion-only, and both-provider results separate; never merge
+tasks by title. If a provider is unavailable, activity is unsupported, or a
+cursor remains, report the exact coverage gap instead of presenting `None`.
 
 ## Step 3: Claude Code sessions today
 
