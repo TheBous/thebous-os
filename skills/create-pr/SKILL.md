@@ -6,8 +6,8 @@ description: Use when the user asks to create or open a pull request, or to merg
 ## Goal
 
 Create a Pull Request for the current branch against `main`. Generate the
-title and description from the branch diff, plus the Jira ticket when one
-exists.
+title and description from the branch diff, plus the linked Jira or Notion task
+when one exists.
 
 ## Routing
 
@@ -36,15 +36,16 @@ If not pushed:
 git push -u origin "$(git branch --show-current)"
 ```
 
-### 2. Extract the Jira ticket and fetch details
+### 2. Resolve the task and fetch details
 
-Follow `references/jira-task-context.md` with:
+Follow `references/task-context.md` with:
 - `<SOURCES>` = the current branch name
 - `<REQUIRED>` = `optional`
 - `<DETAILS>` = `basic`
 
-If `<KEY>` is empty, continue with no Jira context. If it is set,
-`<TASK_SUMMARY>` and `<TASK_DESCRIPTION>` feed the PR title and body.
+If no task resolves, continue with no task context and make no provider calls.
+Otherwise set `TASK_REF`, `PROVIDER`, `EXTERNAL_ID`, `TASK_URL`,
+`TASK_SUMMARY` and `TASK_DESCRIPTION` from the normalized task.
 
 ### 3. Analyze the diff against the base branch
 
@@ -63,30 +64,31 @@ Analyze the diff to identify:
 
 **Don't trust the diff hunk alone** for this — when it doesn't show the full function body, type definitions, or imports needed to judge the change, read the full file locally (it's already checked out on this branch, no need for the GitHub API).
 
-### 4. Validate the implementation against Jira
+### 4. Validate the implementation against the task
 
-If `<KEY>` is empty, skip this step.
+If no task is resolved, skip this step.
 
-Compare the full diff and the tests against `<TASK_REQUIREMENTS>` from `references/jira-task-context.md`.
+Compare the full diff and tests against `<TASK_REQUIREMENTS>` from the provider-neutral context.
 
 For each requirement, record `✅ Met`, `⚠️ Partially met / unverifiable`, or `❌ Not met`, with concise evidence from the changed files or tests.
 
 Show the checklist to the user and ask:
 ```
-✅ Jira validation complete for <KEY>. Are all listed requirements satisfied and can I create the PR?
+✅ Task validation complete for <PROVIDER>:<EXTERNAL_ID>. Are all listed requirements satisfied and can I create the PR?
 ```
 
 Do not create the PR unless every item is `✅ Met` and the user confirms. If any item is partial, unverifiable, or not met, stop and report what must be addressed.
 
 ### 5. Auto-generate title and description
 
-**Title**: `<type>(<scope>): <concrete action and outcome> [<KEY>]`.
+**Title**: `<type>(<scope>): <concrete action and outcome> [<PROVIDER>:<EXTERNAL_ID>]` when a task exists.
 
 Use a short, concrete imperative title that is understandable without opening
 the PR. Choose `<type>` from `feat`, `fix`, `refactor`, `perf`, `docs`,
 `test`, `build`, `ci`, or `chore`; use a meaningful component for `<scope>`.
-Keep the Jira key at the end so the title remains searchable without making
-the ticket identifier the only useful context. Examples:
+Keep the task reference at the end so the title remains searchable without
+making the identifier the only useful context. For Jira, preserve the existing
+`[<KEY>]` convention. Examples:
 
 ```text
 feat(auth): add passwordless login with email links [AUTH-142]
@@ -99,14 +101,15 @@ Do not use generic titles such as `Fix bug`, `Update code`, `Phase 1`, or
 that conflicts with this format, preserve the repository convention while
 retaining the same concrete action-and-outcome content.
 
-**Description**: fill `.github/PULL_REQUEST_TEMPLATE.md` using the Jira ticket
-and the diff analysis. If `CONTRIBUTING.md` exists, follow any compatible
+**Description**: fill `.github/PULL_REQUEST_TEMPLATE.md` using the task context
+and diff analysis. If `CONTRIBUTING.md` exists, follow any compatible
 repository-specific rules as well.
 
 Don't leave placeholder text — each section must reflect the actual diff.
 When filling the template, delete HTML comments and placeholder bullets,
-always pass `--body`, and add `Fixes <JIRA_BASE_URL>/browse/<KEY>` only when
-`<KEY>` is set. Automatically check the correct checkbox in "Type of change"
+always pass `--body`, and add `Fixes <JIRA_BASE_URL>/browse/<KEY>` only for a
+Jira task. For Notion, add its task URL as a plain reference instead of a
+GitHub closing keyword. Automatically check the correct checkbox in "Type of change"
 based on the analyzed diff. Remove sections that are genuinely not
 applicable. Keep the description focused on one purpose and do not repeat the
 diff mechanically.
@@ -128,7 +131,7 @@ If the change isn't screenshot-worthy, skip this step silently. For non-obvious 
 
 ### 7. Create the PR
 
-If `<KEY>` is empty, show the generated title and body and wait for the user
+If no task is resolved, show the generated title and body and wait for the user
 to confirm before creating.
 
 ```bash
@@ -153,40 +156,60 @@ curl -sf \
 
 ### 7a. Log the PR link to Obsidian (optional)
 
-If `<KEY>` is empty, skip this step. If `OBSIDIAN_VAULT_PATH` is configured, follow `references/obsidian-log.md`:
+If no task is resolved, skip this step. If `OBSIDIAN_VAULT_PATH` is configured,
+follow `references/obsidian-log.md`:
 
 ```bash
 source "scripts/helpers.sh"
 load_env
-obsidian_log_pr "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "<PR_URL>" "[[<KEY>]] — PR opened: <PR_URL>"
+obsidian_log_pr_task "${OBSIDIAN_VAULT_PATH:-}" "<TASK_REF>" "<PR_URL>" "<PROVIDER>:<EXTERNAL_ID> — PR opened: <PR_URL>"
 ```
 
-### 8. Jira comment
+### 8. Task comment
 
-If `<KEY>` is empty, skip steps 8 and 9.
+If no task is resolved, skip steps 8 and 9 and make no provider calls.
 
-Leave a comment on the Jira issue:
+For Jira, leave the existing comment through MCP and use `jira_comment` as the
+fallback:
 
 ```bash
 source "scripts/helpers.sh"
 load_env
 ```
 
-Use the MCP tool `addCommentToJiraIssue` with `issueKey: "<KEY>"` and `comment: "🔍 PR opened: <PR_URL>"`.
+Use the MCP tool `addCommentToJiraIssue` with `issueKey: "<EXTERNAL_ID>"` and
+`comment: "🔍 PR opened: <PR_URL>"`.
 
 **If the MCP call fails**, use the `jira_comment` helper as fallback:
 ```bash
 source "scripts/helpers.sh"
-jira_comment "<KEY>" "🔍 PR opened: <PR_URL>"
+jira_comment "<EXTERNAL_ID>" "🔍 PR opened: <PR_URL>"
 ```
 
-### 9. Jira transition (optional)
+For Notion:
 
-If `JIRA_IN_REVIEW_ID` is configured and not empty, also transition the ticket using `references/jira-transition.md` with:
+```bash
+source "scripts/notion.sh"
+notion_add_comment "<EXTERNAL_ID>" "🔍 PR opened: <PR_URL>"
+```
+
+### 9. Task status (optional)
+
+For Jira, if `JIRA_IN_REVIEW_ID` is configured and not empty, transition the
+ticket using `references/jira-transition.md` with:
 - `<TRANSITION_ID>` = `$JIRA_IN_REVIEW_ID`
 - `<COMMENT_TEXT>` = (empty/skip comment in jira-transition, we already left one in step 8)
 
-If the transition fails or `JIRA_IN_REVIEW_ID` is not configured, **continue anyway** — the comment was already left in step 8.
+For Notion:
+
+```bash
+source "scripts/notion.sh"
+notion_set_status "<EXTERNAL_ID>" "in_review"
+```
+
+If the comment or status operation fails, report the exact semantic error and
+the partial result. Continue with Slack only after reporting it; never claim
+both operations succeeded when one failed.
 
 ### 10. Slack notification
 
@@ -195,12 +218,17 @@ source "scripts/helpers.sh"
 load_env
 ```
 
-If `<KEY>` is set:
+If a Jira task is resolved:
 ```bash
 slack_notify "🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Review*"
 ```
 
-If `<KEY>` is empty:
+If a Notion task is resolved:
+```bash
+slack_notify "🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>\n🎫 <<TASK_URL>|notion:<EXTERNAL_ID>> → *In Review*"
+```
+
+If no task is resolved:
 ```bash
 slack_notify "🔍 PR opened: *<PR_TITLE>*\n🔗 <PR_URL>"
 ```
@@ -211,8 +239,8 @@ If Slack notification fails, **continue anyway** — the PR (and Jira comment, i
 
 Show the user:
 - PR created: `<PR_URL>`
-- Jira comment: left on `<KEY>` (or skipped, no key)
-- Ticket `<KEY>` → In Review (if transition succeeded; otherwise note it was skipped)
+- Task comment: left on `<PROVIDER>:<EXTERNAL_ID>` (or skipped, no task)
+- Task `<PROVIDER>:<EXTERNAL_ID>` → `in_review` (if status update succeeded; otherwise report the partial result)
 - Slack: notified (or "notification failed, but PR and comment are done")
-- Obsidian: PR link recorded (or "skipped, no vault configured / no key")
+- Obsidian: PR link recorded (or "skipped, no vault configured / no task")
   - → Suggest the next step: `/thebous-os:review-pr-multiharness` to get it reviewed

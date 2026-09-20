@@ -1,11 +1,12 @@
 ---
 name: merge-pr
-description: Merge a PR to main, transition the Jira ticket to In Staging, and notify Slack
+description: Merge a PR to main, transition the linked Jira or Notion task, and notify Slack
 ---
 
 ## Goal
 
-Select and merge a PR into `main`, transition the linked Jira ticket to In Staging, notify Slack.
+Select and merge a PR into `main`, move the linked Jira or Notion task to
+`in_staging`, comment on it, and notify Slack.
 
 ## Steps
 
@@ -46,11 +47,18 @@ curl -sf -H "Authorization: Bearer $(gh auth token)" \
 Extract:
 - `headRefName`: the PR's branch
 - `url`: the PR URL
-- Jira key from the branch name:
+- the provider-neutral task reference from the branch:
   ```bash
   source "scripts/helpers.sh"
-  KEY=$(extract_jira_key "<headRefName>")
+  TASK_REF=$(resolve_work_item_ref "<headRefName>" 2>/dev/null || true)
   ```
+
+Use the resolution rules from `references/task-context.md`; merge only needs
+the resulting `TaskRef` and does not fetch task details before the merge.
+
+If resolution returns no reference, continue without task context and make no
+provider calls. Otherwise set `PROVIDER`, `EXTERNAL_ID` and `TASK_URL` from
+`TASK_REF`.
 
 ### 3. Merge the PR
 
@@ -72,11 +80,21 @@ curl -sf -X PUT -H "Authorization: Bearer $(gh auth token)" \
 # merge_method: "squash" | "merge" | "rebase" depending on the choice
 ```
 
-### 4. Jira transition and comment
+### 4. Task transition and comment
 
-If there's a linked Jira ticket, follow `references/jira-transition.md` (in the plugin root) with:
+If the linked provider is Jira, follow `references/jira-transition.md` with:
 - `<TRANSITION_ID>` = `$JIRA_IN_STAGING_ID`
 - `<COMMENT_TEXT>` = `"🔀 PR #<NUMBER> merged to main: <PR_URL>"`
+
+If the linked provider is Notion, source `scripts/notion.sh` and run:
+
+```bash
+notion_set_status "<EXTERNAL_ID>" "in_staging"
+notion_add_comment "<EXTERNAL_ID>" "🔀 PR #<NUMBER> merged to main: <PR_URL>"
+```
+
+Report status and comment separately. If either operation fails, show the
+semantic error and do not claim that the full provider update succeeded.
 
 ### 5. Slack notification
 
@@ -84,10 +102,11 @@ If there's a linked Jira ticket, follow `references/jira-transition.md` (in the 
 source "scripts/helpers.sh"
 load_env
 MERGED_BY=$(git config user.name 2>/dev/null || echo "unknown")
-slack_notify "🔀 PR #<NUMBER> merged to main\n🎫 <$JIRA_BASE_URL/browse/<KEY>|<KEY>> → *In Staging*\n👤 $MERGED_BY\n🔗 <PR_URL>"
+slack_notify "🔀 PR #<NUMBER> merged to main\n🎫 <$JIRA_BASE_URL/browse/<EXTERNAL_ID>|<EXTERNAL_ID>> → *In Staging*\n👤 $MERGED_BY\n🔗 <PR_URL>"
 ```
 
-If there's no Jira ticket, the Slack message is: `🔀 PR #<NUMBER> merged to main — <PR_TITLE>`
+For Notion, use `TASK_URL` and `notion:<EXTERNAL_ID>` in the task link. If no
+task is resolved, the Slack message is: `🔀 PR #<NUMBER> merged to main — <PR_TITLE>`.
 
 ### 6. Confluence documentation update (if configured)
 
@@ -126,6 +145,6 @@ If no candidates are found or the user declines, proceed silently.
 
 Show the user:
 - PR #`<NUMBER>` merged
-- Ticket `<KEY>` → In Staging (if applicable)
+- Task `<PROVIDER>:<EXTERNAL_ID>` → `in_staging` (if applicable)
 - Slack: notified
 - Documentation updated: `<list of updated pages>` (if applicable)
