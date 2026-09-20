@@ -4,11 +4,11 @@
   <img src="thebous-os.png" alt="thebous-os" width="720">
 </p>
 
-Git workflow automation for coding agents, connected to Jira, GitHub, Slack,
+Git workflow automation for coding agents, connected to Jira, Notion, GitHub, Slack,
 Confluence, Gmail, calendar, Granola and Obsidian.
 
 `thebous-os` turns recurring engineering work into reusable skills: start from a
-Jira ticket, create a branch, implement and verify a change, open or review a PR,
+Jira ticket or Notion task, create a branch, implement and verify a change, open or review a PR,
 merge it, update documentation, and keep the activity linked in Obsidian.
 It also provides a morning briefing, a live current-status report and an end-of-day
 recap.
@@ -16,6 +16,7 @@ recap.
 ## What it includes
 
 - Jira task creation with a fixed Italian description and acceptance-criteria template
+- Notion task tracking through a configured database with the same provider-neutral contract
 - Jira → Git branch workflow with status transitions and Slack notifications
 - Feature/fix implementation with optional Granola context and Obsidian logging
 - PR creation, review, review-feedback resolution and merge workflows
@@ -205,11 +206,16 @@ At minimum, Jira REST workflows need:
 JIRA_BASE_URL=https://your-domain.atlassian.net
 JIRA_EMAIL=your-email@example.com
 JIRA_API_TOKEN=your-atlassian-api-token
+NOTION_API_TOKEN=your-notion-integration-token
+NOTION_DATABASE_ID=your-notion-database-id
 ```
 
-The setup can also configure Jira transition IDs, Slack, Confluence, Obsidian,
+The setup can also configure Jira transition IDs, Notion, Slack, Confluence, Obsidian,
 GitHub repositories and Gmail. Keep this file outside the repository and never
 commit API tokens, app passwords or webhooks.
+
+Notion task databases use the fixed properties `Name`, `Description`, `Status`,
+and optionally `Assignee`, `Due date` and `Start date`.
 
 ## Common workflows
 
@@ -237,7 +243,8 @@ commands/<name>.md            thin command adapter
 .codex-plugin/                Codex plugin manifest
 .cursor-plugin/               Cursor plugin and marketplace manifests
 .opencode/plugins/            OpenCode discovery adapter
-scripts/helpers.sh            shared credentials, Jira, Slack and Obsidian helpers
+scripts/helpers.sh            shared credentials, Jira, Slack, Notion and Obsidian helpers
+scripts/notion.sh             read-only Notion task adapter
 references/                   shared workflow references
 ```
 
