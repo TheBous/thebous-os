@@ -2,12 +2,12 @@
 """Small stateful helpers for the provider-neutral SDD execution gate."""
 
 import json
-import os
 import re
-import stat
 import sys
 import time
 from pathlib import Path
+
+from sdd_tdd_lock import lock_primary, unlock_primary
 
 
 TASK_LINE = re.compile(r"^- \[([ xX])\] \*\*Task\s+[^:]+:\s*(.*?)\*\*")
@@ -34,6 +34,11 @@ def approved(root, change):
     if not approval.is_file() or marker not in approval.read_text(encoding="utf-8").splitlines():
         stop(f"missing exact approval marker: {marker}", 2)
     return package / "tasks.md"
+
+
+def approve_plan(root, change):
+    approved(root, change)
+    print(f"APPROVED: approve-plan changes/{change}")
 
 
 def tasks(path):
@@ -83,14 +88,31 @@ def evidence_path(git_path, change, task):
     return Path(git_path) / change / f"{task}.json"
 
 
-def record_quality(git_path, change, task, static_command, mutation_command, review_path):
+def record_quality(git_path, worktree, change, task, static_command, mutation_command, review_path, started):
     if not static_command:
         stop("static analysis command is required", 8)
     if not mutation_command:
         stop("mutation testing command is required", 8)
     review = Path(review_path)
-    if not review.is_file() or "PASS" not in review.read_text(encoding="utf-8").splitlines():
-        stop("independent review receipt must contain an exact PASS line", 8)
+    try:
+        review.resolve().relative_to(worktree.resolve())
+    except ValueError:
+        pass
+    else:
+        stop("independent review receipt must be outside the worktree", 8)
+    try:
+        receipt = json.loads(review.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        stop("independent review receipt must be valid JSON", 8)
+    if review.stat().st_mtime <= float(started):
+        stop("independent review receipt is stale", 8)
+    if receipt != {
+        "status": "PASS",
+        "task": task,
+        "independent": True,
+        "findings": [],
+    }:
+        stop("independent review receipt has an invalid contract", 8)
     target = evidence_path(git_path, change, task)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps({
@@ -115,39 +137,14 @@ def require_quality(git_path, change, task):
         stop(f"quality evidence is not passing for {task}", 9)
 
 
-def lock_primary(base, git_path, change):
-    lock_dir = Path(git_path) / "sdd-tdd-lock"
-    lock_dir.mkdir(parents=True, exist_ok=True)
-    manifest = lock_dir / f"{change}.json"
-    if manifest.exists():
-        stop(f"primary worktree already locked for {change}", 10)
-    paths = [base]
-    for root, dirs, files in os.walk(base, topdown=True, followlinks=False):
-        dirs[:] = [name for name in dirs if name not in {".git", ".worktrees"}]
-        files[:] = [name for name in files if name != ".git"]
-        paths.extend(Path(root) / name for name in dirs + files)
-    if any(path.is_symlink() for path in paths):
-        stop("primary worktree contains symlinks; refusing physical lock", 10)
-    modes = {str(path): stat.S_IMODE(path.stat().st_mode) for path in paths}
-    manifest.write_text(json.dumps(modes, indent=2) + "\n", encoding="utf-8")
+def require_red(git_path, change, task, marker):
+    target = evidence_path(git_path, change, task).with_name(f"{task}.red.json")
     try:
-        for path in paths:
-            path.chmod(modes[str(path)] & ~(stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH))
-    except OSError as error:
-        for name, mode in modes.items():
-            Path(name).chmod(mode)
-        manifest.unlink(missing_ok=True)
-        stop(f"could not lock primary worktree: {error}", 10)
-
-
-def unlock_primary(git_path, change):
-    manifest = Path(git_path) / "sdd-tdd-lock" / f"{change}.json"
-    if not manifest.is_file():
-        stop(f"no primary worktree lock exists for {change}", 11)
-    modes = json.loads(manifest.read_text(encoding="utf-8"))
-    for name, mode in modes.items():
-        Path(name).chmod(mode)
-    manifest.unlink()
+        evidence = json.loads(target.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        stop("RED assertion evidence is missing or invalid", 4)
+    if evidence != {"status": "FAIL", "kind": "assertion", "task": task, "marker": marker}:
+        stop("RED evidence does not prove an assertion failure", 4)
 
 
 def mark_complete(worktree, change, task):
@@ -176,12 +173,16 @@ def main(argv):
 
     if action == "select-task":
         select_task(worktree, change)
+    elif action == "approve-plan":
+        approve_plan(worktree, change)
     elif action == "assert-task":
         assert_task(worktree, change, argument(4, "task id is required"))
     elif action == "record-quality":
-        record_quality(argument(4, "evidence path is required"), change, argument(5, "task id is required"), argument(6, "static command is required"), argument(7, "mutation command is required"), argument(8, "review receipt is required"))
+        record_quality(argument(4, "evidence path is required"), worktree, change, argument(5, "task id is required"), argument(6, "static command is required"), argument(7, "mutation command is required"), argument(8, "review receipt is required"), argument(9, "review start time is required"))
     elif action == "require-quality":
         require_quality(argument(4, "evidence path is required"), change, argument(5, "task id is required"))
+    elif action == "require-red":
+        require_red(argument(4, "evidence path is required"), change, argument(5, "task id is required"), argument(6, "RED marker is required"))
     elif action == "lock":
         lock_primary(base, argument(4, "Git directory is required"), change)
     elif action == "unlock":

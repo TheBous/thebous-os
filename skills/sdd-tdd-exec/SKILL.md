@@ -55,6 +55,7 @@ blockers, and next task.
    `changes/{CHG_ID}/approval.md`:
 
 ```bash
+bash .spec-framework/bin/enforce_tdd.sh approve-plan {CHG_ID}
 bash .spec-framework/bin/enforce_tdd.sh select-task {CHG_ID}
 ```
 
@@ -89,8 +90,16 @@ observable behavior and map to an `AC-NNN`. Run:
 bash .spec-framework/bin/enforce_tdd.sh verify-red {CHG_ID} {TASK_ID} "{TEST_COMMAND}" "{RED_ASSERTION_MARKER}"
 ```
 
-The command must fail because of an assertion such as `AssertionError`. A
-passing test, structural failure, or missing exact marker is a gate failure.
+The command must fail because of an assertion such as `AssertionError` and
+write this JSON contract to the `TDD_RED_EVIDENCE` path supplied by the gate:
+
+```json
+{"status":"FAIL","kind":"assertion","task":"T-001","marker":"AC-001: expected failure"}
+```
+
+A passing test, structural failure, missing evidence, or mismatched marker is
+a gate failure. The marker is an AC-specific label; it is not a substitute for
+the structured assertion evidence.
 
 ### GREEN
 
@@ -112,18 +121,26 @@ Refactor only after GREEN, preserving behavior and path boundaries. Then run:
 bash .spec-framework/bin/enforce_tdd.sh verify-global {CHG_ID} {TASK_ID} "{GLOBAL_TEST_COMMAND}"
 ```
 
-Ask an independent reviewer in a fresh context to check the AC, test quality,
-error paths, and scope. The reviewer must produce a receipt outside the
-worktree with an exact `PASS` line. Then execute both quality commands and
-record the receipt:
+Prepare an independent review command that dispatches a fresh context and
+checks the AC, test quality, error paths, and scope. The gate executes that
+command itself. The command must write valid JSON to `TDD_REVIEW_RECEIPT`:
+
+```json
+{"status":"PASS","task":"T-001","independent":true,"findings":[]}
+```
+
+Then execute both quality commands and the reviewer command automatically:
 
 ```bash
 bash .spec-framework/bin/enforce_tdd.sh verify-quality \
-  {CHG_ID} {TASK_ID} "{STATIC_COMMAND}" "{MUTATION_COMMAND}" "{REVIEW_RECEIPT}"
+  {CHG_ID} {TASK_ID} "{STATIC_COMMAND}" "{MUTATION_COMMAND}" \
+  "{INDEPENDENT_REVIEW_COMMAND}" "{REVIEW_RECEIPT}"
 ```
 
 Missing static or mutation commands, a failing command, or a missing reviewer
-receipt is a hard failure, not a reported limitation.
+command or receipt is a hard failure, not a reported limitation. Exit status,
+stage logs, structured receipts, and timestamps are retained under the Git
+administrative evidence directory; raw command strings are not persisted.
 
 ## Task Completion Handoff
 

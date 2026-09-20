@@ -7,11 +7,12 @@ TASK_ID="${3:-}"
 PAYLOAD="${4:-}"
 SECOND_PAYLOAD="${5:-}"
 THIRD_PAYLOAD="${6:-}"
+FOURTH_PAYLOAD="${7:-}"
 
 fail() { printf 'ERROR: %s\n' "$1" >&2; exit "${2:-1}"; }
 
 [[ "$CHANGE_ID" =~ ^CHG-[0-9]{4}-[0-9]{3}$ ]] || fail "invalid change id"
-if [[ "$ACTION" != select-task && "$ACTION" != unlock ]]; then
+if [[ "$ACTION" != select-task && "$ACTION" != unlock && "$ACTION" != approve-plan ]]; then
   [[ "$TASK_ID" =~ ^T-[0-9]{3}$ ]] || fail "invalid task id"
 fi
 
@@ -40,7 +41,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
-run_command() { bash -c -- "$2" >"$1" 2>&1; }
+run_command() {
+  TDD_RED_EVIDENCE="${3:-}" TDD_REVIEW_RECEIPT="${4:-}" bash -c -- "$2" >"$1" 2>&1
+}
 require_command() { [[ -n "$PAYLOAD" ]] || fail "a test command is required for ${ACTION}"; }
 is_test_path() { case "$1" in test/*|tests/*|spec/*|specs/*|*_test.*|*.test.*|*.spec.*) return 0;; *) return 1;; esac; }
 production_changes() {
@@ -73,6 +76,11 @@ record_stage() {
   mkdir -p "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}"
   printf 'PASS\n' > "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}"
 }
+preserve_log() {
+  mkdir -p "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}"
+  cp "$LOG_FILE" "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}.log"
+  chmod 600 "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}.log"
+}
 require_stage() {
   [[ -f "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}" ]] || fail "${1} evidence missing; run the gate first" 9
   grep -Fxq PASS "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}" || fail "invalid ${1} evidence" 9
@@ -81,6 +89,9 @@ require_stage() {
 case "$ACTION" in
   select-task)
     "$PYTHON" "$HELPER" select-task "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID"
+    ;;
+  approve-plan)
+    "$PYTHON" "$HELPER" approve-plan "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID"
     ;;
   init)
     "$PYTHON" "$HELPER" assert-task "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$TASK_ID" >/dev/null
@@ -99,12 +110,16 @@ case "$ACTION" in
     CHANGES=$(production_changes)
     [[ -z "$CHANGES" ]] || { printf 'VIOLATION: production paths changed before RED:\n%s\n' "$CHANGES" >&2; fail "write the failing test before production code" 2; }
     LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-red.XXXXXX")
-    set +e; run_command "$LOG_FILE" "$PAYLOAD"; RUNNER_STATUS=$?; set -e
+    RED_EVIDENCE="$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.red.json"
+    mkdir -p "$(dirname "$RED_EVIDENCE")"
+    rm -f "$RED_EVIDENCE"
+    set +e; run_command "$LOG_FILE" "$PAYLOAD" "$RED_EVIDENCE"; RUNNER_STATUS=$?; set -e
+    preserve_log red
     [[ "$RUNNER_STATUS" -ne 0 ]] || { cat "$LOG_FILE" >&2; fail "RED test passed immediately" 3; }
     if grep -Eiq 'SyntaxError|ParseError|Cannot find module|ModuleNotFoundError|compilation failed|command not found|No such file or directory' "$LOG_FILE"; then
       cat "$LOG_FILE" >&2; fail "RED test failed structurally, not by assertion" 4
     fi
-    grep -Fq -- "$SECOND_PAYLOAD" "$LOG_FILE" || { cat "$LOG_FILE" >&2; fail "RED failure lacks the declared assertion marker" 4; }
+    "$PYTHON" "$HELPER" require-red "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR/sdd-tdd-evidence" "$TASK_ID" "$SECOND_PAYLOAD"
     record_stage red
     printf 'OK: semantic RED marker verified for %s\n' "$TASK_ID"
     ;;
@@ -112,6 +127,7 @@ case "$ACTION" in
     require_command
     LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-${ACTION}.XXXXXX")
     set +e; run_command "$LOG_FILE" "$PAYLOAD"; RUNNER_STATUS=$?; set -e
+    preserve_log "${ACTION#verify-}"
     if [[ "$RUNNER_STATUS" -ne 0 ]]; then
       cat "$LOG_FILE" >&2
       [[ "$ACTION" == "verify-global" ]] && fail "global regression suite failed" 6
@@ -125,13 +141,21 @@ case "$ACTION" in
     [[ -n "$PAYLOAD" ]] || fail "static analysis command is required"
     [[ -n "$SECOND_PAYLOAD" ]] || fail "mutation testing command is required"
     [[ -n "$THIRD_PAYLOAD" ]] || fail "independent review receipt is required"
+    [[ -n "$FOURTH_PAYLOAD" ]] || fail "independent review receipt path is required"
     LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-static.XXXXXX")
     set +e; run_command "$LOG_FILE" "$PAYLOAD"; RUNNER_STATUS=$?; set -e
+    preserve_log static
     [[ "$RUNNER_STATUS" -eq 0 ]] || { cat "$LOG_FILE" >&2; fail "static analysis failed" 8; }
     LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-mutation.XXXXXX")
     set +e; run_command "$LOG_FILE" "$SECOND_PAYLOAD"; RUNNER_STATUS=$?; set -e
+    preserve_log mutation
     [[ "$RUNNER_STATUS" -eq 0 ]] || { cat "$LOG_FILE" >&2; fail "mutation testing failed" 8; }
-    "$PYTHON" "$HELPER" record-quality "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR/sdd-tdd-evidence" "$TASK_ID" "$PAYLOAD" "$SECOND_PAYLOAD" "$THIRD_PAYLOAD"
+    REVIEW_STARTED=$("$PYTHON" -c 'import time; print(time.time())')
+    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-review.XXXXXX")
+    set +e; run_command "$LOG_FILE" "$THIRD_PAYLOAD" "" "$FOURTH_PAYLOAD"; RUNNER_STATUS=$?; set -e
+    preserve_log review
+    [[ "$RUNNER_STATUS" -eq 0 ]] || { cat "$LOG_FILE" >&2; fail "independent review command failed" 8; }
+    "$PYTHON" "$HELPER" record-quality "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR/sdd-tdd-evidence" "$TASK_ID" "$PAYLOAD" "$SECOND_PAYLOAD" "$FOURTH_PAYLOAD" "$REVIEW_STARTED"
     printf 'OK: quality and independent review gates passed for %s\n' "$TASK_ID"
     ;;
   verify-paths)
@@ -158,6 +182,6 @@ case "$ACTION" in
     printf 'OK: committed %s and marked it complete\n' "$TASK_ID"
     ;;
   *)
-    fail "unsupported action; use select-task, init, verify-red, verify-green, verify-global, verify-quality, verify-paths, complete, or unlock"
+    fail "unsupported action; use approve-plan, select-task, init, verify-red, verify-green, verify-global, verify-quality, verify-paths, complete, or unlock"
     ;;
 esac
