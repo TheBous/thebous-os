@@ -23,7 +23,9 @@ or `GMAIL_APP_PASSWORD` values are missing, tell the user to run
 query every configured provider and disclose the one that is not configured.
 Gmail credentials are only a fallback when no native Gmail connector is
 available. Notion coverage is enabled when `NOTION_API_TOKEN` and
-`NOTION_DATABASE_ID` are present in the loaded environment.
+`NOTION_DATABASE_ID` are present in the loaded environment. When
+`NOTION_USER_EMAIL` is present, use it to scope Notion tasks to the current user;
+otherwise disclose that assignment scope is unavailable.
 
 ## Step 1: Calculate time windows
 
@@ -119,10 +121,12 @@ fields: ["summary", "duedate", "status", "project"]
 ```
 
 For Notion, source `scripts/notion.sh` and call `notion_list_tasks` with
-`due_from=TODAY`, `due_to=DUE_END`, and the provider-neutral equivalent of
-`status != done`. Use normalized `due_at`, `status`, `ref.url`, and
-`ref.external_id`; follow `next_cursor` until complete. Keep Jira-only,
-Notion-only, and both-provider results separate.
+`due_from=TODAY`, `due_to=DUE_END`, and `assignee=NOTION_USER_EMAIL` when
+configured. Exclude tasks whose normalized status is `done` after collection;
+the adapter does not silently ignore negative filters.
+Use normalized `due_at`, `status`, `ref.url`, and `ref.external_id`; follow
+`next_cursor` until complete. Keep Jira-only, Notion-only, and both-provider
+results separate.
 
 ## Step 6: Tasks starting today
 
@@ -135,8 +139,9 @@ fields: ["summary", "status", "project"]
 `getJiraIssueTypeMetaWithFields`, ask which field represents the start date, and
 update this skill once the correct name is known.
 
-For Notion, call `notion_list_tasks` with `start_from=TODAY` and
-`start_to=TODAY`; use normalized `start_at`, `status`, and the Notion page link.
+For Notion, call `notion_list_tasks` with `start_from=TODAY`, `start_to=TODAY`,
+and `assignee=NOTION_USER_EMAIL` when configured; use normalized `start_at`,
+`status`, and the Notion page link.
 
 ## Step 7: Overnight task activity
 
@@ -200,6 +205,7 @@ Report title, start/end, and conference URL when present.
 - **⚪ Low/FYI**: informative non-urgent email and passive reminders.
 
 An item may appear in both the priority index and its detailed section.
+Every task item must retain its provider source label and direct link.
 
 ## Step 12: Compose the report
 

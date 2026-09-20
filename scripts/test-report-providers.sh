@@ -12,11 +12,15 @@ for skill in "$CURRENT_STATUS" "$MORNING_BRIEFING"; do
   grep -q "list_activity" "$skill"
   grep -q "coverage gap" "$skill"
   grep -q "provider" "$skill"
+  grep -q "source label" "$skill"
 done
 
 grep -q "Jira-only" "$CURRENT_STATUS"
 grep -q "Notion-only" "$CURRENT_STATUS"
 grep -q "both providers" "$CURRENT_STATUS"
+grep -q "Exclude tasks whose normalized status is" "$MORNING_BRIEFING"
 grep -q "NOTION_API_TOKEN" "$MORNING_BRIEFING"
+grep -q "NOTION_USER_EMAIL" "$CURRENT_STATUS"
+grep -q "NOTION_USER_EMAIL" "$MORNING_BRIEFING"
 
 echo "Provider report checks passed."

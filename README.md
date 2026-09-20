@@ -209,6 +209,8 @@ JIRA_EMAIL=your-email@example.com
 JIRA_API_TOKEN=your-atlassian-api-token
 NOTION_API_TOKEN=your-notion-integration-token
 NOTION_DATABASE_ID=your-notion-database-id
+NOTION_DATA_SOURCE_ID=your-notion-data-source-id-if-the-database-has-multiple-sources
+NOTION_USER_EMAIL=your-notion-account-email
 ```
 
 The setup can also configure Jira transition IDs, Notion, Slack, Confluence, Obsidian,
@@ -216,7 +218,9 @@ GitHub repositories and Gmail. Keep this file outside the repository and never
 commit API tokens, app passwords or webhooks.
 
 Notion task databases use the fixed properties `Name`, `Description`, `Status`,
-and optionally `Assignee`, `Due date` and `Start date`.
+and optionally `Assignee`, `Due date` and `Start date`. A database with multiple
+data sources must set `NOTION_DATA_SOURCE_ID` explicitly for list queries.
+`NOTION_USER_EMAIL` scopes report queries to one team member when set.
 
 ## Common workflows
 

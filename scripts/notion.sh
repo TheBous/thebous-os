@@ -22,20 +22,68 @@ notion_config_validate() {
 }
 
 notion_data_source_id() {
-  local configured="${NOTION_DATA_SOURCE_ID:-}" response data_source_id
+  local configured="${NOTION_DATA_SOURCE_ID:-}" response data_source_id data_source_count
 
   if [ -n "$configured" ]; then
     data_source_id=$(format_notion_page_id "$configured" 2>/dev/null || true)
   else
-    response=$(notion_api_request GET "/v1/databases/$NOTION_DATABASE_ID")
+    if ! response=$(notion_api_request GET "/v1/databases/$NOTION_DATABASE_ID"); then
+      return 2
+    fi
+    data_source_count=$(jq -r '.data_sources | length' <<<"$response")
+    if [ "$data_source_count" != "1" ]; then
+      echo "ERROR: VALIDATION_ERROR: configure NOTION_DATA_SOURCE_ID when the database has multiple data sources" >&2
+      return 2
+    fi
     data_source_id=$(jq -r '.data_sources[0].id // empty' <<<"$response")
     data_source_id=$(format_notion_page_id "$data_source_id" 2>/dev/null || true)
   fi
   if [ -z "$data_source_id" ]; then
-    echo "ERROR: VALIDATION_ERROR: Notion database has no usable data source" >&2
+    echo "ERROR: VALIDATION_ERROR: Notion data source ID is invalid or unavailable" >&2
     return 2
   fi
   printf '%s' "$data_source_id"
+}
+
+notion_user_id_by_email() {
+  local email="$1" cursor="" path response user_id encoded_cursor
+
+  while :; do
+    path="/v1/users?page_size=100"
+    if [ -n "$cursor" ]; then
+      encoded_cursor=$(jq -rn --arg cursor "$cursor" '$cursor | @uri')
+      path="$path&start_cursor=$encoded_cursor"
+    fi
+    if ! response=$(notion_api_request GET "$path"); then
+      return 2
+    fi
+    if ! jq -e '.object == "list" and (.results | type == "array")' <<<"$response" >/dev/null 2>&1; then
+      echo "ERROR: VALIDATION_ERROR: Notion user list response is malformed" >&2
+      return 2
+    fi
+    user_id=$(jq -r --arg email "$email" '
+      first(.results[]
+        | select(.type == "person" and ((.person.email // "") | ascii_downcase) == ($email | ascii_downcase))
+        | .id
+      ) // empty
+    ' <<<"$response")
+    if [ -n "$user_id" ]; then
+      if ! user_id=$(format_notion_page_id "$user_id" 2>/dev/null); then
+        echo "ERROR: VALIDATION_ERROR: Notion user ID is invalid" >&2
+        return 2
+      fi
+      printf '%s' "$user_id"
+      return 0
+    fi
+    if [ "$(jq -r '.has_more // false' <<<"$response")" != "true" ]; then
+      break
+    fi
+    cursor=$(jq -r '.next_cursor // empty' <<<"$response")
+    [ -n "$cursor" ] || break
+  done
+
+  echo "ERROR: NOT_FOUND: No Notion user matches the assignee email" >&2
+  return 2
 }
 
 notion_status() {
@@ -86,7 +134,9 @@ notion_normalize_page() {
     normalized_expected=$(format_notion_page_id "$expected_database" 2>/dev/null || true)
     normalized_source=$(format_notion_page_id "$parent_data_source_id" 2>/dev/null || true)
     normalized_expected_source=$(format_notion_page_id "$expected_data_source" 2>/dev/null || true)
-    if [ -z "$normalized_expected" ] || { [ "$normalized_parent" != "$normalized_expected" ] && { [ -z "$normalized_expected_source" ] || [ "$normalized_source" != "$normalized_expected_source" ]; }; }; then
+    if [ -z "$normalized_expected" ] \
+      || { [ "$normalized_parent" != "$normalized_expected" ] && { [ -z "$normalized_expected_source" ] || [ "$normalized_source" != "$normalized_expected_source" ]; }; } \
+      || { [ -n "$normalized_expected_source" ] && [ -n "$normalized_source" ] && [ "$normalized_source" != "$normalized_expected_source" ]; }; then
       echo "ERROR: VALIDATION_ERROR: Notion page is outside the configured database" >&2
       return 2
     fi
@@ -223,7 +273,8 @@ notion_get_page() {
 }
 
 notion_list_tasks() {
-  local filters_json="${1:-}" data_source_id response filter payload page_size cursor items next_cursor status_names
+  local filters_json="${1:-}" data_source_id response filter payload page_size cursor items next_cursor status_names statuses status normalized_page assignee_email="" assignee_user_id=""
+  local -a normalized_items=()
 
   notion_config_validate
   [ -n "$filters_json" ] || filters_json='{}'
@@ -231,19 +282,40 @@ notion_list_tasks() {
     echo "ERROR: VALIDATION_ERROR: Notion task filters must be a JSON object" >&2
     return 2
   fi
+  assignee_email=$(jq -r 'if .assignee == null then "" else .assignee end' <<<"$filters_json")
+  if [ -n "$assignee_email" ]; then
+    if ! jq -e '(.assignee | type) == "string"' <<<"$filters_json" >/dev/null 2>&1; then
+      echo "ERROR: VALIDATION_ERROR: Notion assignee filter must be an email string" >&2
+      return 2
+    fi
+    if ! assignee_user_id=$(notion_user_id_by_email "$assignee_email"); then
+      return 2
+    fi
+  fi
   page_size=$(jq -r '(.limit // 100)' <<<"$filters_json")
   if ! [[ "$page_size" =~ ^[0-9]+$ ]] || [ "$page_size" -lt 1 ] || [ "$page_size" -gt 100 ]; then
     echo "ERROR: VALIDATION_ERROR: Notion task limit must be between 1 and 100" >&2
     return 2
   fi
   cursor=$(jq -r '.cursor // empty' <<<"$filters_json")
-  status_names=$(jq -r '(.status // empty) | if type == "array" then .[] else . end' <<<"$filters_json" \
+  statuses=$(jq -r '(.status // empty) | if type == "array" then .[] else . end' <<<"$filters_json")
+  for status in $statuses; do
+    case "$status" in
+      todo|in_progress|in_review|in_staging|done) ;;
+      *)
+        echo "ERROR: VALIDATION_ERROR: unsupported canonical Notion status" >&2
+        return 2
+        ;;
+    esac
+  done
+  status_names=$(printf '%s\n' "$statuses" \
     | while IFS= read -r status; do
         [ -n "$status" ] && notion_status_name "$status"
       done \
     | jq -R -s 'split("\n") | map(select(length > 0))')
-  filter=$(jq -c --argjson status_names "$status_names" '
+  filter=$(jq -c --argjson status_names "$status_names" --arg assignee_user_id "$assignee_user_id" '
     [
+      (if $assignee_user_id == "" then empty else {property:"Assignee",people:{contains:$assignee_user_id}} end),
       (if ($status_names | length) == 0 then empty
        elif ($status_names | length) == 1 then {property:"Status",status:{equals:$status_names[0]}}
        else {or:($status_names | map({property:"Status",status:{equals:.}}))}
@@ -260,7 +332,9 @@ notion_list_tasks() {
       else {and:$filters}
       end
   ' <<<"$filters_json")
-  data_source_id=$(notion_data_source_id)
+  if ! data_source_id=$(notion_data_source_id); then
+    return 2
+  fi
   payload=$(jq -n \
     --arg cursor "$cursor" \
     --argjson page_size "$page_size" \
@@ -273,9 +347,17 @@ notion_list_tasks() {
     echo "ERROR: VALIDATION_ERROR: Notion task list response is malformed" >&2
     return 2
   fi
-  items=$(while IFS= read -r page; do
-    notion_normalize_page "$page" "$NOTION_DATABASE_ID" "$data_source_id"
-  done < <(jq -c '.results[]' <<<"$response") | jq -s '.')
+  while IFS= read -r page; do
+    if ! normalized_page=$(notion_normalize_page "$page" "$NOTION_DATABASE_ID" "$data_source_id"); then
+      return 2
+    fi
+    normalized_items+=("$normalized_page")
+  done < <(jq -c '.results[]' <<<"$response")
+  if [ "${#normalized_items[@]}" -eq 0 ]; then
+    items='[]'
+  else
+    items=$(printf '%s\n' "${normalized_items[@]}" | jq -s '.')
+  fi
   next_cursor=$(jq -r 'if .has_more then (.next_cursor // "") else "" end' <<<"$response")
   jq -n \
     --argjson items "$items" \

@@ -69,13 +69,17 @@ before classifying it. Preserve URL, repository, author, state, and last update.
 Use the shared account configuration and query each configured task provider
 independently. For Jira, use the existing issue queries and normalize each item
 to the provider-neutral task contract. For Notion, source `scripts/notion.sh`,
-call `notion_list_tasks` with the date/status filters, and use its `items`,
-`next_cursor`, `ref.url`, and canonical `status` fields. Call each provider's
+call `notion_list_tasks` with the date/status filters and, when
+`NOTION_USER_EMAIL` is configured, `assignee=NOTION_USER_EMAIL`; use its `items`,
+`next_cursor`, `ref.url`, and canonical `status` fields. Every item must retain a
+provider source label, external ID, and source link. Call each provider's
 `list_activity` for comments, updates, assignments, and transitions. Keep
 provider and external ID on every item: a Jira-only run, a Notion-only run, and
 a run with both providers are valid; never merge distinct tasks merely because
 their titles match. If Notion activity is unsupported, credentials are missing,
 or `next_cursor` remains, add a coverage gap naming the provider and category;
+if `NOTION_USER_EMAIL` is missing, disclose that Notion task assignment could not
+be scoped to the current user;
 never turn the unavailable result into `None`. For Confluence, find pages
 created or updated today, comments, and pending approvals. Link each item to
 its provider task when a reference is available.

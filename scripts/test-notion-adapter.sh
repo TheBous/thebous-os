@@ -31,7 +31,7 @@ assert_error() {
   fi
 }
 
-unset NOTION_API_TOKEN NOTION_DATABASE_ID NOTION_API_VERSION
+unset NOTION_API_TOKEN NOTION_DATABASE_ID NOTION_API_VERSION NOTION_DATA_SOURCE_ID
 
 CONFIG_OUTPUT=$(notion_config_validate 2>&1)
 CONFIG_STATUS=$?
@@ -108,6 +108,11 @@ OUTPUT=$(notion_normalize_page "$WRONG_PARENT" "$NOTION_DATABASE_ID" 2>&1)
 STATUS=$?
 assert_error "page from another database" "VALIDATION_ERROR" "$OUTPUT" "$STATUS"
 
+WRONG_DATA_SOURCE=$(jq '.parent.data_source_id = "bbbbbbbb-cccc-dddd-eeee-ffffffffffff"' <<<"$PAGE_JSON")
+OUTPUT=$(notion_normalize_page "$WRONG_DATA_SOURCE" "$NOTION_DATABASE_ID" "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" 2>&1)
+STATUS=$?
+assert_error "page from another data source" "VALIDATION_ERROR" "$OUTPUT" "$STATUS"
+
 curl() {
   local output_file=""
   while [ "$#" -gt 0 ]; do
@@ -146,7 +151,9 @@ FIXTURE_URL_FILE=$(mktemp)
 trap 'rm -f "$FIXTURE_LOG" "$FIXTURE_METHOD_FILE" "$FIXTURE_BODY_FILE" "$FIXTURE_URL_FILE"' EXIT
 UPDATED_PAGE_JSON=$(jq '.properties.Status.status.name = "Done" | .last_edited_time = "2026-09-20T10:00:00.000Z"' <<<"$PAGE_JSON")
 DATABASE_RESPONSE=$(jq -n --arg id "$NOTION_DATABASE_ID" '{object:"database",id:$id,data_sources:[{id:"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"}]}')
+USERS_RESPONSE=$(jq -n '{object:"list",has_more:false,next_cursor:null,results:[{object:"user",id:"cccccccc-dddd-eeee-ffff-000000000000",type:"person",person:{email:"marco@example.com"}}]}')
 QUERY_RESPONSE=$(jq -n --argjson page "$PAGE_JSON" '{object:"list",has_more:true,next_cursor:"cursor-2",results:[$page]}')
+MALFORMED_QUERY_RESPONSE=$(jq -n --argjson page "$PAGE_JSON" '{object:"list",has_more:false,next_cursor:null,results:[{object:"page",id:"not-a-page"},$page]}')
 
 curl() {
   local output_file="" method="GET" body="" url=""
@@ -163,9 +170,17 @@ curl() {
   printf '%s' "$method" >"$FIXTURE_METHOD_FILE"
   printf '%s' "$body" >"$FIXTURE_BODY_FILE"
   printf '%s' "$url" >"$FIXTURE_URL_FILE"
-  if [ "$FIXTURE_MODE" = "list" ] && [ "$method" = "GET" ]; then
+  if [ "$FIXTURE_MODE" = "list" ] && [ "$method" = "GET" ] && [[ "$url" = *"/v1/users"* ]]; then
+    printf '%s' "$USERS_RESPONSE" >"$output_file"
+  elif { [ "$FIXTURE_MODE" = "list" ] || [ "$FIXTURE_MODE" = "malformed-list" ]; } && [ "$method" = "GET" ]; then
     printf '%s' "$DATABASE_RESPONSE" >"$output_file"
   elif [ "$FIXTURE_MODE" = "list" ] && [ "$method" = "POST" ]; then
+    printf '%s' "$QUERY_RESPONSE" >"$output_file"
+  elif [ "$FIXTURE_MODE" = "malformed-list" ] && [ "$method" = "POST" ]; then
+    printf '%s' "$MALFORMED_QUERY_RESPONSE" >"$output_file"
+  elif [ "$FIXTURE_MODE" = "multi-list" ] && [ "$method" = "GET" ]; then
+    printf '%s' "$(jq '.data_sources += [{id:\"bbbbbbbb-cccc-dddd-eeee-ffffffffffff\"}]' <<<"$DATABASE_RESPONSE")" >"$output_file"
+  elif [ "$FIXTURE_MODE" = "multi-list" ] && [ "$method" = "POST" ]; then
     printf '%s' "$QUERY_RESPONSE" >"$output_file"
   elif [ "$method" = "GET" ]; then
     printf '%s' "$PAGE_JSON" >"$output_file"
@@ -182,7 +197,7 @@ curl() {
 FIXTURE_HTTP_STATUS=200
 FIXTURE_MODE=list
 : >"$FIXTURE_LOG"
-LIST_PAGE=$(notion_list_tasks '{"status":"in_progress","cursor":"cursor-1","limit":25}')
+LIST_PAGE=$(notion_list_tasks '{"status":"in_progress","cursor":"cursor-1","limit":25,"due_from":"2026-09-20","due_to":"2026-10-01","start_from":"2026-09-20","updated_from":"2026-09-20T00:00:00Z"}')
 FIXTURE_CALLS=$(wc -l <"$FIXTURE_LOG" | tr -d ' ')
 FIXTURE_METHOD=$(<"$FIXTURE_METHOD_FILE")
 FIXTURE_REQUEST_BODY=$(<"$FIXTURE_BODY_FILE")
@@ -192,9 +207,54 @@ assert_eq "list uses data source endpoint" "https://api.notion.com/v1/data_sourc
 assert_eq "list uses POST" "POST" "$FIXTURE_METHOD"
 assert_eq "list forwards page size" "25" "$(jq -r '.page_size' <<<"$FIXTURE_REQUEST_BODY")"
 assert_eq "list forwards cursor" "cursor-1" "$(jq -r '.start_cursor' <<<"$FIXTURE_REQUEST_BODY")"
-assert_eq "list maps canonical status" "In progress" "$(jq -r '.filter.status.equals' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "list maps canonical status" "In progress" "$(jq -r '.filter.and[0].status.equals' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "list maps due range" "2026-10-01" "$(jq -r '.filter.and[2].date.on_or_before' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "list maps start range" "2026-09-20" "$(jq -r '.filter.and[3].date.on_or_after' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "list maps updated range" "2026-09-20T00:00:00Z" "$(jq -r '.filter.and[4].last_edited_time.on_or_after' <<<"$FIXTURE_REQUEST_BODY")"
 assert_eq "list normalizes task" "Implement OAuth login" "$(jq -r '.items[0].title' <<<"$LIST_PAGE")"
 assert_eq "list preserves pagination" "cursor-2" "$(jq -r '.next_cursor' <<<"$LIST_PAGE")"
+
+ASSIGNEE_LIST=$(notion_list_tasks '{"assignee":"marco@example.com","limit":25}')
+ASSIGNEE_REQUEST_BODY=$(<"$FIXTURE_BODY_FILE")
+assert_eq "list resolves assignee email" "cccccccc-dddd-eeee-ffff-000000000000" "$(jq -r '.filter.people.contains' <<<"$ASSIGNEE_REQUEST_BODY")"
+assert_eq "assignee list still returns tasks" "Implement OAuth login" "$(jq -r '.items[0].title' <<<"$ASSIGNEE_LIST")"
+
+OUTPUT=$(notion_list_tasks '{"assignee":"nobody@example.com"}' 2>&1)
+STATUS=$?
+assert_error "unknown assignee is reported" "NOT_FOUND" "$OUTPUT" "$STATUS"
+
+FIXTURE_MODE=multi-list
+: >"$FIXTURE_LOG"
+OUTPUT=$(notion_list_tasks '{}' 2>&1)
+STATUS=$?
+FIXTURE_CALLS=$(wc -l <"$FIXTURE_LOG" | tr -d ' ')
+assert_error "multiple data sources require explicit selection" "VALIDATION_ERROR" "$OUTPUT" "$STATUS"
+assert_eq "multiple data sources stop before query" "1" "$FIXTURE_CALLS"
+
+NOTION_DATA_SOURCE_ID="bbbbbbbb-cccc-dddd-eeee-ffffffffffff"
+: >"$FIXTURE_LOG"
+EXPLICIT_LIST=$(notion_list_tasks '{}')
+assert_eq "explicit data source skips database lookup" "1" "$(wc -l <"$FIXTURE_LOG" | tr -d ' ')"
+assert_eq "explicit data source is queried" "https://api.notion.com/v1/data_sources/bbbbbbbb-cccc-dddd-eeee-ffffffffffff/query" "$(<"$FIXTURE_URL_FILE")"
+assert_eq "explicit data source returns tasks" "Implement OAuth login" "$(jq -r '.items[0].title' <<<"$EXPLICIT_LIST")"
+unset NOTION_DATA_SOURCE_ID
+
+FIXTURE_MODE=list
+: >"$FIXTURE_LOG"
+OUTPUT=$(notion_list_tasks '{"status":"blocked"}' 2>&1)
+STATUS=$?
+assert_error "unknown canonical status is rejected" "VALIDATION_ERROR" "$OUTPUT" "$STATUS"
+assert_eq "invalid status makes no request" "0" "$(wc -l <"$FIXTURE_LOG" | tr -d ' ')"
+
+OUTPUT=$(notion_list_tasks '{"assignee":123}' 2>&1)
+STATUS=$?
+assert_error "invalid assignee filter is explicit" "VALIDATION_ERROR" "$OUTPUT" "$STATUS"
+
+FIXTURE_MODE=malformed-list
+OUTPUT=$(notion_list_tasks '{}' 2>&1)
+STATUS=$?
+assert_error "malformed task page is rejected" "VALIDATION_ERROR" "$OUTPUT" "$STATUS"
+
 OUTPUT=$(notion_list_activity '{}' 2>&1)
 STATUS=$?
 assert_error "unsupported Notion activity is explicit" "UNSUPPORTED_OPERATION" "$OUTPUT" "$STATUS"
