@@ -244,7 +244,7 @@ commands/<name>.md            thin command adapter
 .cursor-plugin/               Cursor plugin and marketplace manifests
 .opencode/plugins/            OpenCode discovery adapter
 scripts/helpers.sh            shared credentials, Jira, Slack, Notion and Obsidian helpers
-scripts/notion.sh             read-only Notion task adapter
+scripts/notion.sh             Notion task adapter
 references/                   shared workflow references
 ```
 

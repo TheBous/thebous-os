@@ -268,6 +268,11 @@ The MVP uses one configured database with these fixed property names:
 The adapter validates the property types and values at the boundary. Arbitrary
 property-name mapping is out of scope for the MVP.
 
+The adapter maps canonical status writes to supported Notion status values,
+creates pages with the existing `Descrizione` / `Acceptance Criteria` text in
+`Description`, and adds comments as separate operations. A status update that
+already has the requested canonical state is idempotent.
+
 ## Git and Obsidian identity
 
 Existing Jira branches stay unchanged:

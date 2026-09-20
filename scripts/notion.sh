@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Read-only Notion adapter for thebous-os task provider contract.
+# Notion adapter for thebous-os task provider contract.
 # Source this file; do not execute it directly.
 
 set -euo pipefail
@@ -115,30 +115,44 @@ notion_normalize_page() {
     }'
 }
 
-notion_get_page() {
-  local page_id="$1"
-  local normalized_id response_file response http_status curl_status
-
-  notion_config_validate
-  normalized_id=$(format_notion_page_id "$page_id" 2>/dev/null || true)
-  if [ -z "$normalized_id" ]; then
-    echo "ERROR: INVALID_REFERENCE: invalid Notion page ID" >&2
-    return 2
-  fi
+notion_api_request() {
+  local method="$1" path="$2" body="${3:-}"
+  local response_file response http_status curl_status
+  local api_base="${NOTION_API_BASE_URL:-https://api.notion.com}"
 
   response_file=$(mktemp)
-  if http_status=$(curl -sS \
-    -o "$response_file" \
-    -w '%{http_code}' \
-    --connect-timeout 10 \
-    --max-time 30 \
-    -H "Authorization: Bearer $NOTION_API_TOKEN" \
-    -H "Notion-Version: ${NOTION_API_VERSION:-2026-03-11}" \
-    -H "Accept: application/json" \
-    "$NOTION_API_BASE_URL/v1/pages/$normalized_id"); then
-    curl_status=0
+  if [ -n "$body" ]; then
+    if http_status=$(curl -sS \
+      -o "$response_file" \
+      -w '%{http_code}' \
+      --connect-timeout 10 \
+      --max-time 30 \
+      -H "Authorization: Bearer $NOTION_API_TOKEN" \
+      -H "Notion-Version: ${NOTION_API_VERSION:-2026-03-11}" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -X "$method" \
+      --data "$body" \
+      "$api_base$path" 2>/dev/null); then
+      curl_status=0
+    else
+      curl_status=$?
+    fi
   else
-    curl_status=$?
+    if http_status=$(curl -sS \
+      -o "$response_file" \
+      -w '%{http_code}' \
+      --connect-timeout 10 \
+      --max-time 30 \
+      -H "Authorization: Bearer $NOTION_API_TOKEN" \
+      -H "Notion-Version: ${NOTION_API_VERSION:-2026-03-11}" \
+      -H "Accept: application/json" \
+      -X "$method" \
+      "$api_base$path" 2>/dev/null); then
+      curl_status=0
+    else
+      curl_status=$?
+    fi
   fi
   response=$(<"$response_file")
   rm -f "$response_file"
@@ -149,24 +163,159 @@ notion_get_page() {
   fi
 
   case "$http_status" in
-    200|201) ;;
+    200|201|202) printf '%s' "$response" ;;
     401|403)
       echo "ERROR: AUTH_REQUIRED: Notion rejected the connection" >&2
       return 2
       ;;
     404)
-      echo "ERROR: NOT_FOUND: Notion page was not found or is not shared" >&2
+      echo "ERROR: NOT_FOUND: Notion resource was not found or is not shared" >&2
       return 2
       ;;
-    429|5??)
+    409)
+      echo "ERROR: CONFLICT: Notion rejected the write because the resource changed" >&2
+      return 2
+      ;;
+    429|5??|529)
       echo "ERROR: PROVIDER_UNAVAILABLE: Notion service is temporarily unavailable" >&2
       return 2
       ;;
     *)
-      echo "ERROR: VALIDATION_ERROR: Notion rejected the page request" >&2
+      echo "ERROR: VALIDATION_ERROR: Notion rejected the request" >&2
+      return 2
+      ;;
+  esac
+}
+
+notion_get_page() {
+  local page_id="$1" normalized_id response
+
+  notion_config_validate
+  normalized_id=$(format_notion_page_id "$page_id" 2>/dev/null || true)
+  if [ -z "$normalized_id" ]; then
+    echo "ERROR: INVALID_REFERENCE: invalid Notion page ID" >&2
+    return 2
+  fi
+
+  response=$(notion_api_request GET "/v1/pages/$normalized_id")
+  notion_normalize_page "$response" "$NOTION_DATABASE_ID"
+}
+
+notion_status_name() {
+  case "$1" in
+    todo) echo "Not started" ;;
+    in_progress) echo "In progress" ;;
+    in_review) echo "In review" ;;
+    in_staging) echo "In staging" ;;
+    done) echo "Complete" ;;
+    *)
+      echo "ERROR: VALIDATION_ERROR: unsupported canonical Notion status" >&2
+      return 2
+      ;;
+  esac
+}
+
+notion_create_task() {
+  local title="${1:-}" description="${2:-}" database_id="${3:-${NOTION_DATABASE_ID:-}}"
+  local normalized_database payload response
+
+  notion_config_validate
+  if [ -z "$title" ] || [ -z "$description" ]; then
+    echo "ERROR: VALIDATION_ERROR: Notion task title and description are required" >&2
+    return 2
+  fi
+  normalized_database=$(format_notion_page_id "$database_id" 2>/dev/null || true)
+  if [ -z "$normalized_database" ]; then
+    echo "ERROR: VALIDATION_ERROR: Notion database ID is invalid" >&2
+    return 2
+  fi
+
+  payload=$(jq -n \
+    --arg database_id "$normalized_database" \
+    --arg title "$title" \
+    --arg description "$description" \
+    '{
+      parent: {database_id: $database_id},
+      properties: {
+        Name: {title: [{text: {content: $title}}]},
+        Description: {rich_text: [{text: {content: $description}}]},
+        Status: {status: {name: "Not started"}}
+      }
+    }')
+  response=$(notion_api_request POST "/v1/pages" "$payload")
+  notion_normalize_page "$response" "$normalized_database"
+}
+
+notion_set_status() {
+  local page_id="$1" canonical_status="$2"
+  local normalized_id raw_page current_status property_type provider_status payload response
+
+  notion_config_validate
+  normalized_id=$(format_notion_page_id "$page_id" 2>/dev/null || true)
+  if [ -z "$normalized_id" ]; then
+    echo "ERROR: INVALID_REFERENCE: invalid Notion page ID" >&2
+    return 2
+  fi
+  provider_status=$(notion_status_name "$canonical_status")
+  raw_page=$(notion_api_request GET "/v1/pages/$normalized_id")
+  current_status=$(notion_normalize_page "$raw_page" "$NOTION_DATABASE_ID")
+  if [ "$(jq -r '.status' <<<"$current_status")" = "$canonical_status" ]; then
+    printf '%s' "$current_status"
+    return 0
+  fi
+
+  property_type=$(jq -r '.properties.Status.type // empty' <<<"$raw_page")
+  case "$property_type" in
+    status)
+      payload=$(jq -n --arg name "$provider_status" '{properties:{Status:{status:{name:$name}}}}')
+      ;;
+    select)
+      payload=$(jq -n --arg name "$provider_status" '{properties:{Status:{select:{name:$name}}}}')
+      ;;
+    *)
+      echo "ERROR: VALIDATION_ERROR: Notion Status property type is unsupported" >&2
       return 2
       ;;
   esac
 
+  response=$(notion_api_request PATCH "/v1/pages/$normalized_id" "$payload")
   notion_normalize_page "$response" "$NOTION_DATABASE_ID"
+}
+
+notion_add_comment() {
+  local page_id="$1" body="${2:-}"
+  local normalized_id payload response comment_id created_at
+
+  notion_config_validate
+  normalized_id=$(format_notion_page_id "$page_id" 2>/dev/null || true)
+  if [ -z "$normalized_id" ]; then
+    echo "ERROR: INVALID_REFERENCE: invalid Notion page ID" >&2
+    return 2
+  fi
+  if [ -z "$body" ]; then
+    echo "ERROR: VALIDATION_ERROR: comment body is required" >&2
+    return 2
+  fi
+
+  payload=$(jq -n \
+    --arg page_id "$normalized_id" \
+    --arg body "$body" \
+    '{parent:{page_id:$page_id},rich_text:[{text:{content:$body}}]}')
+  response=$(notion_api_request POST "/v1/comments" "$payload")
+  if ! jq -e '(.id | type == "string") and (.created_time | type == "string")' <<<"$response" >/dev/null 2>&1; then
+    echo "ERROR: VALIDATION_ERROR: Notion comment response is malformed" >&2
+    return 2
+  fi
+  comment_id=$(jq -r '.id' <<<"$response")
+  created_at=$(jq -r '.created_time' <<<"$response")
+  jq -n \
+    --arg page_id "$normalized_id" \
+    --arg comment_id "$comment_id" \
+    --arg created_at "$created_at" \
+    '{
+      ref: {provider: "notion", external_id: $page_id, url: null},
+      external_id: $comment_id,
+      url: null,
+      created_at: $created_at
+    }'
 }

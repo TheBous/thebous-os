@@ -134,6 +134,100 @@ assert_error "Notion rate limit error" "PROVIDER_UNAVAILABLE" "$OUTPUT" "$STATUS
 
 unset -f curl
 
+FIXTURE_HTTP_STATUS=200
+FIXTURE_CALLS=0
+FIXTURE_METHOD=""
+FIXTURE_REQUEST_BODY=""
+FIXTURE_MODE=""
+FIXTURE_LOG=$(mktemp)
+FIXTURE_METHOD_FILE=$(mktemp)
+FIXTURE_BODY_FILE=$(mktemp)
+trap 'rm -f "$FIXTURE_LOG" "$FIXTURE_METHOD_FILE" "$FIXTURE_BODY_FILE"' EXIT
+UPDATED_PAGE_JSON=$(jq '.properties.Status.status.name = "Done" | .last_edited_time = "2026-09-20T10:00:00.000Z"' <<<"$PAGE_JSON")
+
+curl() {
+  local output_file="" method="GET" body=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -o) output_file="$2"; shift 2 ;;
+      -X) method="$2"; shift 2 ;;
+      --data|-d) body="$2"; shift 2 ;;
+      -w|-H) shift 2 ;;
+      *) shift ;;
+    esac
+  done
+  printf '%s\n' "$method" >>"$FIXTURE_LOG"
+  printf '%s' "$method" >"$FIXTURE_METHOD_FILE"
+  printf '%s' "$body" >"$FIXTURE_BODY_FILE"
+  if [ "$method" = "GET" ]; then
+    printf '%s' "$PAGE_JSON" >"$output_file"
+  elif [ "$method" = "PATCH" ]; then
+    printf '%s' "$UPDATED_PAGE_JSON" >"$output_file"
+  elif [ "$FIXTURE_MODE" = "create" ]; then
+    printf '%s' "$PAGE_JSON" >"$output_file"
+  else
+    printf '%s' '{"object":"comment","id":"comment-123","created_time":"2026-09-20T10:05:00.000Z"}' >"$output_file"
+  fi
+  printf '%s' "$FIXTURE_HTTP_STATUS"
+}
+
+: >"$FIXTURE_LOG"
+FIXTURE_MODE=create
+CREATE_DESCRIPTION=$'## Descrizione\n\nImplementare il lavoro.\n\n## Acceptance Criteria\n\n[ ] Verificare il risultato.'
+CREATED_TASK=$(notion_create_task "Nuovo task" "$CREATE_DESCRIPTION")
+FIXTURE_CALLS=$(wc -l <"$FIXTURE_LOG" | tr -d ' ')
+FIXTURE_METHOD=$(<"$FIXTURE_METHOD_FILE")
+FIXTURE_REQUEST_BODY=$(<"$FIXTURE_BODY_FILE")
+assert_eq "created task provider" "notion" "$(jq -r '.ref.provider' <<<"$CREATED_TASK")"
+assert_eq "create uses POST" "POST" "$FIXTURE_METHOD"
+assert_eq "create targets configured database" "$NOTION_DATABASE_ID" "$(jq -r '.parent.database_id' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "create preserves Italian description" "$CREATE_DESCRIPTION" "$(jq -r '.properties.Description.rich_text[0].text.content' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "status map todo" "Not started" "$(notion_status_name todo)"
+assert_eq "status map in progress" "In progress" "$(notion_status_name in_progress)"
+assert_eq "status map in review" "In review" "$(notion_status_name in_review)"
+assert_eq "status map in staging" "In staging" "$(notion_status_name in_staging)"
+assert_eq "status map done" "Complete" "$(notion_status_name done)"
+
+FIXTURE_CALLS=0
+: >"$FIXTURE_LOG"
+FIXTURE_MODE=update
+UPDATED_TASK=$(notion_set_status "6f3b2c1a-1234-4567-89ab-0123456789ab" "todo")
+FIXTURE_CALLS=$(wc -l <"$FIXTURE_LOG" | tr -d ' ')
+FIXTURE_METHOD=$(<"$FIXTURE_METHOD_FILE")
+FIXTURE_REQUEST_BODY=$(<"$FIXTURE_BODY_FILE")
+assert_eq "status update makes one read and one write" "2" "$FIXTURE_CALLS"
+assert_eq "status update uses PATCH" "PATCH" "$FIXTURE_METHOD"
+assert_eq "status update maps todo" "Not started" "$(jq -r '.properties.Status.status.name' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "status update returns normalized task" "done" "$(jq -r '.status' <<<"$UPDATED_TASK")"
+
+FIXTURE_CALLS=0
+: >"$FIXTURE_LOG"
+FIXTURE_MODE=update
+IDEMPOTENT_TASK=$(notion_set_status "6f3b2c1a-1234-4567-89ab-0123456789ab" "in_progress")
+FIXTURE_CALLS=$(wc -l <"$FIXTURE_LOG" | tr -d ' ')
+assert_eq "same status is idempotent" "1" "$FIXTURE_CALLS"
+assert_eq "idempotent status" "in_progress" "$(jq -r '.status' <<<"$IDEMPOTENT_TASK")"
+
+FIXTURE_CALLS=0
+: >"$FIXTURE_LOG"
+FIXTURE_MODE=comment
+RECEIPT=$(notion_add_comment "6f3b2c1a-1234-4567-89ab-0123456789ab" "Commento di test")
+FIXTURE_CALLS=$(wc -l <"$FIXTURE_LOG" | tr -d ' ')
+FIXTURE_METHOD=$(<"$FIXTURE_METHOD_FILE")
+FIXTURE_REQUEST_BODY=$(<"$FIXTURE_BODY_FILE")
+assert_eq "comment uses POST" "POST" "$FIXTURE_METHOD"
+assert_eq "comment body" "Commento di test" "$(jq -r '.rich_text[0].text.content' <<<"$FIXTURE_REQUEST_BODY")"
+assert_eq "comment receipt ID" "comment-123" "$(jq -r '.external_id' <<<"$RECEIPT")"
+assert_eq "comment receipt timestamp" "2026-09-20T10:05:00.000Z" "$(jq -r '.created_at' <<<"$RECEIPT")"
+
+FIXTURE_HTTP_STATUS=504
+: >"$FIXTURE_LOG"
+OUTPUT=$(notion_add_comment "6f3b2c1a-1234-4567-89ab-0123456789ab" "timeout" 2>&1)
+STATUS=$?
+FIXTURE_CALLS=$(wc -l <"$FIXTURE_LOG" | tr -d ' ')
+assert_error "comment timeout is not retried" "PROVIDER_UNAVAILABLE" "$OUTPUT" "$STATUS"
+assert_eq "comment timeout makes one request" "1" "$FIXTURE_CALLS"
+
 if [ "$FAIL" -eq 0 ]; then
   echo "All Notion adapter checks passed."
   exit 0

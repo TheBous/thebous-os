@@ -13,7 +13,7 @@ Guide the user step by step through the setup. Ask one question at a time and wa
 
 1a. **Jira Email + API Token** (optional on Claude Code, required elsewhere) — the Atlassian Rovo MCP covers Jira/Confluence calls on Claude Code, but a few paths always use direct REST instead of MCP: the curl fallback in `references/jira-transition.md` and `scripts/helpers.sh` (used if the MCP call errors), and `person-activity`'s Jira queries (no MCP path at all). On Codex/OpenCode, where the Rovo MCP isn't available, this is the **only** way Jira calls work. Ask for the Jira account email and an API token (generate one at https://id.atlassian.com/manage-profile/security/api-tokens). Leave both blank to skip — MCP-only paths keep working on Claude Code, but the fallback/person-activity paths will fail until this is set.
 
-1b. **Notion Integration Token + Database ID** (optional) — ask for an internal integration token and the ID of the Notion database used for tasks. The integration must have read-content access to that database. Leave both blank to use Jira only. Never display or log the token after receiving it.
+1b. **Notion Integration Token + Database ID** (optional) — ask for an internal integration token and the ID of the Notion database used for tasks. The integration needs read/insert/update content and comment access for the full task lifecycle. Leave both blank to use Jira only. Never display or log the token after receiving it.
 
 2. **Slack Webhook URL** — explain where to create it: `api.slack.com → Your Apps → Incoming Webhooks → Add New Webhook`, then ask for the URL.
 

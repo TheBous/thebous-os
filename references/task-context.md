@@ -50,7 +50,8 @@ Route by `.provider` and return a normalized Task, never the raw provider respon
 - **Notion** — source `scripts/notion.sh` and call:
   `notion_get_page "$(jq -r '.external_id' <<<"$REF_JSON")"`. The adapter
   validates the configured database schema and returns the normalized Task.
-  The MVP read path is read-only; writes must report `UNSUPPORTED_OPERATION`.
+  Its supported writes are `notion_create_task`, `notion_set_status` and
+  `notion_add_comment`; other writes must report `UNSUPPORTED_OPERATION`.
 
 If fetching fails, map the provider result to the shared semantic errors:
 `AUTH_REQUIRED`, `NOT_FOUND`, `VALIDATION_ERROR` or `PROVIDER_UNAVAILABLE`.
