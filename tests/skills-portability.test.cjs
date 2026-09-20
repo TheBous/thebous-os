@@ -196,9 +196,10 @@ test('cook initializes provider-neutral SDD artifacts before development', () =>
   const cook = fs.readFileSync(path.join(skillsDir, 'cook', 'SKILL.md'), 'utf8');
   assert.match(cook, /direct Jira relationships|linked issues|parent story/i);
   assert.match(cook, /Do not show the user the ticket title or description/i);
-  assert.match(cook, /Tickets\/DC-<TASK_ID>\/spec\.md/);
-  assert.match(cook, /Tickets\/DC-<TASK_ID>\/plan\.md/);
-  assert.match(cook, /Tickets\/DC-<TASK_ID>\/tasks\.md/);
+  assert.match(cook, /Tickets\/<TASK_STORAGE_KEY>\/spec\.md/);
+  assert.match(cook, /Tickets\/<TASK_STORAGE_KEY>\/plan\.md/);
+  assert.match(cook, /Tickets\/<TASK_STORAGE_KEY>\/tasks\.md/);
+  assert.match(cook, /Tickets\/DC-123/);
   assert.match(cook, /implementation-direction\.html/);
   assert.match(cook, /Before changing source or test code/i);
   assert.match(cook, /each delegated action.*tasks\.md/is);

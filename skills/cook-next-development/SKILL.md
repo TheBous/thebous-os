@@ -12,8 +12,12 @@ plan, or task file is missing, stop and use `cook-next-planning`.
 
 Read both destinations:
 
-- `docs/<KEY>/spec.html`, `plan.md`, `task.md`;
-- `<OBSIDIAN_VAULT_PATH>/Dev/Tickets/<KEY>/spec.html`, `plan.md`, `task.md`.
+- `docs/<TASK_STORAGE_KEY>/spec.html`, `plan.md`, `task.md`;
+- `<OBSIDIAN_VAULT_PATH>/Dev/Tickets/<TASK_STORAGE_KEY>/spec.html`, `plan.md`, `task.md`.
+
+The handoff carries a provider-neutral `TaskRef` resolved by
+`references/task-context.md`. Jira keys keep their existing storage key; Notion
+pages use `notion-<page-id>` through `obsidian_task_storage_key`.
 
 Verify that the copies are identical, the spec and plan are approved, and
 `task.md` contains the ordered work. Before the first source-code change:

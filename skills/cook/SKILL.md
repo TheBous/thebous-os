@@ -20,22 +20,25 @@ BASE_COMMIT=$(git rev-parse HEAD)
 Use this baseline only to measure the changes made for the current feature or fix;
 do not count unrelated changes that were already present.
 
-Follow `references/jira-task-context.md` with:
+Follow `references/task-context.md` with:
 - `<SOURCES>` = the current branch name
 - `<REQUIRED>` = `optional`
 - `<DETAILS>` = `full`
 
-In addition to the resolved task, collect its direct Jira relationships: linked
-issues, subtasks, parent story/task, epic or other ancestor, and the stories or
-child tasks under that parent when available. Resolve parent links upward until
-there is no parent or the project hierarchy ends. Use this related context to
-define scope, dependencies, acceptance criteria, and implementation order.
+Set `TASK_REF` (the provider-neutral `TaskRef`), `PROVIDER`, `EXTERNAL_ID`, `TASK_SUMMARY`, `TASK_DESCRIPTION`,
+and `TASK_REQUIREMENTS` from the normalized context. For Jira, also collect
+direct relationships: linked issues, subtasks, parent story/task, epic or other
+ancestor, and child tasks when available. For Notion, use only the normalized
+page fields; related Jira links are not available and must not be invented.
+Resolve Jira parent links upward until there is no parent or the hierarchy ends.
+Use available related context to define scope, dependencies, acceptance
+criteria and implementation order.
 
 Do not show the user the ticket title or description. Ask only for confirmation
 that the gathered scope is correct and incorporate any clarification:
 
 ```text
-I collected the task context and its Jira links. Shall I proceed with this scope? Would you like to add or correct anything?
+I collected the task context and available provider links. Shall I proceed with this scope? Would you like to add or correct anything?
 ```
 
 Wait for a reply before creating the implementation artifacts.
@@ -52,8 +55,8 @@ If the user says **no**, continue to step 3 without pulling anything.
 
 If the user says **yes**:
 
-1. Require `<KEY>` and a configured `OBSIDIAN_VAULT_PATH`. If either is
-   missing, explain that the meeting cannot be imported into the ticket and
+1. Require `TASK_REF` and a configured `OBSIDIAN_VAULT_PATH`. If either is
+   missing, explain that the meeting cannot be imported into the task and
    ask whether to continue without Granola.
 2. Prefer an available Granola MCP connection. Otherwise use the official
    Granola API with `GRANOLA_API_KEY`. On this machine, when the Obsidian
@@ -66,17 +69,18 @@ If the user says **yes**:
    `cursor`. Show a numbered selection with title and creation date. If the
    list is large, let the user filter it by title/date before selecting.
 4. Ask which meeting to use. Never select a meeting automatically, even when
-   one title appears to match the Jira ticket. If the user declines or no
+   one title appears to match the task. If the user declines or no
    meeting is selected, continue without importing one.
 5. For the selected note, pull its detail with `include=transcript`, then
-   create a new Markdown page in the existing Obsidian ticket folder
-   `Dev/Tickets/<KEY>` using `obsidian_ticket_dir`. Name it
+   create a new Markdown page in the provider-aware Obsidian task folder using
+   `obsidian_task_dir`. Name it
    `granola-<GRANOLA_ID>.md` so the same meeting cannot be imported twice.
 6. Do not overwrite an existing page silently. If that file already exists,
    tell the user it is already imported and ask whether to use it or choose
    another meeting.
-7. The new page must contain frontmatter for `ticket`, `granola_id`, `title`,
-   `created_at`, `updated_at`, `granola_url`, and `imported_at`, followed by
+7. The new page must contain frontmatter for `provider`, `external_id`, `url`,
+   `granola_id`, `title`, `created_at`, `updated_at`, `granola_url`, and
+   `imported_at` (keep `ticket` for Jira compatibility), followed by
    the meeting title, summary, attendees, and full transcript when returned
    by Granola. Preserve the source content; do not invent or summarize it.
 8. Confirm the imported page path to the user before proceeding with the
@@ -90,25 +94,29 @@ silently after a failed requested import.
 ### 3. Initialize the SDD work package
 
 Before invoking Wayfinder, Brainstorming, Grilling, Superpowers, or any other
-preliminary skill, create the SDD work package for the resolved Jira task:
+preliminary skill, create the SDD work package for the resolved task:
 
 ```text
-<OBSIDIAN_VAULT_PATH>/Tickets/DC-<TASK_ID>/spec.md
-<OBSIDIAN_VAULT_PATH>/Tickets/DC-<TASK_ID>/plan.md
-<OBSIDIAN_VAULT_PATH>/Tickets/DC-<TASK_ID>/tasks.md
+<OBSIDIAN_VAULT_PATH>/Tickets/<TASK_STORAGE_KEY>/spec.md
+<OBSIDIAN_VAULT_PATH>/Tickets/<TASK_STORAGE_KEY>/plan.md
+<OBSIDIAN_VAULT_PATH>/Tickets/<TASK_STORAGE_KEY>/tasks.md
 ```
 
 `OBSIDIAN_VAULT_PATH` is required for this workflow. If it is unset or the vault
 does not exist, stop before invoking another skill or changing code and ask the
 user to configure it.
 
-`<TASK_ID>` is the numeric part of the Jira key (`DC-123` → `DC-123`). If the
-ticket key is not in the `DC-<number>` format, use the complete resolved key after
-`Tickets/` and report the path.
+If `TASK_REF` is empty, skip Granola import, provider relationships, provider
+writes and task-scoped SDD artifacts; continue only with the user-confirmed
+local scope and make no provider calls.
+
+Derive `<TASK_STORAGE_KEY>` with `obsidian_task_storage_key "$TASK_REF"`.
+This keeps existing Jira paths such as `Tickets/DC-123` and uses
+`Tickets/notion-<page-id>` for Notion. Report the selected path.
 
 Create these files before any code change. Their minimum responsibilities are:
 
-- `spec.md`: problem, scope, related Jira context, requirements, constraints,
+- `spec.md`: problem, scope, related provider context, requirements, constraints,
   acceptance criteria, and decisions;
 - `plan.md`: implementation approach, affected areas, dependencies, risks, and
   verification strategy;
@@ -146,7 +154,7 @@ update `tasks.md` as each preliminary skill completes.
 Before changing source or test code, create a self-contained HTML document at:
 
 ```text
-<OBSIDIAN_VAULT_PATH>/Tickets/DC-<TASK_ID>/implementation-direction.html
+<OBSIDIAN_VAULT_PATH>/Tickets/<TASK_STORAGE_KEY>/implementation-direction.html
 ```
 
 The document is written for a developer: it must sit between business and deep
@@ -161,7 +169,7 @@ before development and ask the user to configure it: this artifact is mandatory.
 
 **REQUIRED SUB-SKILL:** Use `architecture-first-development` before changing
 source or test code. It governs design and code structure; this skill continues
-to govern Jira context, SDD artifacts, verification, and documentation.
+to govern provider context, SDD artifacts, verification, and documentation.
 
 ### 6. Proceed with SDD implementation
 
@@ -187,7 +195,7 @@ The changes exceed 300 lines of code. Would you like to split this feature into 
 
 Do not assume the answer. If the user says **yes**, propose a minimal decomposition
 into independently reviewable tasks/PRs, ordered by dependency, and wait for approval
-before continuing as a single feature. Do not create Jira tasks, branches or PRs
+before continuing as a single feature. Do not create provider tasks, branches or PRs
 automatically from this check. If the user says **no**, continue with the current
 implementation and record that the user explicitly chose not to split it.
 
@@ -233,24 +241,24 @@ Wait for confirmation. For each confirmed doc, update the relevant content to re
 ### 9. Finalize the SDD artifacts
 
 Before the final response, ensure the three SDD files and the HTML direction
-document are present in `<OBSIDIAN_VAULT_PATH>/Tickets/DC-<TASK_ID>/`. Mark every
+document are present in `<OBSIDIAN_VAULT_PATH>/Tickets/<TASK_STORAGE_KEY>/`. Mark every
 completed item in `tasks.md`, record final decisions and verification results in
 `plan.md`, and record the delivered behavior and acceptance-criteria status in
 `spec.md`.
 
 ### 10. Log to Obsidian (optional)
 
-Only if a Jira ticket was found in step 1 (`<KEY>` is set). Follow
+If a task reference was found in step 1 (`TASK_REF` is set). Follow
 `references/obsidian-log.md` for the daily note. Do not create a second
-`plan.md` under `Dev/Tickets/<KEY>`: the canonical SDD `plan.md` is already in
-`Tickets/DC-<TASK_ID>` above.
+`plan.md` under the provider-aware task directory: the canonical SDD `plan.md` is already in
+`Tickets/<TASK_STORAGE_KEY>` above.
 
 ```bash
 source "scripts/helpers.sh"
 load_env
 
 if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ]; then
-  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "[[<KEY>]] — implemented via SDD"
+  obsidian_append_daily "${OBSIDIAN_VAULT_PATH}" "<PROVIDER>:<EXTERNAL_ID> — implemented via SDD"
 fi
 ```
 
@@ -260,7 +268,7 @@ Show the user:
 - ✅ Feature/fix implemented via SDD
 - ✅ Tests: full suite green (all scripts passed)
 - ✅ Documentation updated: `<list of files/pages>` (if applicable)
-- ✅ SDD bundle: `Tickets/DC-<TASK_ID>/spec.md`, `plan.md`, `tasks.md`, and `implementation-direction.html`
+- ✅ SDD bundle: `Tickets/<TASK_STORAGE_KEY>/spec.md`, `plan.md`, `tasks.md`, and `implementation-direction.html`
 - ✅ Obsidian log: updated (or "skipped, no vault configured")
 - ✅ Granola context page: `<path>` (if imported, otherwise "skipped")
 - → Suggest the next step: `/thebous-os:create-pr` to open the PR

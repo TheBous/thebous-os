@@ -1,6 +1,6 @@
 ---
 name: cook-next-planning
-description: "Plan a feature or fix before development: retrieve the full Jira context, clarify requirements, build the mental model, and create synchronized spec.html, plan.md, and task.md files in the project and Obsidian. Use when scope, design, test strategy, risks, and PR stacking must be defined without writing code yet."
+description: "Plan a feature or fix before development: retrieve the full Jira or Notion task context, clarify requirements, build the mental model, and create synchronized spec.html, plan.md, and task.md files in the project and Obsidian. Use when scope, design, test strategy, risks, and PR stacking must be defined without writing code yet."
 ---
 
 # Cook Next Planning
@@ -10,11 +10,11 @@ only analysis, decisions, and planning artifacts.
 
 ## Constraints
 
-- Resolve the Jira task and retrieve its full context before proceeding.
+- Resolve the Jira or Notion task and retrieve its full normalized context before proceeding.
 - Require `OBSIDIAN_VAULT_PATH`; stop if the ticket or vault is unavailable.
 - Create and synchronize:
-  - project: `docs/<KEY>/spec.html`, `plan.md`, `task.md`;
-  - Obsidian: `<OBSIDIAN_VAULT_PATH>/Dev/Tickets/<KEY>/spec.html`, `plan.md`,
+  - project: `docs/<TASK_STORAGE_KEY>/spec.html`, `plan.md`, `task.md`;
+  - Obsidian: `<OBSIDIAN_VAULT_PATH>/Dev/Tickets/<TASK_STORAGE_KEY>/spec.html`, `plan.md`,
     `task.md`.
 - Use `task.md` as the single checklist, updating it before and after every
   activity.
@@ -23,9 +23,9 @@ only analysis, decisions, and planning artifacts.
   meaningful risk areas.
 - Do not start development until the artifacts are complete and approved.
 
-## 1. Retrieve Jira context
+## 1. Retrieve provider context
 
-Use `references/jira-task-context.md` with:
+Use `references/task-context.md` with:
 
 ```text
 <SOURCES> = current branch and user input
@@ -33,11 +33,12 @@ Use `references/jira-task-context.md` with:
 <DETAILS> = full
 ```
 
-Retrieve the summary, description, acceptance criteria, status, priority,
+Set `TASK_REF` (the provider-neutral `TaskRef`) and the normalized Task fields before planning. For Jira,
+retrieve the summary, description, acceptance criteria, status, priority,
 assignee, issue type, linked issues, subtasks, parent, epic/ancestor, and child
-tasks. Walk up the parent hierarchy until it ends. Use this context to define
-scope, dependencies, criteria, and work order; do not reimplement Jira key
-resolution.
+tasks. For Notion, use only the normalized page fields and do not invent linked
+issues or parent hierarchy. Use the available context to define scope,
+dependencies, criteria and work order; do not reimplement provider resolution.
 
 ## 2. Understand deeply
 
@@ -166,8 +167,8 @@ load_env
 test -n "${OBSIDIAN_VAULT_PATH:-}" && test -d "$OBSIDIAN_VAULT_PATH"
 ```
 
-Use `obsidian_ticket_dir` for the Obsidian destination and create
-`docs/<KEY>/` in the project. Write `spec.html` in both destinations with:
+Use `obsidian_task_dir` for the Obsidian destination and create
+`docs/<TASK_STORAGE_KEY>/` in the project. Write `spec.html` in both destinations with:
 
 - problem, goal, user-visible value, stakeholder, scope, and out of scope;
 - capability map and client-valued feature list when the request is composite;
@@ -217,7 +218,7 @@ Only after creating the spec, write `plan.md` in both destinations. Include:
   buildable, testable, and demonstrable;
 - safe parallel work, sequential dependencies, required owners/reviewers, and
   the contract that must be agreed before parallel work starts;
-- traceability from Jira requirement → capability → feature slice → spec section
+- traceability from provider task requirement → capability → feature slice → spec section
   → task → PR → test → evidence;
 - any PR stack ordered by dependency.
 
