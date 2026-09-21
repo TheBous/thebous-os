@@ -11,7 +11,7 @@ metadata:
   discipline: test-driven-development
 ---
 
-# SDD TDD Execute
+# Cook Execute
 
 ## Overview
 

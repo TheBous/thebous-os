@@ -119,7 +119,7 @@ def _strict_int(value):
 
 
 def _verify_attestation(event, event_type):
-    secret = os.environ.get("SDD_VERIFY_ATTESTATION_KEY")
+    secret = os.environ.get("COOK_VERIFY_ATTESTATION_KEY")
     signature = event.get("signature")
     if not secret or not isinstance(signature, str) or not SHA256.fullmatch(signature):
         raise VerificationError("authenticated host attestation is required")

@@ -10,7 +10,7 @@ metadata:
   phase: technical-planning
 ---
 
-# SDD Technical Planning and Task Decomposition Engine
+# Cook Technical Planning and Task Decomposition Engine
 
 ## Overview
 

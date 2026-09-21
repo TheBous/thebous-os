@@ -26,10 +26,10 @@ from cook_verify import (  # noqa: E402
 
 class SddVerifyTests(unittest.TestCase):
     def setUp(self):
-        os.environ["SDD_VERIFY_ATTESTATION_KEY"] = "test-key"
+        os.environ["COOK_VERIFY_ATTESTATION_KEY"] = "test-key"
 
     def tearDown(self):
-        os.environ.pop("SDD_VERIFY_ATTESTATION_KEY", None)
+        os.environ.pop("COOK_VERIFY_ATTESTATION_KEY", None)
 
     def signed_attestation(self, value):
         payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()

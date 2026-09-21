@@ -3,7 +3,7 @@ name: cook-specify
 description: Use when a feature, bug fix, or behavior change needs a versioned specification before planning or implementation, especially when requirements are ambiguous, scope may grow, contracts matter, or AI-generated assumptions are risky
 ---
 
-# SDD Specify
+# Cook Specify
 
 ## Overview
 

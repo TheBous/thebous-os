@@ -11,7 +11,7 @@ metadata:
   discipline: living-spec-synchronization
 ---
 
-# SDD Reconcile
+# Cook Reconcile
 
 ## Overview
 
@@ -76,7 +76,7 @@ python3 skills/cook-verify/scripts/cook_verify.py validate-approval \
   ".git/cook-verify-evidence/{CHG_ID}"
 ```
 
-The protected `SDD_VERIFY_ATTESTATION_KEY` must be available to the trusted host.
+The protected `COOK_VERIFY_ATTESTATION_KEY` must be available to the trusted host.
 The approval must bind the exact command, approver, timestamp, verification
 commit, report hash, attestation path, and attestation hash. If the validator is
 unavailable or the receipt is invalid, stop.
@@ -263,7 +263,7 @@ the living spec and archive gates passed; it does not imply a merged PR.
 ## Red Flags - Stop
 
 - `verification-report.md` or `verification-approval.json` is missing.
-- `SDD_VERIFY_ATTESTATION_KEY` or host attestation is unavailable.
+- `COOK_VERIFY_ATTESTATION_KEY` or host attestation is unavailable.
 - Any finding is `CRITICAL` or `IMPORTANT`, even if local tests pass.
 - `meta.json` has no base fingerprint or points outside `specs/`.
 - A merge conflict is being “resolved” by choosing the newest text automatically.

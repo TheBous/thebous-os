@@ -153,7 +153,7 @@ PY
 
 run_engine() {
   local repo="$1" action="$2" id="$3"
-  (cd "$repo" && SDD_VERIFY_ATTESTATION_KEY=test-secret bash .spec-framework/bin/reconcile_engine.sh "$action" "$id")
+  (cd "$repo" && COOK_VERIFY_ATTESTATION_KEY=test-secret bash .spec-framework/bin/reconcile_engine.sh "$action" "$id")
 }
 
 test_missing_receipt_blocks_sync() {

@@ -11,7 +11,7 @@ metadata:
   discipline: deterministic-quality-gates
 ---
 
-# SDD Verify
+# Cook Verify
 
 ## Overview
 
@@ -223,7 +223,7 @@ forked context, the dispatch identity and raw receipt are retained, all ACs are
 covered, and no finding has severity `CRITICAL` or `IMPORTANT`. Require the
 host-generated `dispatch_id`, `fork_id`, input hash, raw receipt path/hash, and
 the exact AC set. The host dispatch event must be HMAC-authenticated with the
-protected `SDD_VERIFY_ATTESTATION_KEY`; without that key, block verification.
+protected `COOK_VERIFY_ATTESTATION_KEY`; without that key, block verification.
 Validate it with:
 
 ```bash
@@ -306,7 +306,7 @@ host must write `changes/{CHG_ID}/verification-approval.json` containing the
 command, approver, ISO-8601 timestamp, verification commit, SHA-256 of the
 report, and a hash of a host-generated HMAC-authenticated `human-checkpoint`
 event that repeats and binds the command, approver, verification commit, and
-report hash. Without the protected `SDD_VERIFY_ATTESTATION_KEY` or host
+report hash. Without the protected `COOK_VERIFY_ATTESTATION_KEY` or host
 attestation, block reconciliation; a locally fabricated approver field is not
 authorization. Validate it before reconciliation:
 
@@ -333,7 +333,7 @@ The approval receipt is durable evidence, not a string copied into the report:
 
 The referenced `approval-event.json` repeats `command`, `approver`,
 `verification_commit`, and `report_sha256`, sets `event` to `human-checkpoint`,
-and carries the HMAC `signature` validated with `SDD_VERIFY_ATTESTATION_KEY`.
+and carries the HMAC `signature` validated with `COOK_VERIFY_ATTESTATION_KEY`.
 
 The command must be issued by the engineer after the verification commit:
 
