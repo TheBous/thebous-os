@@ -36,9 +36,10 @@ task, PR comment verification, or exploratory testing.
   advisory evidence.
 - A passing global suite does not replace typing, lint, architecture, mutation,
   or independent review evidence.
-- Mutation score must be independently computed as `killed / total * 100`, with
-  `total > 0` and a result `>= 80%`; an unavailable, rounded, ambiguous, or
-  conflicting score fails the gate.
+- Mutation score must be independently computed as
+  `killed / (total - equivalent) * 100`, with `total - equivalent > 0` and a
+  result `>= 80%`; an unavailable, rounded, ambiguous, or conflicting score
+  fails the gate.
 - The implementing agent cannot act as the independent reviewer. A receipt's
   `"independent": true` field is not proof of provenance by itself.
 - Never downgrade, hide, or reinterpret a `CRITICAL` or `IMPORTANT` finding to
