@@ -12,7 +12,7 @@ class SkillContractTests(unittest.TestCase):
         cls.source = SKILL.read_text(encoding="utf-8") if SKILL.is_file() else ""
 
     def test_declares_execution_skill_metadata(self):
-        self.assertIn("name: sdd-tdd-exec", self.source)
+        self.assertIn("name: cook-execute", self.source)
         self.assertIn("Use when", self.source)
 
     def test_requires_tdd_and_workspace_gates(self):

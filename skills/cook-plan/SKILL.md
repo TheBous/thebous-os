@@ -1,5 +1,5 @@
 ---
-name: sdd-plan
+name: cook-plan
 description: Use when an approved delta specification is ready for technical design, architecture decisions, and implementation task decomposition
 allowed-tools: "Read,Write,Glob,Grep,Bash(git:*),Bash(python3:*),Bash(bash:*)"
 version: 1.0.0
@@ -25,7 +25,7 @@ production or test implementation.
 Use when `changes/{CHG_ID}/delta-spec.md` has been approved and the next step is
 technical design or implementation planning. Use it for changes spanning
 multiple modules, contracts, migrations, infrastructure boundaries, or parallel
-work. Trigger with `/sdd:plan` when the host exposes that command.
+work. Trigger with `/cook:plan` when the host exposes that command.
 
 ## When NOT to Use
 
@@ -80,12 +80,12 @@ Locate and read:
 Run the existing specification validator before planning:
 
 ```bash
-python3 skills/sdd-specify/scripts/validate_spec.py \
+python3 skills/cook-specify/scripts/validate_spec.py \
   changes/{CHG_ID}/delta-spec.md
 ```
 
 If any precondition or validation fails, stop and route the work back to
-`sdd-specify`. Classify discovered information as `Fact`, `Decision`,
+`cook-specify`. Classify discovered information as `Fact`, `Decision`,
 `Assumption`, or `Unknown`. Do not create `design.md` or `tasks.md` until the
 bounded context and approved requirements are known.
 
@@ -228,7 +228,7 @@ python3 .spec-framework/bin/validate_plan.py changes/{CHG_ID}
 ```
 
 The project entrypoint delegates to the canonical implementation at
-`skills/sdd-plan/scripts/validate_plan.py`. It validates the two planning
+`skills/cook-plan/scripts/validate_plan.py`. It validates the two planning
 artifacts, metadata, required sections, technology guidance evidence, the file
 matrix, AC-to-task traceability, allowed/forbidden paths, DAG dependencies and
 cycles, TDD/Definition-of-Done fields, worktree metadata, and placeholders.
@@ -254,7 +254,7 @@ exploration transcript:
 
 ```markdown
 ## Agent Handoff
-- **Phase:** sdd-plan
+- **Phase:** cook-plan
 - **Status:** ready-for-approval | blocked
 - **Inputs:** delta-spec.md, proposal.md, constitution, repository commit
 - **Artifacts:** design.md, tasks.md

@@ -1,7 +1,7 @@
 ---
-name: sdd-reconcile
+name: cook-reconcile
 description: Use when a verified SDD change is ready to synchronize its delta with the canonical living specification, persist architectural decisions, archive its audit trail, integrate the code, or clean up its worktree
-allowed-tools: "Read,Write,Glob,Grep,Bash(git:*),Bash(gh:*),Bash(bash .spec-framework/bin/*),Bash(python3 skills/sdd-verify/scripts/*)"
+allowed-tools: "Read,Write,Glob,Grep,Bash(git:*),Bash(gh:*),Bash(bash .spec-framework/bin/*),Bash(python3 skills/cook-verify/scripts/*)"
 version: 1.0.0
 license: MIT
 compatibility: "Universal Agent Skills (Claude Code, OpenAI Codex, OpenCode)"
@@ -25,7 +25,7 @@ When an invariant is unknown, stop rather than guessing.
 
 ## When to Use
 
-Use `/sdd:reconcile {CHG_ID}` only after `sdd-verify` has produced
+Use `/cook:reconcile {CHG_ID}` only after `cook-verify` has produced
 `changes/{CHG_ID}/verification-report.md` and the engineer has issued the exact
 command `approve-verification changes/{CHG_ID}`. Use it before the completed
 change becomes historical truth or its isolated Git Worktree is discarded.
@@ -38,7 +38,7 @@ and clean up.”
 
 - Require `changes/{CHG_ID}/delta-spec.md`, `meta.json`, `verification-report.md`, and `verification-approval.json`.
 - Require a report with no open `CRITICAL` or `IMPORTANT` finding. Missing, provisional, or advisory evidence is a blocker.
-- Revalidate the approval receipt with the trusted `sdd-verify` validator and its authenticated host attestation. A copied approver name is not authorization.
+- Revalidate the approval receipt with the trusted `cook-verify` validator and its authenticated host attestation. A copied approver name is not authorization.
 - Synchronize the living spec before archiving the change. Never archive an unapplied delta.
 - Treat `[ADDED]`, `[MODIFIED]`, and `[REMOVED]` as contract changes, not free-form prose.
 - Require a base fingerprint for every `[MODIFIED]` or `[REMOVED]` requirement. A live fingerprint mismatch enters 3-way semantic merge or blocks with a conflict.
@@ -70,10 +70,10 @@ Resolve the trusted repository root and validate the change ID. Read the
 verification handoff, then validate the durable receipt:
 
 ```bash
-python3 skills/sdd-verify/scripts/sdd_verify.py validate-approval \
+python3 skills/cook-verify/scripts/cook_verify.py validate-approval \
   "changes/{CHG_ID}/verification-approval.json" \
   "{CHG_ID}" "{VERIFICATION_COMMIT}" "{REPORT_SHA256}" \
-  ".git/sdd-verify-evidence/{CHG_ID}"
+  ".git/cook-verify-evidence/{CHG_ID}"
 ```
 
 The protected `SDD_VERIFY_ATTESTATION_KEY` must be available to the trusted host.

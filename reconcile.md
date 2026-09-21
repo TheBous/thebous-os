@@ -2,7 +2,7 @@
 
 Nello sviluppo software orientato agli agenti autonomi, il valore di una specifica tecnica non si esaurisce nella fase iniziale di orientamento dell'implementazione [cite: 1, 2]. La divergenza fondamentale tra i modelli di specifica effimeri (*Spec-First*) e i sistemi evoluti a specifica vincolante (*Spec-Anchored*) risiede nella capacità del repository di mantenere allineata nel tempo la fonte di verità del comportamento di sistema [cite: 3, 4]. Nei framework privi di un meccanismo formale di chiusura del ciclo, la specifica degrada a documentazione statica non appena il codice viene integrato, riproponendo le medesime criticità storiche del *Model-Driven Development* (MDD): disallineamento progressivo, accumulo di debito informativo e perdita di sincronizzazione rispetto al codice in esecuzione [cite: 3, 4].
 
-La fase di riconciliazione e archiviazione (`sdd-reconcile`) costituisce l'atto finale del ciclo di vita dello Spec-Driven Development [cite: 2, 5]. Tale fase assume la responsabilità architetturale di convertire le modifiche transitorie e isolate, sviluppate all'interno di un Git Worktree e convalidate dall'harness di collaudo, in patrimonio informativo permanente [cite: 2, 4]. Essa governa la sincronizzazione bidirezionale tra il codice collaudato e la specifica canonica (*Living Spec*), la persistenza delle decisioni architetturali (*Architecture Decision Records*), la certificazione di conformità mediante ricevute empiriche, l'integrazione ordinata nell'albero Git primario e la bonifica strutturale degli ambienti effimeri di computazione [cite: 2, 6, 7].
+La fase di riconciliazione e archiviazione (`cook-reconcile`) costituisce l'atto finale del ciclo di vita dello Spec-Driven Development [cite: 2, 5]. Tale fase assume la responsabilità architetturale di convertire le modifiche transitorie e isolate, sviluppate all'interno di un Git Worktree e convalidate dall'harness di collaudo, in patrimonio informativo permanente [cite: 2, 4]. Essa governa la sincronizzazione bidirezionale tra il codice collaudato e la specifica canonica (*Living Spec*), la persistenza delle decisioni architetturali (*Architecture Decision Records*), la certificazione di conformità mediante ricevute empiriche, l'integrazione ordinata nell'albero Git primario e la bonifica strutturale degli ambienti effimeri di computazione [cite: 2, 6, 7].
 
 ---
 
@@ -109,15 +109,15 @@ La codifica operativa della fase di riconciliazione all'interno di un componente
 
 Il corpo del documento formalizza la logica di transizione tramite istruzioni imperative non negoziabili, demandando l'elaborazione dei documenti e i comandi di filesystem a uno script bash dedicato [cite: 25, 27, 28].
 
-### Descrittore Operativo: `skills/sdd-reconcile/SKILL.md`
+### Descrittore Operativo: `skills/cook-reconcile/SKILL.md`
 
 ```yaml
 ---
-name: sdd-reconcile
+name: cook-reconcile
 description: |
   Reconciles completed delta specifications into living canonical specifications using 3-way AST merge, 
   persists ADRs, archives change proposals, creates verified PRs, and tears down Git Worktrees. 
-  Trigger with "/sdd:reconcile {CHG_ID}".
+  Trigger with "/cook:reconcile {CHG_ID}".
 allowed-tools: "Read,Write,Edit,Glob,Grep,Bash(git:*),Bash(gh:*),Bash(bash .spec-framework/bin/*)"
 version: 1.2.0
 license: MIT

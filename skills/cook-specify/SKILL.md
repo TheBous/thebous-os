@@ -1,5 +1,5 @@
 ---
-name: sdd-specify
+name: cook-specify
 description: Use when a feature, bug fix, or behavior change needs a versioned specification before planning or implementation, especially when requirements are ambiguous, scope may grow, contracts matter, or AI-generated assumptions are risky
 ---
 
@@ -130,7 +130,7 @@ systems, describe only the delta; do not copy unchanged architecture.
 Run from the repository root:
 
 ```bash
-python3 skills/sdd-specify/scripts/validate_spec.py \
+python3 skills/cook-specify/scripts/validate_spec.py \
   changes/{CHG_ID}/delta-spec.md
 ```
 
@@ -148,14 +148,14 @@ Before presenting the checkpoint, complete the handoff in `proposal.md`:
 
 ```markdown
 ## Agent Handoff
-- **Phase:** sdd-specify
+- **Phase:** cook-specify
 - **Status:** ready-for-approval | blocked
 - **Artifacts:** proposal.md, delta-spec.md
 - **Validator result:** <command, exit status, and concise output>
 - **Decisions:** <resolved decisions only>
 - **Unknowns:** <remaining unknowns or `none`>
 - **Blockers:** <blocking items or `none`>
-- **Next phase:** sdd-plan after explicit approval
+- **Next phase:** cook-plan after explicit approval
 ```
 
 Return only this compact handoff, the artifact paths, and the approval request.

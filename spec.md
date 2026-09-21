@@ -889,7 +889,7 @@ Questo è il modello ideale di artefatto di specifica (`delta-spec.md`) ottimizz
 Se stai creando una libreria di competenze basata sullo standard `SKILL.md`, la fase di specifica deve essere divisa in **due skill coordinate** o in una singola skill a due step con validazione deterministica:
 
 
-1. **Definire la skill `sdd-specify` con regole ferree nel body:**
+1. **Definire la skill `cook-specify` con regole ferree nel body:**
 * Istruire il modello a rifiutare qualsiasi tentativo di scrivere codice di produzione finché la specifica non è validata.
 
 

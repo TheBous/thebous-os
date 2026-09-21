@@ -3,8 +3,8 @@ set -euo pipefail
 
 ROOT=$(git rev-parse --show-toplevel)
 ENGINE="$ROOT/.spec-framework/bin/reconcile_engine.sh"
-VERIFY="$ROOT/skills/sdd-verify/scripts/sdd_verify.py"
-TMP=$(mktemp -d "${TMPDIR:-/tmp}/sdd-reconcile.XXXXXX")
+VERIFY="$ROOT/skills/cook-verify/scripts/cook_verify.py"
+TMP=$(mktemp -d "${TMPDIR:-/tmp}/cook-reconcile.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT
 
 fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
@@ -15,14 +15,14 @@ assert_not_contains() { ! grep -Fq -- "$2" "$1" || fail "${1} unexpectedly conta
 
 new_repo() {
   local repo="$1" id="CHG-2026-042"
-  mkdir -p "$repo/.spec-framework/bin" "$repo/skills/sdd-verify/scripts"
+  mkdir -p "$repo/.spec-framework/bin" "$repo/skills/cook-verify/scripts"
   cp "$ENGINE" "$repo/.spec-framework/bin/reconcile_engine.sh"
-  cp "$VERIFY" "$repo/skills/sdd-verify/scripts/sdd_verify.py"
+  cp "$VERIFY" "$repo/skills/cook-verify/scripts/cook_verify.py"
   chmod +x "$repo/.spec-framework/bin/reconcile_engine.sh"
   git -C "$repo" init -q
   git -C "$repo" config user.email test@example.com
   git -C "$repo" config user.name Test
-  mkdir -p "$repo/specs" "$repo/changes/$id" "$repo/.git/sdd-verify-evidence/$id"
+  mkdir -p "$repo/specs" "$repo/changes/$id" "$repo/.git/cook-verify-evidence/$id"
   cat >"$repo/specs/core.md" <<'EOF'
 # Core
 
@@ -118,7 +118,7 @@ subprocess.run(["git", "-C", str(repo), "commit", "-qm", "fixture"], check=True)
 verification_commit = subprocess.check_output(
     ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True
 ).strip()
-evidence = repo / ".git" / "sdd-verify-evidence" / change_id
+evidence = repo / ".git" / "cook-verify-evidence" / change_id
 secret = "test-secret"
 report = repo / "changes" / change_id / "verification-report.md"
 report_sha = hashlib.sha256(report.read_bytes()).hexdigest()

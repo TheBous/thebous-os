@@ -7,7 +7,7 @@ import sys
 import time
 from pathlib import Path
 
-from sdd_tdd_lock import lock_primary, unlock_primary
+from cook_tdd_lock import lock_primary, unlock_primary
 
 
 TASK_LINE = re.compile(r"^- \[([ xX])\] \*\*Task\s+[^:]+:\s*(.*?)\*\*")
@@ -163,7 +163,7 @@ def mark_complete(worktree, change, task):
 
 def main(argv):
     if len(argv) < 4:
-        stop("usage: sdd_tdd.py ACTION BASE WORKTREE CHANGE [TASK...]" )
+        stop("usage: cook_tdd.py ACTION BASE WORKTREE CHANGE [TASK...]" )
     action, base, worktree, change = argv[:4]
     base, worktree = Path(base), Path(worktree)
     def argument(index, message):

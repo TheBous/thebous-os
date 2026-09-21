@@ -22,7 +22,7 @@ BASE_DIR=$(git rev-parse --show-toplevel 2>/dev/null) || fail "not inside a Git 
 WORKTREE_PATH="$BASE_DIR/.worktrees/$CHANGE_ID"
 [[ -d "$WORKTREE_PATH" ]] || fail "worktree not found: $WORKTREE_PATH"
 
-HELPER="$BASE_DIR/skills/sdd-verify/scripts/sdd_verify.py"
+HELPER="$BASE_DIR/skills/cook-verify/scripts/cook_verify.py"
 [[ -f "$HELPER" ]] || fail "missing harness helper: $HELPER"
 PYTHON=$(command -v python3) || fail "python3 is required"
 

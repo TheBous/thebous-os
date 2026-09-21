@@ -12,7 +12,7 @@ def stop(message, code=1):
 
 
 def lock_primary(base, git_path, change):
-    lock_dir = Path(git_path) / "sdd-tdd-lock"
+    lock_dir = Path(git_path) / "cook-tdd-lock"
     lock_dir.mkdir(parents=True, exist_ok=True)
     manifest = lock_dir / f"{change}.json"
     if manifest.exists():
@@ -37,7 +37,7 @@ def lock_primary(base, git_path, change):
 
 
 def unlock_primary(git_path, change):
-    manifest = Path(git_path) / "sdd-tdd-lock" / f"{change}.json"
+    manifest = Path(git_path) / "cook-tdd-lock" / f"{change}.json"
     if not manifest.is_file():
         stop(f"no primary worktree lock exists for {change}", 11)
     modes = json.loads(manifest.read_text(encoding="utf-8"))

@@ -152,14 +152,14 @@ def report_paths(directory):
 def verify_approval(directory):
     report, approval = report_paths(directory)
     evidence_raw = Path(
-        subprocess.check_output(["git", "rev-parse", "--git-path", "sdd-verify-evidence"], cwd=ROOT, text=True).strip()
+        subprocess.check_output(["git", "rev-parse", "--git-path", "cook-verify-evidence"], cwd=ROOT, text=True).strip()
     )
     if not evidence_raw.is_absolute():
         evidence_raw = ROOT / evidence_raw
     evidence = evidence_raw.resolve() / CHANGE_ID
-    helper = ROOT / "skills/sdd-verify/scripts/sdd_verify.py"
+    helper = ROOT / "skills/cook-verify/scripts/cook_verify.py"
     if not helper.is_file():
-        fail(f"sdd-verify validator is required: {helper}")
+        fail(f"cook-verify validator is required: {helper}")
     receipt = read_json(approval)
     verification_commit = receipt.get("verification_commit")
     report_hash = sha256_bytes(report.read_bytes())

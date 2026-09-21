@@ -78,7 +78,7 @@ class EnforceTddWorkflowTests(EnforceTddFixture):
         git_dir = subprocess.check_output(
             ["git", "-C", str(worktree), "rev-parse", "--git-dir"], text=True
         ).strip()
-        evidence = Path(git_dir) / "sdd-tdd-evidence" / "CHG-2026-089"
+        evidence = Path(git_dir) / "cook-tdd-evidence" / "CHG-2026-089"
         for name in ("T-001.static.log", "T-001.mutation.log", "T-001.review.log", "T-001.json"):
             self.assertTrue((evidence / name).is_file(), name)
 

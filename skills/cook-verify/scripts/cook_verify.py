@@ -519,7 +519,7 @@ def run_harness(root, change_id, base_sha, commands, evidence_path, command_mani
         common_dir = (worktree / common_dir).resolve()
     if common_dir != git_dir:
         raise VerificationError("worktree belongs to a different Git repository")
-    expected_evidence = (git_dir / "sdd-verify-evidence" / change_id).resolve()
+    expected_evidence = (git_dir / "cook-verify-evidence" / change_id).resolve()
     if evidence != expected_evidence:
         raise VerificationError("evidence path must be inside the Git evidence directory")
     expected_manifest = (root / "changes" / change_id / "verification-commands.json").resolve()
@@ -528,7 +528,7 @@ def run_harness(root, change_id, base_sha, commands, evidence_path, command_mani
     command_spec = _json(manifest)
     if command_spec.get("change_id") != change_id or command_spec.get("base_sha") != base_sha:
         raise VerificationError("command manifest targets a different change or base commit")
-    for candidate in (git_dir / "sdd-verify-evidence", expected_evidence):
+    for candidate in (git_dir / "cook-verify-evidence", expected_evidence):
         if candidate.is_symlink():
             raise VerificationError("evidence path cannot contain symlinks")
     if len(commands) != 4 or any(not command.strip() for command in commands):
@@ -617,7 +617,7 @@ def run_harness(root, change_id, base_sha, commands, evidence_path, command_mani
 def main(argv):
     if len(argv) < 2:
         print(
-            "usage: sdd_verify.py run-harness ROOT CHANGE_ID BASE_SHA EVIDENCE "
+            "usage: cook_verify.py run-harness ROOT CHANGE_ID BASE_SHA EVIDENCE "
             "MANIFEST TYPECHECK STATIC ARCHITECTURE GLOBAL",
             file=sys.stderr,
         )

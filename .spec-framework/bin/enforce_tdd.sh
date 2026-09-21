@@ -24,11 +24,11 @@ WORKTREE_ROOT=$(git -C "$WORKTREE_PATH" rev-parse --show-toplevel 2>/dev/null) |
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$BASE_PATH/.spec-framework/bin/enforce_tdd.sh")" && pwd -P)
 PYTHON=$(command -v python3) || fail "python3 is required for SDD state gates"
-HELPER="$SCRIPT_DIR/sdd_tdd.py"
+HELPER="$SCRIPT_DIR/cook_tdd.py"
 [[ -f "$HELPER" ]] || fail "missing SDD state helper: $HELPER"
 GIT_DIR=$(git -C "$WORKTREE_PATH" rev-parse --git-dir)
 [[ "$GIT_DIR" = /* ]] || GIT_DIR="$WORKTREE_PATH/$GIT_DIR"
-LOCK_FILE="${GIT_DIR}/sdd-tdd-lock/${CHANGE_ID}.json"
+LOCK_FILE="${GIT_DIR}/cook-tdd-lock/${CHANGE_ID}.json"
 cd "$WORKTREE_PATH"
 
 LOG_FILE=""
@@ -73,17 +73,17 @@ check_paths() {
   done <<< "$(git status --porcelain --untracked-files=all)"
 }
 record_stage() {
-  mkdir -p "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}"
-  printf 'PASS\n' > "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}"
+  mkdir -p "$GIT_DIR/cook-tdd-evidence/${CHANGE_ID}"
+  printf 'PASS\n' > "$GIT_DIR/cook-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}"
 }
 preserve_log() {
-  mkdir -p "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}"
-  cp "$LOG_FILE" "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}.log"
-  chmod 600 "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}.log"
+  mkdir -p "$GIT_DIR/cook-tdd-evidence/${CHANGE_ID}"
+  cp "$LOG_FILE" "$GIT_DIR/cook-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}.log"
+  chmod 600 "$GIT_DIR/cook-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}.log"
 }
 require_stage() {
-  [[ -f "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}" ]] || fail "${1} evidence missing; run the gate first" 9
-  grep -Fxq PASS "$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}" || fail "invalid ${1} evidence" 9
+  [[ -f "$GIT_DIR/cook-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}" ]] || fail "${1} evidence missing; run the gate first" 9
+  grep -Fxq PASS "$GIT_DIR/cook-tdd-evidence/${CHANGE_ID}/${TASK_ID}.${1}" || fail "invalid ${1} evidence" 9
 }
 
 case "$ACTION" in
@@ -109,8 +109,8 @@ case "$ACTION" in
     [[ -n "$SECOND_PAYLOAD" ]] || fail "an exact RED assertion marker is required"
     CHANGES=$(production_changes)
     [[ -z "$CHANGES" ]] || { printf 'VIOLATION: production paths changed before RED:\n%s\n' "$CHANGES" >&2; fail "write the failing test before production code" 2; }
-    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-red.XXXXXX")
-    RED_EVIDENCE="$GIT_DIR/sdd-tdd-evidence/${CHANGE_ID}/${TASK_ID}.red.json"
+    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/cook-tdd-red.XXXXXX")
+    RED_EVIDENCE="$GIT_DIR/cook-tdd-evidence/${CHANGE_ID}/${TASK_ID}.red.json"
     mkdir -p "$(dirname "$RED_EVIDENCE")"
     rm -f "$RED_EVIDENCE"
     set +e; run_command "$LOG_FILE" "$PAYLOAD" "$RED_EVIDENCE"; RUNNER_STATUS=$?; set -e
@@ -119,13 +119,13 @@ case "$ACTION" in
     if grep -Eiq 'SyntaxError|ParseError|Cannot find module|ModuleNotFoundError|compilation failed|command not found|No such file or directory' "$LOG_FILE"; then
       cat "$LOG_FILE" >&2; fail "RED test failed structurally, not by assertion" 4
     fi
-    "$PYTHON" "$HELPER" require-red "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR/sdd-tdd-evidence" "$TASK_ID" "$SECOND_PAYLOAD"
+    "$PYTHON" "$HELPER" require-red "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR/cook-tdd-evidence" "$TASK_ID" "$SECOND_PAYLOAD"
     record_stage red
     printf 'OK: semantic RED marker verified for %s\n' "$TASK_ID"
     ;;
   verify-green|verify-global)
     require_command
-    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-${ACTION}.XXXXXX")
+    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/cook-tdd-${ACTION}.XXXXXX")
     set +e; run_command "$LOG_FILE" "$PAYLOAD"; RUNNER_STATUS=$?; set -e
     preserve_log "${ACTION#verify-}"
     if [[ "$RUNNER_STATUS" -ne 0 ]]; then
@@ -142,20 +142,20 @@ case "$ACTION" in
     [[ -n "$SECOND_PAYLOAD" ]] || fail "mutation testing command is required"
     [[ -n "$THIRD_PAYLOAD" ]] || fail "independent review receipt is required"
     [[ -n "$FOURTH_PAYLOAD" ]] || fail "independent review receipt path is required"
-    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-static.XXXXXX")
+    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/cook-tdd-static.XXXXXX")
     set +e; run_command "$LOG_FILE" "$PAYLOAD"; RUNNER_STATUS=$?; set -e
     preserve_log static
     [[ "$RUNNER_STATUS" -eq 0 ]] || { cat "$LOG_FILE" >&2; fail "static analysis failed" 8; }
-    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-mutation.XXXXXX")
+    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/cook-tdd-mutation.XXXXXX")
     set +e; run_command "$LOG_FILE" "$SECOND_PAYLOAD"; RUNNER_STATUS=$?; set -e
     preserve_log mutation
     [[ "$RUNNER_STATUS" -eq 0 ]] || { cat "$LOG_FILE" >&2; fail "mutation testing failed" 8; }
     REVIEW_STARTED=$("$PYTHON" -c 'import time; print(time.time())')
-    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/sdd-tdd-review.XXXXXX")
+    LOG_FILE=$(mktemp "${TMPDIR:-/tmp}/cook-tdd-review.XXXXXX")
     set +e; run_command "$LOG_FILE" "$THIRD_PAYLOAD" "" "$FOURTH_PAYLOAD"; RUNNER_STATUS=$?; set -e
     preserve_log review
     [[ "$RUNNER_STATUS" -eq 0 ]] || { cat "$LOG_FILE" >&2; fail "independent review command failed" 8; }
-    "$PYTHON" "$HELPER" record-quality "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR/sdd-tdd-evidence" "$TASK_ID" "$PAYLOAD" "$SECOND_PAYLOAD" "$FOURTH_PAYLOAD" "$REVIEW_STARTED"
+    "$PYTHON" "$HELPER" record-quality "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR/cook-tdd-evidence" "$TASK_ID" "$PAYLOAD" "$SECOND_PAYLOAD" "$FOURTH_PAYLOAD" "$REVIEW_STARTED"
     printf 'OK: quality and independent review gates passed for %s\n' "$TASK_ID"
     ;;
   verify-paths)
@@ -171,12 +171,12 @@ case "$ACTION" in
     require_stage green
     require_stage global
     check_paths "${PAYLOAD},${TASKS_PATH}" "$SECOND_PAYLOAD"
-    "$PYTHON" "$HELPER" require-quality "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR/sdd-tdd-evidence" "$TASK_ID"
+    "$PYTHON" "$HELPER" require-quality "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR/cook-tdd-evidence" "$TASK_ID"
     "$PYTHON" "$HELPER" complete "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$TASK_ID"
     check_paths "${PAYLOAD},${TASKS_PATH}" "$SECOND_PAYLOAD"
     git add --all -- .
     git diff --cached --quiet && fail "no changes to commit" 12
-    git commit -m "feat(sdd): implement ${TASK_ID}"
+    git commit -m "feat(cook): implement ${TASK_ID}"
     "$PYTHON" "$HELPER" unlock "$BASE_PATH" "$WORKTREE_PATH" "$CHANGE_ID" "$GIT_DIR"
     UNLOCK_ON_EXIT=0
     printf 'OK: committed %s and marked it complete\n' "$TASK_ID"

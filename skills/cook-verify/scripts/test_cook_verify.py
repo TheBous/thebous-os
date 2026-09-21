@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from sdd_verify import (  # noqa: E402
+from cook_verify import (  # noqa: E402
     VerificationError,
     validate_approval,
     validate_mutation_receipt,
@@ -124,7 +124,7 @@ class SddVerifyTests(unittest.TestCase):
             result = subprocess.run(
                 [
                     sys.executable,
-                    str(Path(__file__).with_name("sdd_verify.py")),
+                    str(Path(__file__).with_name("cook_verify.py")),
                     "validate-mutation",
                     str(receipt),
                     sha,
@@ -156,7 +156,7 @@ class SddVerifyTests(unittest.TestCase):
             result = subprocess.run(
                 [
                     sys.executable,
-                    str(Path(__file__).with_name("sdd_verify.py")),
+                    str(Path(__file__).with_name("cook_verify.py")),
                     "validate-mutation",
                     str(receipt),
                     sha,
@@ -287,7 +287,7 @@ class SddVerifyTests(unittest.TestCase):
 
     def test_cli_without_command_returns_usage_error(self):
         result = subprocess.run(
-            [sys.executable, str(Path(__file__).with_name("sdd_verify.py"))],
+            [sys.executable, str(Path(__file__).with_name("cook_verify.py"))],
             text=True,
             capture_output=True,
         )
@@ -421,7 +421,7 @@ class SddVerifyTests(unittest.TestCase):
             base_sha = subprocess.check_output(
                 ["git", "rev-parse", "HEAD"], cwd=root, text=True
             ).strip()
-            evidence = root / ".git/sdd-verify-evidence/CHG-2026-042"
+            evidence = root / ".git/cook-verify-evidence/CHG-2026-042"
             command = self.harness_command(
                 root,
                 base_sha,
@@ -451,7 +451,7 @@ class SddVerifyTests(unittest.TestCase):
                 root,
                 base_sha,
                 ["python3 -c 'print(1)'", "python3 -c 'print(2)'", "python3 -c 'print(3)'", "python3 -c 'print(4)'"],
-                root / ".git/sdd-verify-evidence/CHG-2026-042",
+                root / ".git/cook-verify-evidence/CHG-2026-042",
             )
             result = subprocess.run(command, cwd=root, text=True, capture_output=True)
             self.assertNotEqual(result.returncode, 0)
@@ -468,7 +468,7 @@ class SddVerifyTests(unittest.TestCase):
                 root,
                 base_sha,
                 ["touch generated.txt", "python3 -c 'print(2)'", "python3 -c 'print(3)'", "python3 -c 'print(4)'"],
-                root / ".git/sdd-verify-evidence/CHG-2026-042",
+                root / ".git/cook-verify-evidence/CHG-2026-042",
             )
             result = subprocess.run(command, cwd=root, text=True, capture_output=True)
             self.assertNotEqual(result.returncode, 0)
@@ -492,7 +492,7 @@ class SddVerifyTests(unittest.TestCase):
                     "python3 -c 'print(3)'",
                     "python3 -c 'print(4)'",
                 ],
-                root / ".git/sdd-verify-evidence/CHG-2026-042",
+                root / ".git/cook-verify-evidence/CHG-2026-042",
             )
             result = subprocess.run(command, cwd=root, text=True, capture_output=True)
             self.assertNotEqual(result.returncode, 0)
@@ -530,7 +530,7 @@ class SddVerifyTests(unittest.TestCase):
                 root,
                 base_sha,
                 ["python3 -c 'print(1)'", "python3 -c 'print(2)'", "python3 -c 'print(3)'", "python3 -c 'print(4)'"],
-                root / ".git/sdd-verify-evidence/CHG-2026-042",
+                root / ".git/cook-verify-evidence/CHG-2026-042",
             )
             result = subprocess.run(command, cwd=root, text=True, capture_output=True)
             self.assertNotEqual(result.returncode, 0)
@@ -547,7 +547,7 @@ class SddVerifyTests(unittest.TestCase):
                 root,
                 base_sha,
                 ["true", "true", "true", "true"],
-                root / ".git/sdd-verify-evidence/CHG-2026-042",
+                root / ".git/cook-verify-evidence/CHG-2026-042",
             )
             result = subprocess.run(command, cwd=root, text=True, capture_output=True)
             self.assertNotEqual(result.returncode, 0)
@@ -571,7 +571,7 @@ class SddVerifyTests(unittest.TestCase):
                 root,
                 base_sha,
                 commands,
-                root / ".git/sdd-verify-evidence/CHG-2026-042",
+                root / ".git/cook-verify-evidence/CHG-2026-042",
             )
             with self.assertRaises(VerificationError):
                 run_harness(root, "CHG-2026-042", base_sha, commands, command[-1], command[-2], timeout=0.05)
@@ -595,12 +595,12 @@ class SddVerifyTests(unittest.TestCase):
                 root,
                 base_sha,
                 commands,
-                root / ".git/sdd-verify-evidence/CHG-2026-042",
+                root / ".git/cook-verify-evidence/CHG-2026-042",
             )
             with self.assertRaises(VerificationError):
                 run_harness(root, "CHG-2026-042", base_sha, commands, command[-1], command[-2])
             self.assertLessEqual(
-                (root / ".git/sdd-verify-evidence/CHG-2026-042/typecheck.log").stat().st_size,
+                (root / ".git/cook-verify-evidence/CHG-2026-042/typecheck.log").stat().st_size,
                 MAX_LOG_BYTES,
             )
 
@@ -632,9 +632,9 @@ class SddVerifyTests(unittest.TestCase):
         subprocess.run(["git", "add", "README.md"], cwd=root, check=True)
         subprocess.run(["git", "commit", "-qm", "init"], cwd=root, check=True)
         subprocess.run(["git", "branch", "-M", "main"], cwd=root, check=True)
-        helper = root / "skills/sdd-verify/scripts"
+        helper = root / "skills/cook-verify/scripts"
         helper.mkdir(parents=True)
-        shutil.copy(Path(__file__).with_name("sdd_verify.py"), helper / "sdd_verify.py")
+        shutil.copy(Path(__file__).with_name("cook_verify.py"), helper / "cook_verify.py")
         harness = root / ".spec-framework/bin"
         harness.mkdir(parents=True)
         shutil.copy(

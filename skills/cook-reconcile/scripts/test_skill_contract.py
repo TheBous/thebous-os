@@ -12,7 +12,7 @@ class SkillContractTests(unittest.TestCase):
         cls.source = SKILL.read_text(encoding="utf-8")
 
     def test_has_portable_metadata(self):
-        self.assertIn("name: sdd-reconcile", self.source)
+        self.assertIn("name: cook-reconcile", self.source)
         self.assertRegex(self.source, r"description: Use when")
 
     def test_requires_reconciliation_gates(self):

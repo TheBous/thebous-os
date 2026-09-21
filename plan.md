@@ -188,15 +188,15 @@ Per rendere operativa questa disciplina all'interno di un pacchetto esportabile 
 
 Il frontmatter YAML stabilisce i vincoli di attivazione e gli strumenti consentiti, mantenendosi compatto per non eccedere la soglia di discovery nel prompt di sistema [cite: 30, 32, 33]. Il corpo dell'abilità delinea tassativamente la procedura esecutiva senza includere testo esplicativo superfluo, mentre le operazioni deterministiche (allocazione worktree, linting dei vincoli) vengono demandate a script shell ausiliari esterni [cite: 30, 32, 34].
 
-### Descrittore Operativo: `skills/sdd-plan/SKILL.md`
+### Descrittore Operativo: `skills/cook-plan/SKILL.md`
 
 ```yaml
 ---
-name: sdd-plan
+name: cook-plan
 description: |
   Compiles validated delta specifications into technical designs, ADRs, and bite-sized
   DAG implementation tasks. Sets up isolated Git Worktrees and runs independent plan audits.
-  Use whenever a specification is ready for technical breakdown. Trigger with "/sdd:plan".
+  Use whenever a specification is ready for technical breakdown. Trigger with "/cook:plan".
 allowed-tools: "Read,Write,Glob,Grep,Bash(git:*),Bash(python3:*),Bash(bash:*)"
 version: 1.0.0
 license: MIT

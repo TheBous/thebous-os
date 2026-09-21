@@ -12,7 +12,7 @@ class SkillContractTests(unittest.TestCase):
         cls.source = SKILL.read_text(encoding="utf-8")
 
     def test_has_planning_skill_metadata(self):
-        self.assertIn("name: sdd-plan", self.source)
+        self.assertIn("name: cook-plan", self.source)
         self.assertIn("Use when", self.source)
 
     def test_requires_all_planning_gates(self):

@@ -57,8 +57,8 @@ class EnforceTddFixture(unittest.TestCase):
         destination.parent.mkdir(parents=True)
         shutil.copy2(SOURCE_SCRIPT, destination)
         destination.chmod(0o755)
-        shutil.copy2(SOURCE_SCRIPT.parent / "sdd_tdd.py", destination.parent / "sdd_tdd.py")
-        shutil.copy2(SOURCE_SCRIPT.parent / "sdd_tdd_lock.py", destination.parent / "sdd_tdd_lock.py")
+        shutil.copy2(SOURCE_SCRIPT.parent / "cook_tdd.py", destination.parent / "cook_tdd.py")
+        shutil.copy2(SOURCE_SCRIPT.parent / "cook_tdd_lock.py", destination.parent / "cook_tdd_lock.py")
         subprocess.run(["git", "add", "README.md", "changes", ".spec-framework"], cwd=repo, check=True)
         subprocess.run(["git", "commit", "-qm", "baseline"], cwd=repo, check=True)
         worktree = repo / ".worktrees" / CHANGE_ID

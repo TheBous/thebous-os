@@ -1,5 +1,5 @@
 ---
-name: sdd-tdd-exec
+name: cook-execute
 description: Use when an approved changes/{CHG_ID}/tasks.md contains pending implementation tasks that must be executed with strict TDD inside an isolated Git worktree
 allowed-tools: "Read,Write,Edit,Glob,Grep,Bash(git:*),Bash(bash .spec-framework/bin/*)"
 version: 1.1.0
