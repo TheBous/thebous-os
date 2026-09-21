@@ -196,6 +196,40 @@
         "Setup completes successfully with an empty Obsidian path",
         "Mentions that leaving it blank just skips the Obsidian steps everywhere else"
       ]
+    },
+    {
+      id: 22,
+      command: "sdd-refine",
+      prompt: "Add a CSV export button to the task list. It should be fast, secure, and work for all users.",
+      expected_output: "Inspects the repository, asks bounded decision questions before writing any formal spec or code, and creates a build-spec only after the blocking choices are resolved",
+      expectations: [
+        "Does not ask the user for facts discoverable from the repository",
+        "Groups no more than 3-5 questions in a round and gives mutually exclusive options with a recommendation",
+        "Defines measurable behavior instead of accepting vague words such as fast or secure",
+        "Includes an explicit Out of Scope section and waits for approve-build-spec before cook-specify"
+      ]
+    },
+    {
+      id: 23,
+      command: "sdd-refine",
+      prompt: "Fix the login bug: some users get logged out randomly after deployment. It is urgent; just patch it.",
+      expected_output: "Separates observed facts from assumptions, asks about expected behavior and compatibility boundaries, and refuses to implement while blocking uncertainty remains",
+      expectations: [
+        "Does not claim a root cause without repository or reproduction evidence",
+        "Captures affected actors, reproduction evidence, and the behavior that must remain unchanged",
+        "Treats urgency as no waiver for the interview or approval gate"
+      ]
+    },
+    {
+      id: 24,
+      command: "sdd-refine",
+      prompt: "The product manager already decided: add email and push notifications, retry three times, and do not waste time asking questions.",
+      expected_output: "Records the supplied choices as decisions only where they are complete, asks for remaining product boundaries, and does not start implementation or specification without approval",
+      expectations: [
+        "Does not let authority bypass the exact build-spec approval",
+        "Identifies unresolved scope such as recipients, retry failure behavior, opt-out, and delivery guarantees",
+        "Stops with a blocker if the user refuses a question required to bound behavior"
+      ]
     }
   ]
 }

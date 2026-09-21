@@ -7,16 +7,18 @@ description: Use when a feature, bug fix, or behavior change needs a versioned s
 
 ## Overview
 
-This is the specification phase of spec-driven development. Convert a bounded
-request into a short, testable, reviewable delta specification without writing
+This is the specification phase of spec-driven development. Consume the
+approved `build-spec.md` produced by `sdd-refine`, then convert its bounded
+decisions into a short, testable, reviewable delta specification without writing
 production or test code. **No planning or implementation starts until the
 validator passes and the engineer explicitly approves the specification.**
 
 ## When to Use
 
-Use this skill for a new feature, bug fix, API or event contract change,
-security-sensitive behavior, or any change whose requirements are not already
-captured by an approved specification.
+Use this skill after `changes/{CHG_ID}/build-spec.md` has been approved for a
+new feature, bug fix, API or event contract change, security-sensitive behavior,
+or any change whose requirements are not already captured by an approved
+specification.
 
 ## When NOT to Use
 
@@ -27,8 +29,8 @@ Do not skip it merely because the behavior change is small or urgent.
 ## Context Boundary
 
 Run this phase in a fresh context, preferably a sub-agent with `context: fork`.
-The parent/orchestrator passes only the request, `CHG_ID`, repository root,
-constitution path, and relevant stable-spec paths. Do not pass the full
+The parent/orchestrator passes only the approved `build-spec.md`, the request,
+`CHG_ID`, repository root, constitution path, and relevant stable-spec paths. Do not pass the full
 transcript, raw prior tool results, or unrelated conversation history. Read
 additional repository evidence just-in-time and keep only high-signal facts in
 the working context.
@@ -43,6 +45,7 @@ boundary by starting from the listed files only.
 ## Non-Negotiable Rules
 
 - Do not invent product decisions, limits, identities, payloads, error codes, or security behavior.
+- Require the approved `changes/{CHG_ID}/build-spec.md` before drafting any formal specification.
 - Ask targeted Socratic questions before drafting: 2-4 questions per round, only about blocking ambiguity.
 - Record unresolved uncertainty as a `Decision Moment` or open question. It blocks drafting and implementation.
 - Write requirements only in EARS notation and tag every criterion with `[ADDED]`, `[MODIFIED]`, or `[REMOVED]`.
@@ -58,10 +61,13 @@ silent assumptions from becoming implementation behavior.
 
 ### 1. Context Ingestion
 
-Read the request, `.spec-framework/constitution.md`, and relevant stable files
-under `specs/`. Inspect the existing flow when the change modifies a codebase.
+Read and verify `changes/{CHG_ID}/build-spec.md` first. It must contain the
+literal approval command `approve-build-spec changes/{CHG_ID}/build-spec.md`.
+Then read the request, `.spec-framework/constitution.md`, and relevant stable
+files under `specs/`. Inspect the existing flow when the change modifies a
+codebase.
 Declare the bounded context and affected stable specifications. Do not create a
-file, plan, test, or code in this step.
+new formal specification until the build spec is approved.
 
 Classify findings as `Fact`, `Decision`, `Assumption`, or `Unknown`. Retrieve
 facts from the repository first; ask the engineer only for decisions or facts
@@ -81,7 +87,8 @@ write the unresolved items as blockers and stop.
 
 ### 3. Draft the Delta
 
-After clarification, create only:
+After clarification and only when the approved build spec still matches the
+answers, create only:
 
 ```text
 changes/{CHG_ID}/proposal.md
@@ -89,7 +96,8 @@ changes/{CHG_ID}/delta-spec.md
 ```
 
 `proposal.md` records intent, resolved decisions, assumptions, risks, and the
-human approval status. `delta-spec.md` uses this exact structure:
+human approval status. It must link back to the approved build spec.
+`delta-spec.md` uses this exact structure:
 
 ```markdown
 # Spec Delta: <change>
@@ -177,6 +185,7 @@ already contains code or the request is urgent.
 
 | Gate | Required evidence | Failure action |
 |---|---|---|
+| Input | Approved `build-spec.md` with exact approval | Route back to `sdd-refine` |
 | Context | Bounded context and classified facts | Retrieve or record an unknown |
 | Clarification | 2-4 targeted questions per round | Keep unresolved items blocking |
 | Requirements | EARS + delta tag on every `AC-NNN` | Rewrite the criterion |

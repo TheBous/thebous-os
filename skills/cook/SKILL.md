@@ -94,7 +94,13 @@ silently after a failed requested import.
 ### 3. Initialize the SDD work package
 
 Before invoking Wayfinder, Brainstorming, Grilling, Superpowers, or any other
-preliminary skill, create the SDD work package for the resolved task:
+preliminary skill, invoke `sdd-refine` as the mandatory intent-discovery
+pre-phase. It must inspect the repository, ask only decision questions, create
+`changes/{CHG_ID}/build-spec.md`, and stop for the exact approval
+`approve-build-spec changes/{CHG_ID}/build-spec.md`. Do not continue when the
+change ID is unknown; ask for it instead of inventing one.
+
+Only after the build spec is approved may the SDD work package be created:
 
 ```text
 <OBSIDIAN_VAULT_PATH>/Tickets/<TASK_STORAGE_KEY>/spec.md
@@ -144,10 +150,11 @@ How do you want to approach this task?
 - If they choose **2**: invoke the `grilling` skill before proceeding
 - If they choose **3 or 4**: proceed to step 4
 
-This choice only affects how requirements are refined beforehand — implementation
-still proceeds with the SDD files and checklist from step 3, regardless of which
-option was picked. Incorporate all decisions into `spec.md` and `plan.md`, and
-update `tasks.md` as each preliminary skill completes.
+This choice is optional follow-up exploration after `sdd-refine`; it can never
+bypass the build-spec interview or approval. Implementation still proceeds with
+the SDD files and checklist from step 3, regardless of which option was picked.
+Incorporate all decisions into `spec.md` and `plan.md`, and update `tasks.md` as
+each preliminary skill completes.
 
 ### 5. Create the implementation direction HTML
 
