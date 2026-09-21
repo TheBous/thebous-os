@@ -54,7 +54,7 @@ Each interaction shows who, when, what, and a link to the source.
 ## Example Usage
 
 ```
-Enter work item ID (Jira key, GitHub PR #, or git commit hash): T-200
+Enter work item ID (Jira key, Notion page URL/ID, GitHub PR #, or git commit hash): T-200
 Enter person's name or email: marco@company.com
 ```
 

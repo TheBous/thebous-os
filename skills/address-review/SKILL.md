@@ -1,6 +1,6 @@
 ---
 name: address-review
-description: Resolve code review comments on your PR — implement fixes, apply only after user approval, reply on GitHub, then update documentation
+description: Resolve code review comments on your PR linked to a Jira or Notion task — implement fixes, apply only after user approval, reply on GitHub, then update documentation
 ---
 
 ## Goal
@@ -31,16 +31,26 @@ curl -sf -H "Authorization: Bearer $(gh auth token)" \
 
 If there's no open PR for the current branch, ask the user to pass the URL explicitly.
 
-### 1a. Detect a linked Jira ticket (optional)
+### 1a. Resolve the linked task (optional)
 
-Extract a Jira key from the PR's branch name (`headRefName`, already fetched in step 1) using the `extract_jira_key` helper in `scripts/helpers.sh`:
+Use `references/task-context.md` and its provider-neutral task reference with the
+PR branch, title and body:
 
 ```bash
 source "scripts/helpers.sh"
-KEY=$(extract_jira_key "<headRefName>")
+if ! TASK_REF=$(resolve_work_item_ref "<headRefName, title, or body>" 2>/tmp/resolve.err); then
+  if grep -q "ambiguous" /tmp/resolve.err; then
+    # ask user whether Jira or Notion is the source of truth, then re-resolve with `jira:...` or `notion:...`
+  else
+    TASK_REF=""
+  fi
+fi
 ```
 
-Store the result as `<KEY>` if non-empty — used later in step 13 to log to Obsidian. If no key is found, `<KEY>` stays empty and step 13 is skipped.
+Store the resulting `TaskRef` if non-empty. Jira and Notion are independent
+providers; if both references are present, ask which one is the source of truth.
+If no task resolves, continue without task context and skip provider-aware
+Obsidian logging.
 
 ### 2. Ask about worktree usage
 
@@ -220,13 +230,15 @@ If no document was found or the user declines, skip this step silently.
 
 ### 13. Log to Obsidian (optional)
 
-Only if the PR's branch matched a Jira key in step 1a (`<KEY>` is set). Follow `references/obsidian-log.md`. Summarize the resolved items (`<RESOLUTION_SUMMARY>`, e.g. "3 comments addressed: 2 fixed, 1 outdated"):
+Only if `TASK_REF` was resolved in step 1a. Follow `references/obsidian-log.md`
+and use the provider-aware helper. Summarize the resolved items
+(`<RESOLUTION_SUMMARY>`, e.g. "3 comments addressed: 2 fixed, 1 outdated"):
 
 ```bash
 source "scripts/helpers.sh"
 load_env
-obsidian_log_ticket "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "address-review.md" \
-  "<RESOLUTION_SUMMARY>" "[[<KEY>]] — addressed review comments"
+obsidian_log_task "${OBSIDIAN_VAULT_PATH:-}" "<TASK_REF>" "address-review.md" \
+  "<RESOLUTION_SUMMARY>" "<PROVIDER>:<EXTERNAL_ID> — addressed review comments"
 ```
 
 ### 14. Confirmation
@@ -236,7 +248,7 @@ Show the user:
 - Tests: `<list of scripts>` — all green (if run)
 - Replies posted on the PR with their emoji statuses
 - Documentation updated: `<list of files/pages>` (if applicable)
-- Obsidian: logged (or "skipped, no vault configured / no linked ticket")
+- Obsidian: logged (or "skipped, no vault configured / no linked task")
 - Suggest pushing the branch with `git push`
 
 ### 15. Offer to request a new review

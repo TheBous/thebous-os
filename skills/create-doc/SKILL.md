@@ -1,6 +1,6 @@
 ---
 name: create-doc
-description: Create a new documentation page in Confluence
+description: Create a new documentation page in Confluence linked to an optional Jira or Notion task
 ---
 
 ## Goal
@@ -18,14 +18,25 @@ load_env
 
 If the file doesn't exist or `CONFLUENCE_PARENT_URL` is missing, tell the user to run `/thebous-os:setup` first.
 
-### 1a. Detect a linked Jira ticket (optional)
+### 1a. Resolve a linked task (optional)
+
+Use `references/task-context.md` with the current branch as an optional
+provider-neutral task source:
 
 ```bash
 source "scripts/helpers.sh"
-KEY=$(extract_jira_key "$(git branch --show-current)")
+if ! TASK_REF=$(resolve_work_item_ref "$(git branch --show-current)" 2>/tmp/resolve.err); then
+  if grep -q "ambiguous" /tmp/resolve.err; then
+    # ask user whether Jira or Notion is the source of truth, then re-resolve with `jira:...` or `notion:...`
+  else
+    TASK_REF=""
+  fi
+fi
 ```
 
-Store it as `<KEY>` if found — used later to link this doc into Obsidian. If no key is found, `<KEY>` stays empty and the Obsidian step at the end is skipped.
+Store the `TaskRef` if found. Jira and Notion remain independent providers;
+if the resolver reports an ambiguous reference, ask which one is the source
+of truth; if no task resolves, skip the task-linked Obsidian step.
 
 ### 2. Identify the target
 
@@ -112,18 +123,19 @@ Use the MCP tool `createConfluencePage` with:
 
 ### 7a. Log to Obsidian (optional)
 
-Only if `<KEY>` was found in step 1a. Follow `references/obsidian-log.md`:
+Only if `TASK_REF` was found in step 1a. Follow `references/obsidian-log.md`
+and use the provider-aware helper:
 
 ```bash
 source "scripts/helpers.sh"
 load_env
-obsidian_log_ticket "${OBSIDIAN_VAULT_PATH:-}" "<KEY>" "plan.md" \
+obsidian_log_task "${OBSIDIAN_VAULT_PATH:-}" "<TASK_REF>" "plan.md" \
   "Confluence page created: [<title>](<page URL>)" \
-  "[[<KEY>]] — Confluence page created: <title>"
+  "<PROVIDER>:<EXTERNAL_ID> — Confluence page created: <title>"
 ```
 
 ### 8. Confirmation
 
 Show the user:
 - Page created: `<title>` → `<page URL>`
-- Obsidian: logged (or "skipped, no vault configured / no linked ticket")
+- Obsidian: logged (or "skipped, no vault configured / no linked task")
