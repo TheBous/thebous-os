@@ -28,6 +28,5 @@
     "project-management",
     "daily-briefing"
   ],
-  "skills": "./skills/",
-  "commands": "./commands/"
+  "skills": "./skills/"
 }

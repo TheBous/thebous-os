@@ -21,7 +21,7 @@ cd thebous-os
 npm test
 ```
 
-The suite validates skill frontmatter, command adapters, provider portability,
+The suite validates skill frontmatter, provider portability,
 manifest version alignment and key workflow requirements.
 
 Keep credentials in
@@ -69,6 +69,5 @@ Never commit API tokens, app passwords or webhooks.
 ## Architecture constraints
 
 - `skills/<name>/SKILL.md` is the only place for workflow logic.
-- `commands/<name>.md` is a thin adapter. It must not duplicate that logic.
 - Provider manifests (`.claude-plugin/`, `.codex-plugin/`, `.cursor-plugin/`,
   `.opencode/`) only expose the canonical skills.
