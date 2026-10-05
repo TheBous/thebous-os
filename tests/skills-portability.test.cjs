@@ -3,19 +3,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const test = require('node:test');
-const { parseCommandFile } = require('../.opencode/plugins/thebous-os-frontmatter.cjs');
 
 const root = path.resolve(__dirname, '..');
-const commandsDir = path.join(root, 'commands');
 const skillsDir = path.join(root, 'skills');
 const cursorPluginDir = path.join(root, '.cursor-plugin');
-
-function readBody(file) {
-  const source = fs.readFileSync(file, 'utf8');
-  const match = source.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
-  assert.ok(match, `${file} must have YAML frontmatter`);
-  return match[1].trim();
-}
 
 function readFrontmatter(file) {
   const source = fs.readFileSync(file, 'utf8');
@@ -27,63 +18,43 @@ function readFrontmatter(file) {
   };
 }
 
-const workflowNames = fs.readdirSync(commandsDir)
-  .filter((file) => file.endsWith('.md'))
-  .map((file) => file.slice(0, -'.md'.length))
-  .sort();
-
 const skillNames = fs.readdirSync(skillsDir)
   .filter((name) => fs.existsSync(path.join(skillsDir, name, 'SKILL.md')))
   .sort();
 
 for (const name of skillNames) {
   test(`${name} has portable Agent Skills frontmatter`, () => {
-    const metadata = readFrontmatter(path.join(skillsDir, name, 'SKILL.md'));
+    const file = path.join(skillsDir, name, 'SKILL.md');
+    const metadata = readFrontmatter(file);
     assert.equal(metadata.name, name);
     assert.ok(metadata.description, 'description must be non-empty');
+    assert.doesNotMatch(
+      fs.readFileSync(file, 'utf8'),
+      /CLAUDE_PLUGIN_ROOT|commands\/[a-z0-9-]+\.md/,
+    );
   });
 }
 
-for (const name of workflowNames) {
-  test(`${name} has a canonical skill and a thin command adapter`, () => {
-    const skillFile = path.join(skillsDir, name, 'SKILL.md');
-    const commandFile = path.join(commandsDir, `${name}.md`);
-    assert.ok(fs.existsSync(skillFile), `missing ${skillFile}`);
+test('workflow entry points are skills', () => {
+  assert.equal(fs.existsSync(path.join(root, 'commands')), false);
+});
 
-    const skillBody = readBody(skillFile);
-    const commandBody = readBody(commandFile);
-
-    assert.ok(skillBody.length >= 500, `${skillFile} must contain the workflow instructions`);
-    assert.doesNotMatch(skillBody, /CLAUDE_PLUGIN_ROOT|commands\/[a-z0-9-]+\.md/);
-    assert.match(commandBody, new RegExp(`skills/${name}/SKILL\\.md`));
-    assert.ok(commandBody.length < 400, `${commandFile} must remain a thin adapter`);
-  });
-}
-
-test('OpenCode registers canonical skills in addition to commands', () => {
+test('OpenCode registers canonical skills', () => {
   const source = fs.readFileSync(
     path.join(root, '.opencode/plugins/thebous-os.mjs'),
     'utf8',
   );
   assert.match(source, /config\.skills/);
   assert.match(source, /skillsDir/);
+  assert.doesNotMatch(source, /commands/);
 });
 
-test('OpenCode can parse every command adapter', () => {
-  for (const name of workflowNames) {
-    const parsed = parseCommandFile(path.join(commandsDir, `${name}.md`));
-    assert.ok(parsed?.description, `${name} is missing a command description`);
-    assert.match(parsed.template, new RegExp(`skills/${name}/SKILL\\.md`));
-  }
-});
-
-test('Cursor manifest exposes the canonical skills and command adapters', () => {
+test('Cursor manifest exposes the canonical skills', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(cursorPluginDir, 'plugin.json'), 'utf8'));
   assert.equal(manifest.name, 'thebous-os');
   assert.equal(manifest.skills, './skills/');
-  assert.equal(manifest.commands, './commands/');
+  assert.equal(manifest.commands, undefined);
   assert.ok(fs.existsSync(path.join(root, manifest.skills, 'cook', 'SKILL.md')));
-  assert.ok(fs.existsSync(path.join(root, manifest.commands, 'cook.md')));
 });
 
 test('Cursor marketplace points at the repository plugin', () => {
@@ -100,6 +71,19 @@ test('Cursor README documents the UI GitHub import flow', () => {
   assert.match(readme, /\/add-plugin/);
   assert.match(readme, /Paste Link/);
   assert.doesNotMatch(readme, /\/add-plugin https:\/\/github\.com\/TheBous\/thebous-os/);
+});
+
+test('OpenCode setup uses the native skill invocation', () => {
+  const readme = fs.readFileSync(path.join(root, '.opencode/README.md'), 'utf8');
+  assert.match(readme, /@setup/);
+  assert.doesNotMatch(readme, /^\/setup$/m);
+});
+
+test('manual install keeps repository support files', () => {
+  const agents = fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8');
+  assert.match(agents, /references\//);
+  assert.match(agents, /scripts\//);
+  assert.match(agents, /sibling skills/);
 });
 
 test('canonical skills and references do not depend on provider-specific paths', () => {
@@ -324,11 +308,8 @@ test('review workflows share one evidence contract reference', () => {
 
 test('standard review workflow is removed while multiharness variants remain', () => {
   assert.equal(fs.existsSync(path.join(skillsDir, 'review-pr', 'SKILL.md')), false);
-  assert.equal(fs.existsSync(path.join(commandsDir, 'review-pr.md')), false);
   assert.equal(fs.existsSync(path.join(skillsDir, 'review-pr-multiharness', 'SKILL.md')), true);
   assert.equal(fs.existsSync(path.join(skillsDir, 'review-pr-multiharness-ponytail', 'SKILL.md')), true);
-  assert.equal(fs.existsSync(path.join(commandsDir, 'review-pr-multiharness.md')), true);
-  assert.equal(fs.existsSync(path.join(commandsDir, 'review-pr-multiharness-ponytail.md')), true);
 });
 
 test('multiharness review gates findings on evidence instead of uncertainty', () => {

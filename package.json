@@ -13,7 +13,6 @@
   "files": [
     ".cursor-plugin/",
     ".opencode/plugins/",
-    "commands/",
     "skills/",
     "scripts/",
     "references/"

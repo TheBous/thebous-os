@@ -325,8 +325,7 @@ existing Jira `ticket` field remains for old notes and Jira compatibility.
 | Obsidian logging | `TaskRef`, never a Jira key-only assumption |
 
 Provider-specific actions must not be reimplemented in individual workflow
-skills. Commands remain thin adapters and the canonical skills consume this
-contract.
+skills. The canonical skills consume this contract.
 
 ## Migration order
 

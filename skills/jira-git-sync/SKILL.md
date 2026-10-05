@@ -1,11 +1,11 @@
 ---
 name: jira-git-sync
-description: Git → Jira/Notion → Slack → Confluence workflow automation. Use when the user wants to start a task from a Jira or Notion task, create a branch, open/review/merge a PR, tag a release, or sync Confluence docs with code. Route the request to the matching workflow skill instead of reading command adapters.
+description: Git → Jira/Notion → Slack → Confluence workflow automation. Use when the user wants to start a task from a Jira or Notion task, create a branch, open/review/merge a PR, tag a release, or sync Confluence docs with code. Route the request to the matching workflow skill.
 ---
 
 # jira-git-sync
 
-Use this skill as an index for the Jira/Notion/Git/Slack/Confluence workflows. The complete workflow instructions live in the matching canonical skill under `skills/`; root `commands/*.md` files are compatibility adapters only.
+Use this skill as an index for the Jira/Notion/Git/Slack/Confluence workflows. The complete workflow instructions live in the matching canonical skill under `skills/`.
 
 Shared helpers and references, loaded only when the selected workflow requires them:
 
@@ -48,4 +48,4 @@ Map the user's request to the matching skill:
 4. If it references `references/<x>.md`, read that file from `references/`.
 5. If it needs a helper, source it from `scripts/helpers.sh`.
 
-Do not read every workflow into context and do not route through a provider-specific command file.
+Do not read every workflow into context.
