@@ -37,8 +37,8 @@ Canonical skills are available through OpenCode's native `skill` tool when the p
 
 First run of any workflow will ask for configuration (Jira, Slack, Confluence, Obsidian, GitHub repos, Gmail) — one shared setup for the whole plugin:
 
-```bash
-/setup
+```text
+@setup
 ```
 
 Values are saved to `${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env` for future runs. Provider adapters can set `THEBOUS_OS_DATA_DIR` when a host has its own persistent data directory.

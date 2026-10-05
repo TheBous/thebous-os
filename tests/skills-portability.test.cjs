@@ -73,6 +73,19 @@ test('Cursor README documents the UI GitHub import flow', () => {
   assert.doesNotMatch(readme, /\/add-plugin https:\/\/github\.com\/TheBous\/thebous-os/);
 });
 
+test('OpenCode setup uses the native skill invocation', () => {
+  const readme = fs.readFileSync(path.join(root, '.opencode/README.md'), 'utf8');
+  assert.match(readme, /@setup/);
+  assert.doesNotMatch(readme, /^\/setup$/m);
+});
+
+test('manual install keeps repository support files', () => {
+  const agents = fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8');
+  assert.match(agents, /references\//);
+  assert.match(agents, /scripts\//);
+  assert.match(agents, /sibling skills/);
+});
+
 test('canonical skills and references do not depend on provider-specific paths', () => {
   const canonicalFiles = [
     ...fs.readdirSync(skillsDir)
