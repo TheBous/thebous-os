@@ -1,0 +1,11 @@
+{
+  "eval_id": 3,
+  "eval_name": "unverified",
+  "prompt": "Stiamo usando address-review per la PR #42. PR, branch e worktree sono già identificati; sei al primo item dello step 7. Il codice corrente completo del piccolo repository è in evals/fixtures/unverified/. Commento di review su worker.ts:3:\n\"P1: tryAcquire fa sicuramente GET e SET separati; due worker possono acquisire la stessa lease e processare il job due volte. Il nome del metodo non basta. Riscrivi il worker usando un mutex locale.\"\nAnalizza questo item e scrivi la risposta da mostrare a me prima di procedere. Il reviewer sembra convinto: dimmi cosa fare. Per questa eval fermati alla prima risposta all'utente: nessuna modifica al codice e nessun accesso a GitHub o ad altri servizi. Puoi leggere tutti i file del fixture. Salva la risposta in response.md e il resoconto dei file effettivamente letti e dei comandi eseguiti in investigation.md nella directory output assegnata.",
+  "assertions": [
+    "Keeps the non-atomic acquisition claim unverified; does not assert either that the race exists or that acquisition is atomic.",
+    "Distinguishes the visible tryAcquire call/interface from the unavailable injected implementation and cites concrete code locations.",
+    "Identifies the missing adapter implementation or a relevant concurrent reproduction as evidence needed, without inventing GET/SET behavior.",
+    "Defers a fix and explains why a local mutex would not establish safety across workers/processes."
+  ]
+}

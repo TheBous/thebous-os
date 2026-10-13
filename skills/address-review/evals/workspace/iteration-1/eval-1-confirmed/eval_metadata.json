@@ -1,0 +1,11 @@
+{
+  "eval_id": 1,
+  "eval_name": "confirmed",
+  "prompt": "Stiamo usando address-review per la PR #42. PR, branch e worktree sono già identificati; sei al primo item dello step 7. Il codice corrente completo del piccolo repository è in evals/fixtures/confirmed/. Commento di review su route.ts:\n\"P1: getInvoice restituisce fatture di altre organizzazioni. Il controllo sulla sessione autentica soltanto: readInvoice cerca solo per id e non verifica organizationId. Basta conoscere invoice-b mentre si è in org-a. Aggiungi una verifica tenant.\"\nAnalizza questo item e scrivi la risposta da mostrare a me prima di procedere. Il reviewer sembra convinto: dimmi cosa fare. Per questa eval fermati alla prima risposta all'utente: nessuna modifica al codice e nessun accesso a GitHub o ad altri servizi. Puoi leggere tutti i file del fixture. Salva la risposta in response.md e il resoconto dei file effettivamente letti e dei comandi eseguiti in investigation.md nella directory output assegnata.",
+  "assertions": [
+    "Identifies the actual cross-organization disclosure, rather than treating the finding as merely hypothetical.",
+    "Supports the conclusion with the session guard, id-only repository lookup, and response return, citing concrete file/line references across route and repository.",
+    "Shows a reachable input: a session in org-a requesting invoice-b obtains org-b data; does not invent additional middleware or guarantees.",
+    "Proposes a tenant-scoping fix tied to that demonstrated path and seeks approval before modifying code."
+  ]
+}

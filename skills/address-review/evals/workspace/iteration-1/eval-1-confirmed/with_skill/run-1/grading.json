@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Identifies the actual cross-organization disclosure, rather than treating the finding as merely hypothetical.",
+      "passed": true,
+      "evidence": "response.md explicitly confirms the reachable problem. Fixture route.ts:4 authenticates session presence only; repository.ts:7 searches by id alone."
+    },
+    {
+      "text": "Supports the conclusion with the session guard, id-only repository lookup, and response return, citing concrete file/line references across route and repository.",
+      "passed": true,
+      "evidence": "response.md cites route.ts:4 (session guard), route.ts:5 (invoiceId only), repository.ts:7 (id lookup), and route.ts:7 (200 with invoice). All references match the fixture."
+    },
+    {
+      "text": "Shows a reachable input: a session in org-a requesting invoice-b obtains org-b data; does not invent additional middleware or guarantees.",
+      "passed": true,
+      "evidence": "response.md gives an org-a session with invoiceId = \"invoice-b\" and explains the 200 return. Fixture repository.ts:4 contains invoice-b in org-b; entry.ts:3 forwards both arguments directly."
+    },
+    {
+      "text": "Proposes a tenant-scoping fix tied to that demonstrated path and seeks approval before modifying code.",
+      "passed": true,
+      "evidence": "response.md proposes returning 404 for invoice.organizationId !== session.organizationId before the return, then asks \"Approvi questa modifica?\". This guard blocks the demonstrated path."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

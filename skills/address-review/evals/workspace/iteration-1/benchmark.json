@@ -1,0 +1,285 @@
+{
+  "metadata": {
+    "skill_name": "address-review",
+    "skill_path": "/Users/lucvalse/lucvalse/personal/thebous-os/skills/address-review",
+    "executor_model": "Inherited session model; exact runtime ID not exposed",
+    "analyzer_model": "Inherited session model; exact runtime ID not exposed",
+    "timestamp": "2026-10-13T06:19:38Z",
+    "evals_run": [
+      1,
+      2,
+      3
+    ],
+    "runs_per_configuration": 1,
+    "scenario_count": 3
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Identifies the actual cross-organization disclosure, rather than treating the finding as merely hypothetical.",
+          "passed": true,
+          "evidence": "response.md explicitly confirms the reachable problem. Fixture route.ts:4 authenticates session presence only; repository.ts:7 searches by id alone."
+        },
+        {
+          "text": "Supports the conclusion with the session guard, id-only repository lookup, and response return, citing concrete file/line references across route and repository.",
+          "passed": true,
+          "evidence": "response.md cites route.ts:4 (session guard), route.ts:5 (invoiceId only), repository.ts:7 (id lookup), and route.ts:7 (200 with invoice). All references match the fixture."
+        },
+        {
+          "text": "Shows a reachable input: a session in org-a requesting invoice-b obtains org-b data; does not invent additional middleware or guarantees.",
+          "passed": true,
+          "evidence": "response.md gives an org-a session with invoiceId = \"invoice-b\" and explains the 200 return. Fixture repository.ts:4 contains invoice-b in org-b; entry.ts:3 forwards both arguments directly."
+        },
+        {
+          "text": "Proposes a tenant-scoping fix tied to that demonstrated path and seeks approval before modifying code.",
+          "passed": true,
+          "evidence": "response.md proposes returning 404 for invoice.organizationId !== session.organizationId before the return, then asks \"Approvi questa modifica?\". This guard blocks the demonstrated path."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Concludes that the alleged cross-organization disclosure is refuted for the provided request path despite the confident reviewer.",
+          "passed": true,
+          "evidence": "response.md opens \"Il commento è confutato dal codice corrente\". scope.ts:6 and repository.ts:8 establish the existing organization filter."
+        },
+        {
+          "text": "Explains the chain from the session-derived scope in withOrganization to the organizationId predicate in readInvoice, with concrete file/line references.",
+          "passed": true,
+          "evidence": "response.md cites scope.ts:5-6 for the session-derived scope, route.ts:3-4 for wrapper and scope forwarding, and repository.ts:8 for invoice.organizationId === scope.organizationId. These match the fixture."
+        },
+        {
+          "text": "Explains that an org-a session requesting invoice-b receives no invoice/404, rather than org-b data.",
+          "passed": true,
+          "evidence": "response.md explains org-a plus invoice-b returns no invoice and 404 with body null, citing repository.ts:5 and route.ts:5. Verified against the fixture predicate and route branch."
+        },
+        {
+          "text": "Recommends keeping the existing code for this finding, without proposing a redundant authorization check or conceding an unproven bug.",
+          "passed": true,
+          "evidence": "response.md recommends \"mantenere il codice\" and explains no additional route check is needed. Its not-fixed terminology is explicitly explained as no bug on this path, not a concession."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Keeps the non-atomic acquisition claim unverified; does not assert either that the race exists or that acquisition is atomic.",
+          "passed": true,
+          "evidence": "response.md says the claim is unverified and the interface proves neither atomicity nor separate GET/SET operations. The fixture has no adapter implementation."
+        },
+        {
+          "text": "Distinguishes the visible tryAcquire call/interface from the unavailable injected implementation and cites concrete code locations.",
+          "passed": true,
+          "evidence": "response.md cites worker.ts:3-6, lease-store.ts:1-4, and entry.ts:3-5, distinguishing the call/interface from the absent private adapter. All match the fixture."
+        },
+        {
+          "text": "Identifies the missing adapter implementation or a relevant concurrent reproduction as evidence needed, without inventing GET/SET behavior.",
+          "passed": true,
+          "evidence": "response.md requests adapter source/version and, optionally, two independent workers using the same job/store. It does not invent the backend operations."
+        },
+        {
+          "text": "Defers a fix and explains why a local mutex would not establish safety across workers/processes.",
+          "passed": true,
+          "evidence": "response.md defers the fix and explains a local mutex cannot coordinate processes or instances. It requests worker deployment configuration before selecting a correction."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Identifies the actual cross-organization disclosure, rather than treating the finding as merely hypothetical.",
+          "passed": true,
+          "evidence": "response.md says \"Il problema è confermato dal codice\" and traces the existing session-only guard and id-only lookup; verified against route.ts:4-7 and repository.ts:7."
+        },
+        {
+          "text": "Supports the conclusion with the session guard, id-only repository lookup, and response return, citing concrete file/line references across route and repository.",
+          "passed": false,
+          "evidence": "The explanation is correct but response.md supplies no concrete file/line citations or direct code quotes for the session guard, id-only lookup, and response return. investigation.md lists files and prose tracing, without the missing line references or quotes. The proposed guard alone does not evidence those existing statements."
+        },
+        {
+          "text": "Shows a reachable input: a session in org-a requesting invoice-b obtains org-b data; does not invent additional middleware or guarantees.",
+          "passed": true,
+          "evidence": "response.md explicitly states that org-a requesting invoice-b receives 200 and the org-b invoice, including total 900. Fixture repository.ts:4 and route.ts:7 support this, with direct forwarding in entry.ts:3."
+        },
+        {
+          "text": "Proposes a tenant-scoping fix tied to that demonstrated path and seeks approval before modifying code.",
+          "passed": true,
+          "evidence": "response.md proposes !invoice || invoice.organizationId !== session.organizationId with 404 and asks \"Approvi questa modifica?\" before applying it. The proposed guard addresses this disclosure."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Concludes that the alleged cross-organization disclosure is refuted for the provided request path despite the confident reviewer.",
+          "passed": true,
+          "evidence": "response.md says \"Il codice fornito smentisce questo caso\" and correctly explains the existing isolation despite the reviewer. Verified against scope.ts:6 and repository.ts:8."
+        },
+        {
+          "text": "Explains the chain from the session-derived scope in withOrganization to the organizationId predicate in readInvoice, with concrete file/line references.",
+          "passed": false,
+          "evidence": "response.md quotes the exact repository predicate, which counts as concrete evidence for that half of the chain. However, the session-to-scope derivation is only paraphrased by function/file name; no line citation or direct code quote supports that half. investigation.md also lacks line references or source quotes for it. Therefore the full file/line-evidence requirement is unmet."
+        },
+        {
+          "text": "Explains that an org-a session requesting invoice-b receives no invoice/404, rather than org-b data.",
+          "passed": true,
+          "evidence": "response.md explicitly states org-a plus invoice-b yields undefined and the route responds 404. Fixture repository.ts:8 filters out invoice-b and route.ts:5 returns 404."
+        },
+        {
+          "text": "Recommends keeping the existing code for this finding, without proposing a redundant authorization check or conceding an unproven bug.",
+          "passed": true,
+          "evidence": "response.md proposes keeping current code and calls the handler comparison redundant. The fixed label and draft reply say isolation is already enforced and no change was applied; semantically this does not concede an unproven bug."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": null,
+        "tokens": null,
+        "tool_calls": null,
+        "errors": null
+      },
+      "expectations": [
+        {
+          "text": "Keeps the non-atomic acquisition claim unverified; does not assert either that the race exists or that acquisition is atomic.",
+          "passed": true,
+          "evidence": "response.md explicitly says atomicity cannot be established and the separate GET/SET claim remains to be verified. Fixture lease-store.ts defines signatures only; entry.ts:3 confirms the private adapter is absent."
+        },
+        {
+          "text": "Distinguishes the visible tryAcquire call/interface from the unavailable injected implementation and cites concrete code locations.",
+          "passed": true,
+          "evidence": "response.md anchors the item at worker.ts:3 and identifies the only LeaseStore interface in lease-store.ts plus the unique private-adapter injection comment in entry.ts. These are concrete, unambiguous locations in the three tiny fixture files. Unlike cases 1 and 2, this assertion asks for concrete code locations, not specifically file/line citations for every link."
+        },
+        {
+          "text": "Identifies the missing adapter implementation or a relevant concurrent reproduction as evidence needed, without inventing GET/SET behavior.",
+          "passed": true,
+          "evidence": "response.md requests the concrete adapter implementation and proof of concurrency guarantees, together with topology. It treats non-atomic behavior conditionally and invents no GET/SET implementation."
+        },
+        {
+          "text": "Defers a fix and explains why a local mutex would not establish safety across workers/processes.",
+          "passed": true,
+          "evidence": "response.md says a patch needs adapter source or evidence first and explains that a mutex only protects executions sharing it in one process, not separate processes or hosts."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": null,
+      "tokens": null,
+      "tool_calls": null,
+      "errors": null
+    },
+    "old_skill": {
+      "pass_rate": {
+        "mean": 0.8333,
+        "stddev": 0.1443,
+        "min": 0.75,
+        "max": 1.0
+      },
+      "time_seconds": null,
+      "tokens": null,
+      "tool_calls": null,
+      "errors": null
+    },
+    "delta": {
+      "pass_rate": "+16.7 percentage points",
+      "time_seconds": null,
+      "tokens": null
+    }
+  },
+  "notes": [
+    "All three substantive classifications are correct for both skill versions. The two baseline failures concern explicit, traceable source evidence, not accepting false findings.",
+    "Ten of twelve assertions do not discriminate between versions. This is a small synthetic suite with one run per version per scenario; it does not establish statistical superiority or robustness on real PRs.",
+    "Reported standard deviation is across the three different scenarios, not repeated samples of the same prompt.",
+    "Timing, token, tool-call and error metrics were not exposed by executor notifications and are unavailable, not zero.",
+    "Skill description, goal and shared-rubric routing were aligned after execution; the tested verification gate and decision criteria were unchanged.",
+    "The baseline snapshot is archived as ../baseline.md to avoid a nested discoverable SKILL.md inside the plugin."
+  ]
+}

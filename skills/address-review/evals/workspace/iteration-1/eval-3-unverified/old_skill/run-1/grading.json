@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Keeps the non-atomic acquisition claim unverified; does not assert either that the race exists or that acquisition is atomic.",
+      "passed": true,
+      "evidence": "response.md explicitly says atomicity cannot be established and the separate GET/SET claim remains to be verified. Fixture lease-store.ts defines signatures only; entry.ts:3 confirms the private adapter is absent."
+    },
+    {
+      "text": "Distinguishes the visible tryAcquire call/interface from the unavailable injected implementation and cites concrete code locations.",
+      "passed": true,
+      "evidence": "response.md anchors the item at worker.ts:3 and identifies the only LeaseStore interface in lease-store.ts plus the unique private-adapter injection comment in entry.ts. These are concrete, unambiguous locations in the three tiny fixture files. Unlike cases 1 and 2, this assertion asks for concrete code locations, not specifically file/line citations for every link."
+    },
+    {
+      "text": "Identifies the missing adapter implementation or a relevant concurrent reproduction as evidence needed, without inventing GET/SET behavior.",
+      "passed": true,
+      "evidence": "response.md requests the concrete adapter implementation and proof of concurrency guarantees, together with topology. It treats non-atomic behavior conditionally and invents no GET/SET implementation."
+    },
+    {
+      "text": "Defers a fix and explains why a local mutex would not establish safety across workers/processes.",
+      "passed": true,
+      "evidence": "response.md says a patch needs adapter source or evidence first and explains that a mutex only protects executions sharing it in one process, not separate processes or hosts."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

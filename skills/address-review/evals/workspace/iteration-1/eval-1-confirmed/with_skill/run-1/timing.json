@@ -1,0 +1,6 @@
+{
+  "total_tokens": null,
+  "duration_ms": null,
+  "total_duration_seconds": null,
+  "note": "Executor notifications did not expose token or timing metrics. These values are unavailable, not zero."
+}

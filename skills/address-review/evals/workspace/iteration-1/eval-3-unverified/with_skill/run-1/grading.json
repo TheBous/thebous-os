@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Keeps the non-atomic acquisition claim unverified; does not assert either that the race exists or that acquisition is atomic.",
+      "passed": true,
+      "evidence": "response.md says the claim is unverified and the interface proves neither atomicity nor separate GET/SET operations. The fixture has no adapter implementation."
+    },
+    {
+      "text": "Distinguishes the visible tryAcquire call/interface from the unavailable injected implementation and cites concrete code locations.",
+      "passed": true,
+      "evidence": "response.md cites worker.ts:3-6, lease-store.ts:1-4, and entry.ts:3-5, distinguishing the call/interface from the absent private adapter. All match the fixture."
+    },
+    {
+      "text": "Identifies the missing adapter implementation or a relevant concurrent reproduction as evidence needed, without inventing GET/SET behavior.",
+      "passed": true,
+      "evidence": "response.md requests adapter source/version and, optionally, two independent workers using the same job/store. It does not invent the backend operations."
+    },
+    {
+      "text": "Defers a fix and explains why a local mutex would not establish safety across workers/processes.",
+      "passed": true,
+      "evidence": "response.md defers the fix and explains a local mutex cannot coordinate processes or instances. It requests worker deployment configuration before selecting a correction."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

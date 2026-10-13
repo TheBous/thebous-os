@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Identifies the actual cross-organization disclosure, rather than treating the finding as merely hypothetical.",
+      "passed": true,
+      "evidence": "response.md says \"Il problema è confermato dal codice\" and traces the existing session-only guard and id-only lookup; verified against route.ts:4-7 and repository.ts:7."
+    },
+    {
+      "text": "Supports the conclusion with the session guard, id-only repository lookup, and response return, citing concrete file/line references across route and repository.",
+      "passed": false,
+      "evidence": "The explanation is correct but response.md supplies no concrete file/line citations or direct code quotes for the session guard, id-only lookup, and response return. investigation.md lists files and prose tracing, without the missing line references or quotes. The proposed guard alone does not evidence those existing statements."
+    },
+    {
+      "text": "Shows a reachable input: a session in org-a requesting invoice-b obtains org-b data; does not invent additional middleware or guarantees.",
+      "passed": true,
+      "evidence": "response.md explicitly states that org-a requesting invoice-b receives 200 and the org-b invoice, including total 900. Fixture repository.ts:4 and route.ts:7 support this, with direct forwarding in entry.ts:3."
+    },
+    {
+      "text": "Proposes a tenant-scoping fix tied to that demonstrated path and seeks approval before modifying code.",
+      "passed": true,
+      "evidence": "response.md proposes !invoice || invoice.organizationId !== session.organizationId with 404 and asks \"Approvi questa modifica?\" before applying it. The proposed guard addresses this disclosure."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  }
+}

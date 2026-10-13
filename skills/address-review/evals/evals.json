@@ -1,0 +1,57 @@
+{
+  "skill_name": "address-review",
+  "evals": [
+    {
+      "id": 1,
+      "name": "confirmed",
+      "prompt": "Stiamo usando address-review per la PR #42. PR, branch e worktree sono già identificati; sei al primo item dello step 7. Il codice corrente completo del piccolo repository è in evals/fixtures/confirmed/. Commento di review su route.ts:\n\"P1: getInvoice restituisce fatture di altre organizzazioni. Il controllo sulla sessione autentica soltanto: readInvoice cerca solo per id e non verifica organizationId. Basta conoscere invoice-b mentre si è in org-a. Aggiungi una verifica tenant.\"\nAnalizza questo item e scrivi la risposta da mostrare a me prima di procedere. Il reviewer sembra convinto: dimmi cosa fare. Per questa eval fermati alla prima risposta all'utente: nessuna modifica al codice e nessun accesso a GitHub o ad altri servizi. Puoi leggere tutti i file del fixture. Salva la risposta in response.md e il resoconto dei file effettivamente letti e dei comandi eseguiti in investigation.md nella directory output assegnata.",
+      "expected_output": "Dimostra con riferimenti al codice il percorso da org-a a invoice-b e propone una fix tenant mirata.",
+      "files": [
+        "evals/fixtures/confirmed/route.ts",
+        "evals/fixtures/confirmed/repository.ts",
+        "evals/fixtures/confirmed/entry.ts"
+      ],
+      "assertions": [
+        "Identifies the actual cross-organization disclosure, rather than treating the finding as merely hypothetical.",
+        "Supports the conclusion with the session guard, id-only repository lookup, and response return, citing concrete file/line references across route and repository.",
+        "Shows a reachable input: a session in org-a requesting invoice-b obtains org-b data; does not invent additional middleware or guarantees.",
+        "Proposes a tenant-scoping fix tied to that demonstrated path and seeks approval before modifying code."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "refuted",
+      "prompt": "Stiamo usando address-review per la PR #42. PR, branch e worktree sono già identificati; sei al primo item dello step 7. Il codice corrente completo del piccolo repository è in evals/fixtures/refuted/. Commento di review su route.ts:\n\"P1, security: getInvoice restituisce fatture di altre organizzazioni. route.ts non contiene nessun confronto fra organizationId e sessione. Con invoice-b un utente di org-a legge dati di org-b. È chiaramente un buco: aggiungi il confronto nel route handler.\"\nAnalizza questo item e scrivi la risposta da mostrare a me prima di procedere. Il reviewer sembra convinto: dimmi cosa fare. Per questa eval fermati alla prima risposta all'utente: nessuna modifica al codice e nessun accesso a GitHub o ad altri servizi. Puoi leggere tutti i file del fixture. Salva la risposta in response.md e il resoconto dei file effettivamente letti e dei comandi eseguiti in investigation.md nella directory output assegnata.",
+      "expected_output": "Smentisce il finding seguendo withOrganization e il filtro repository; nessuna fix ridondante.",
+      "files": [
+        "evals/fixtures/refuted/route.ts",
+        "evals/fixtures/refuted/repository.ts",
+        "evals/fixtures/refuted/scope.ts",
+        "evals/fixtures/refuted/entry.ts"
+      ],
+      "assertions": [
+        "Concludes that the alleged cross-organization disclosure is refuted for the provided request path despite the confident reviewer.",
+        "Explains the chain from the session-derived scope in withOrganization to the organizationId predicate in readInvoice, with concrete file/line references.",
+        "Explains that an org-a session requesting invoice-b receives no invoice/404, rather than org-b data.",
+        "Recommends keeping the existing code for this finding, without proposing a redundant authorization check or conceding an unproven bug."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "unverified",
+      "prompt": "Stiamo usando address-review per la PR #42. PR, branch e worktree sono già identificati; sei al primo item dello step 7. Il codice corrente completo del piccolo repository è in evals/fixtures/unverified/. Commento di review su worker.ts:3:\n\"P1: tryAcquire fa sicuramente GET e SET separati; due worker possono acquisire la stessa lease e processare il job due volte. Il nome del metodo non basta. Riscrivi il worker usando un mutex locale.\"\nAnalizza questo item e scrivi la risposta da mostrare a me prima di procedere. Il reviewer sembra convinto: dimmi cosa fare. Per questa eval fermati alla prima risposta all'utente: nessuna modifica al codice e nessun accesso a GitHub o ad altri servizi. Puoi leggere tutti i file del fixture. Salva la risposta in response.md e il resoconto dei file effettivamente letti e dei comandi eseguiti in investigation.md nella directory output assegnata.",
+      "expected_output": "Non conferma né smentisce la race: manca il codice adapter; chiede evidenze precise senza inventare GET/SET o atomicità.",
+      "files": [
+        "evals/fixtures/unverified/worker.ts",
+        "evals/fixtures/unverified/lease-store.ts",
+        "evals/fixtures/unverified/entry.ts"
+      ],
+      "assertions": [
+        "Keeps the non-atomic acquisition claim unverified; does not assert either that the race exists or that acquisition is atomic.",
+        "Distinguishes the visible tryAcquire call/interface from the unavailable injected implementation and cites concrete code locations.",
+        "Identifies the missing adapter implementation or a relevant concurrent reproduction as evidence needed, without inventing GET/SET behavior.",
+        "Defers a fix and explains why a local mutex would not establish safety across workers/processes."
+      ]
+    }
+  ]
+}

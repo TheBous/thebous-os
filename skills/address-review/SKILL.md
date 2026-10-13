@@ -1,13 +1,13 @@
 ---
 name: address-review
-description: Resolve code review comments on your PR linked to a Jira or Notion task — implement fixes, apply only after user approval, reply on GitHub, then update documentation
+description: Assess code review comments against code evidence, fix confirmed issues on your PR after user approval, reply to every comment on GitHub, and update documentation for a linked Jira or Notion task
 ---
 
 ## Goal
 
-You received code review feedback on your PR. This workflow guides you through resolving each comment one at a time: read the comment, propose a fix, wait for approval, apply it, then reply on GitHub with a clear verdict. No code is changed without your explicit permission.
+You received code review feedback on your PR. Assess each claim against the current code before presenting it to the user. Propose fixes for confirmed issues, apply them after approval, and reply on GitHub with the outcome for every item, including refuted or unverified claims. No code is changed without your explicit permission.
 
-**Use the evaluation rubric** (`references/evaluation-rubric.md`) to categorize each fix: `fixed`, `partial`, `not-fixed`, `needs-look`, or `outdated`. This ensures consistent reply messaging and clear communication back to reviewers.
+**Use the resolution definitions in [the shared evaluation rubric](../../references/evaluation-rubric.md)** to categorize each outcome: `fixed`, `partial`, `not-fixed`, `needs-look`, or `outdated`. This ensures consistent reply messaging and clear communication back to reviewers.
 
 ## Steps
 
@@ -116,63 +116,84 @@ If it's not available, proceed anyway with the same principle: assess whether th
 
 **Never change code without the user's explicit permission, and never batch multiple items into one fix.** Work through the queue built in step 5 strictly one item at a time:
 
-1. Show the item:
+1. Verify the reviewer's claim in the current code **before presenting an assessment or fix to the user**. Treat the comment as a hypothesis, not as evidence. Read the full surrounding implementation and follow the relevant callers, guards, types, configuration, and dependencies to establish whether the alleged failure is reachable. Actively look for code that contradicts the claim, including validation or guarantees outside the quoted lines.
+
+   Record a verification result distinct from the resolution verdict below:
+   - **Confirmed**: concrete code evidence establishes the triggering conditions, reachable execution path, and actual failure or violated contract. Cite file and line references and explain the causal chain. Use a focused reproduction or existing test when helpful; code evidence may suffice when the failure follows directly from the implementation.
+   - **Refuted**: concrete code evidence contradicts the claim. Cite the guard, invariant, or behavior that prevents the alleged failure, and explain why it applies to this path.
+   - **Unverified**: the evidence is incomplete or depends on unavailable code, runtime behavior, or assumptions. State exactly what is missing and how to verify it. Absence of proof is neither confirmation nor refutation.
+
+   A reviewer's confidence, a plausible hypothetical input, a type assertion, or an assumed library guarantee does not establish runtime behavior. Keep investigating while relevant local evidence is available; if the missing evidence cannot be obtained, retain `unverified` instead of inventing certainty.
+
+2. Present the item, verification result, and supporting evidence to the user. If the item came from a split multi-point comment, show only that point's text. For a **confirmed** issue, propose a concrete fix tied to the demonstrated failure. For a **refuted** issue, explain why no fix is warranted. For an **unverified** issue, explain the missing evidence and next verification step; defer a fix until the issue is confirmed.
+
+   For every confirmed issue, include these three indicators in the response to the user:
+   - **Criticality — 🟢 low, 🟡 medium, or 🔴 high**: assess the demonstrated impact and reachability. Use green for limited impact with a straightforward workaround, yellow for meaningful functional failures affecting a limited path or set of users, and red for serious security exposure, data loss/corruption, or blocked essential flows. Briefly justify the rating from the code evidence; severity is independent of fix effort.
+   - **⏱️ Fix time**: give an approximate range for implementing and verifying the proposed fix, such as `15–30 min` or `1–2 hours`. Exclude waiting for approval or review. Base the estimate on the inspected scope and state any material uncertainty.
+   - **🧩 Code scope**: estimate changed lines and affected files as ranges, including necessary tests or migrations when applicable, such as `~10–25 lines across 1–2 files`. Identify any wider change that makes the estimate uncertain. Prefer the smallest fix that fully addresses the confirmed failure.
+
+   Keep estimates proportional to the available evidence. If time or code scope cannot yet be estimated, say what must be inspected first. For refuted claims, report criticality and fix estimates as not applicable; for unverified claims, report them as undetermined pending evidence. A missing proof must not look like a green, low-risk issue.
+
    ```
    📝 Comment on <file>:<line> (by <author>)
    "<item text>"
+   🔎 Verification: <confirmed | refuted | unverified>
+   Evidence: <file:line references, reachable behavior or counterevidence, and any remaining gaps>
+   💡 Proposal / next step: <fix, reason to keep the code, or verification needed>
+   <🟢 | 🟡 | 🔴> Criticality: <low | medium | high> — <brief impact-based reason>
+   ⏱️ Fix time: <approximate implementation + verification range>
+   🧩 Code scope: <approximate changed-line range and affected files>
    ```
-   If this item came from a split multi-point comment, say so and show only that point's text, not the whole original comment.
 
-2. Analyze the item and propose a concrete fix. Read the full file locally around `<file>:<line>` — not just the snippet quoted in the comment — before proposing anything. The comment alone rarely shows the surrounding function body, type definitions, or imports needed to judge the fix correctly. Any new or renamed identifier in the fix must follow `references/naming-conventions-code.md` (in the plugin root) — plus `references/naming-conventions-db.md` for schema/migration changes or `references/naming-conventions-nextjs.md` for Next.js App Router files. Check for a library-mandated name or an existing sibling pattern before treating something as a violation.
-   ```
-   💡 Proposal: <description of the change you would make>
-
-   Sound good? Do you want to change it or do you have a different opinion?
-   ```
+   For a proposed fix, ask whether the user approves it. Any new or renamed identifier must follow `references/naming-conventions-code.md` (in the plugin root), plus `references/naming-conventions-db.md` for schema/migration changes or `references/naming-conventions-nextjs.md` for Next.js App Router files. Check library-mandated names and existing sibling patterns before treating a name as a violation.
 
 3. Wait for the user's reply. Depending on what they say:
    - **Approves**: apply the fix to the code
    - **Modifies the proposal**: adapt the fix per their instructions, then apply it
    - **Disagrees / wants something else**: discuss until you converge on an action (which may also be "don't change anything")
 
-4. Determine the verdict using `references/evaluation-rubric.md`:
+4. Determine the resolution verdict using the definitions in [the shared evaluation rubric](../../references/evaluation-rubric.md). That rubric also serves `verify-resolved`; for this skill, use the reply policy in step 7 below for every verdict, including `fixed`, `needs-look`, and `outdated`:
 
-   | Verdict | Meaning | Reply? |
-   |---------|---------|--------|
-   | ✅ `fixed` | The code now correctly addresses the concern | No — report only |
-   | ⚠️ `partial` | Partially addressed — some aspects still missing | Yes — quote original concern, explain what remains |
-   | ❌ `not-fixed` | The concern was not addressed | Yes — explain what's still needed |
-   | ❓ `needs-look` | Can't determine from code alone | No — surface to user |
-   | 🔇 `outdated` | The code at this location no longer exists | No — report only |
+   | Verdict | Meaning | Reply content |
+   |---------|---------|---------------|
+   | ✅ `fixed` | The code now correctly addresses the concern | Say what changed and how it resolves the concern |
+   | ⚠️ `partial` | Partially addressed — some aspects still missing | Explain what was addressed and what remains |
+   | ❌ `not-fixed` | No fix was applied, or the concern remains | Explain why no change is warranted, or what is still needed |
+   | ❓ `needs-look` | Can't determine from code alone | State what is unclear and what information or investigation is needed |
+   | 🔇 `outdated` | The code at this location no longer exists | Explain why the comment no longer applies |
 
-   Default to trusting the fix: if the code now addresses your concern — even if the approach differs — mark it as `fixed`. The author may have chosen a better approach than your suggestion.
+   Determine the resolution from the current code evidence, even when the implementation differs from the proposed fix. Mark `fixed` only when the confirmed failure is now addressed. Retain `needs-look` for an unverified claim. For a refuted claim, use `not-fixed` with an explanation that no change is warranted and cite the counterevidence; do not describe it as an outstanding bug.
 
-5. For fixes applied (`fixed` verdict), record the status line:
-   ```
-   ✅ Fixed — <brief description of what changed>
-   ```
+5. Write and post a concise GitHub reply for **every queue item**, whatever its verdict. In particular, a `fixed` item must receive a reply that tells the reviewer what changed; recording the result only in the conversation with the user is not enough. If one original comment was split into multiple items, reply to its thread for each item so every analyzed concern has a clear outcome.
 
-   For partial or not-fixed verdicts, use a reply following the ce-resolve-pr-feedback pattern:
-   ```markdown
-   > [quote the specific sentence from the original review comment]
+   Use the verdict-specific content from the table. For a refuted claim, reply with `🔎 Refuted — <counterevidence and why no change is warranted>`. For an unresolved `partial` or `not-fixed` issue, quote the relevant part of the original concern and explain what remains. For `needs-look`, be explicit about the missing information or next investigation. For `outdated`, briefly explain why the comment no longer applies.
 
-   Still needs attention: [what's missing or wrong with the current fix]
+   Example for a fixed item:
+   ```text
+   ✅ Fixed — Added a null check before accessing the field, so this path no longer throws when the value is absent.
    ```
 
-   Post the reply:
+   Post the reply in the comment's GitHub thread:
    ```bash
    SKILL_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
    echo "[reply body]" | GH_HOST="${PR_HOST:-github.com}" bash "$SKILL_DIR/scripts/reply-to-pr-thread" "$THREAD_ID"
    ```
 
-6. Record the verdict for this item against its `COMMENT_ID`, then move to the next item in the queue.
+6. Record the verdict for this item against its `COMMENT_ID` and confirm that the GitHub reply was posted. If posting fails, report the failure and retry only after fixing the cause; do not mark the item fully handled until the reply succeeds.
 
-Continue through the queue until every item has been resolved and replied to.
+7. For fixes applied (`fixed` verdict), also record the status line:
+   ```
+   ✅ Fixed — <brief description of what changed>
+   ```
+
+8. Move to the next item in the queue.
+
+Continue through the queue until every item has a recorded verdict and a successful GitHub reply.
 
 ### 8. Shared Helpers
 
 Before starting, note these shared references you'll use during the workflow:
-- `references/evaluation-rubric.md` — how to judge each comment's fix (step 7)
+- [Shared evaluation rubric](../../references/evaluation-rubric.md) — resolution definitions; step 7 defines this skill's verification and reply policy
 - `references/run-tests.md` — how to find and run tests (step 9)
 - `references/naming-conventions-{code,db,nextjs}.md` — naming rules for fixes
 
