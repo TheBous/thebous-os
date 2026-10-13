@@ -33,9 +33,7 @@ Never commit API tokens, app passwords or webhooks.
 | Step | Skill | What to do |
 |---|---|---|
 | Start work | `thebous-os:new-branch` | Branch from `main`. From a Jira ticket: `feat/<key>-<slug>` |
-| Implement | `thebous-os:cook` | Code, tests and docs on that branch |
 | Open a PR | `thebous-os:create-pr` | PR against `main`. Title `[KEY] <ticket title>` when a Jira ticket exists |
-| Explain a PR | `thebous-os:explain-change` | Visual walkthrough of the PR, diff or implementation |
 | Review | `thebous-os:review-pr-multiharness` | Default structured review. Use `review-pr-multiharness-ponytail` when a deletion pass is required |
 | Address review | `thebous-os:address-review` | Resolve review comments one by one |
 | Merge | `thebous-os:merge-pr` | Squash into `main` (default), then Jira → In Staging |
@@ -51,8 +49,7 @@ Never commit API tokens, app passwords or webhooks.
 4. Fill in a real title and description (replace every template placeholder).
    When a Jira ticket exists, the title is `[KEY] <ticket title>`. The body
    uses GitHub's Summary / Test plan format and must match the actual diff.
-5. Request review. Use `thebous-os:explain-change` if reviewers need a
-   walkthrough of the PR or diff.
+5. Request review.
 
 ## Review and merge
 

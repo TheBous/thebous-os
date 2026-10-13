@@ -11,7 +11,7 @@ The diff's best extra outcome is getting shorter.
 **REQUIRED SUB-SKILL:** Follow [`skills/review-pr-multiharness/SKILL.md`](../review-pr-multiharness/SKILL.md) in full.
 Do not copy that workflow here. This skill only adds the ponytail lens and
 how it changes roster, report, and GitHub posting. Parent steps still run:
-explain-change, danger score, JSON dispatch contract, report-only GitHub rules.
+scope and intent, danger score, JSON dispatch contract, report-only GitHub rules.
 
 ## Overrides
 

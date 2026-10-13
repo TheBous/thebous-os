@@ -1,9 +1,7 @@
 # thebous-os OpenCode Plugin
 
 This directory contains the OpenCode adapter for thebous-os — a single unified package covering:
-- Git/Jira/Slack/Confluence workflow (new-branch, cook, create-pr, PR review, etc.)
-- Morning briefing (PR reviews, Jira, email, calendar, priority ranking)
-- End-of-day recap (today's work, Claude Code/OpenCode sessions)
+- Git/Jira/Slack/Confluence workflow (new-branch, create-pr, PR review, merge, release)
 
 The source of truth is `../skills/<name>/SKILL.md`.
 
@@ -31,11 +29,11 @@ Add to your `opencode.json`:
 
 Or install directly from GitHub/npm — see the root `README.md` / `package.json`.
 
-Canonical skills are available through OpenCode's native `skill` tool when the plugin is loaded: `create-jira-task`, `new-branch`, `create-pr`, `review-pr-multiharness`, `morning-briefing`, `end-of-day`, `current-status`, and the rest of `skills/`.
+Canonical skills are available through OpenCode's native `skill` tool when the plugin is loaded: `create-jira-task`, `new-branch`, `create-pr`, `review-pr-multiharness`, `address-review`, and the rest of `skills/`.
 
 ## Initial Configuration (first run)
 
-First run of any workflow will ask for configuration (Jira, Slack, Confluence, Obsidian, GitHub repos, Gmail) — one shared setup for the whole plugin:
+First run of any workflow will ask for configuration (Jira, Notion, Slack, Confluence and Obsidian) — one shared setup for the whole plugin:
 
 ```text
 @setup

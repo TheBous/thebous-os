@@ -35,7 +35,7 @@ Follow [`references/task-context.md`](../../references/task-context.md) with:
 Resolve the provider-neutral task reference and normalized task when available;
 A Jira or Notion task may be linked from the branch, PR title, or PR body;
 store `TASK_REF`, `TASK_JSON`, `TASK_REQUIREMENTS`, and the provider source link
-for the walkthrough and review. Jira and Notion are independent providers: if
+for the review. Jira and Notion are independent providers: if
 no task is found or the selected provider is unavailable, continue and record
 the exact coverage gap; do not invent a task. If Jira and Notion references are
 both present, stop and ask which one is the source of truth. If no PR is open on
@@ -48,50 +48,7 @@ source "scripts/helpers.sh"
 TASK_REF=$(resolve_work_item_ref "<branch, title, or body candidate>" 2>/dev/null || true)
 ```
 
-### 2. Explain the PR before reviewing it
-
-Before danger scoring, dispatching reviewers, or writing findings, run the
-project's `explain-change` skill against the PR.
-Pass it the PR number/URL, title, description, head SHA, full diff, changed
-files, tests, and the linked provider-neutral task reference when available. Do not start danger
-scoring, dispatch reviewers, or write findings before this walkthrough has
-been generated.
-
-The walkthrough must include the business goal, before/after behavior, entry
-points, component and data-flow map, relevant implementation chain, examples,
-edge cases, verification steps, and explicit `Evidenza`, `Inferenza`, and `Non
-verificato` labels. It must be a self-contained HTML artifact using local
-CSS/SVG only, not a wall of text.
-
-If a task reference is available, save every generated walkthrough artifact in
-the same review Obsidian root used for PR walkthroughs:
-
-```text
-<OBSIDIAN_VAULT_PATH>/Dev/Review/<TASK_STORAGE_KEY>/explain-change/<slug>-<timestamp>/
-```
-
-Do not overwrite an existing explanation. If the vault is not configured or
-the task storage key cannot be determined, keep the artifact in its temporary
-directory, mark the persistence as skipped in the final report, and never
-invent a task key. Record the absolute artifact path in `Coverage` and in the final
-confirmation.
-
-Use the shared environment loader before writing and create the destination
-only after validating both the vault and the key:
-
-```bash
-source "scripts/helpers.sh"
-if [ -f "$ENV_FILE" ]; then load_env; fi
-
-TASK_STORAGE_KEY=$(obsidian_task_storage_key "$TASK_REF" 2>/dev/null || true)
-if [ -n "${OBSIDIAN_VAULT_PATH:-}" ] && [ -d "${OBSIDIAN_VAULT_PATH}" ] && [ -n "${TASK_STORAGE_KEY:-}" ]; then
-  DEST_DIR="${OBSIDIAN_VAULT_PATH}/Dev/Review/$TASK_STORAGE_KEY/explain-change/<slug>-<timestamp>"
-  mkdir -p "$DEST_DIR"
-  cp -R "<ARTIFACT_DIR>/." "$DEST_DIR/"
-fi
-```
-
-### 3. Resolve scope and intent
+### 2. Resolve scope and intent
 
 Identify the PR URL/number, branch, or local base. Do not switch branches or
 mix a remote PR diff with unrelated workspace files. Capture base/head refs,
@@ -116,7 +73,7 @@ rollout, risks, and follow-ups from the description and the diff. If intent
 is incomplete, mark uncertainty; do not block on a question unless the
 contributing rules make the missing section a merge requirement.
 
-### 4. Classify danger before selecting reviewers
+### 3. Classify danger before selecting reviewers
 
 Always compute a danger score before dispatching subagents. Score every axis
 from 0 to 5:
@@ -159,7 +116,7 @@ The count is a ceiling, not a reason to create irrelevant work. Keep one
 subagent per distinct lens; merge overlapping lenses. A small diff with high
 blast radius gets the high-risk roster.
 
-### 5. Select specialist lenses
+### 4. Select specialist lenses
 
 Always run `correctness`. Add only lenses justified by the diff:
 
@@ -231,7 +188,7 @@ Do not dispatch a generic “review the PR” prompt. If a stack-specific lens i
 selected, specialize `stack-specific.md` with the runtime/framework evidence
 from the diff and name the concrete concern being checked.
 
-### 6. Assign capability tiers without naming models
+### 5. Assign capability tiers without naming models
 
 - `fast`: small, low-risk, deterministic lens;
 - `standard`: normal correctness, tests, standards, maintainability;
@@ -251,7 +208,7 @@ or fewer unless the score is 28–30. If no second harness is available, run
 adversarial locally and disclose the fallback. Never let a closed loop of
 agents approve itself.
 
-### 7. Dispatch and collect
+### 6. Dispatch and collect
 
 Before dispatching, read
 [`../../references/subagent-dispatch.md`](../../references/subagent-dispatch.md) in full.
@@ -286,7 +243,7 @@ Use `P0` for critical breakage/security/data loss, `P1` for high-impact defects
 or broken contracts, `P2` for meaningful edge/performance/maintainability
 issues, and `P3` for narrow advisory improvements.
 
-### 8. Review in passes
+### 7. Review in passes
 
 1. **Story:** verify the requested problem, non-goals, and absence of unrelated work.
 2. **Diff map:** locate semantic hotspots, high fan-out code, boundaries, and generated noise.
@@ -300,7 +257,7 @@ For AI-assisted changes, inspect the test diff early. Look for removed or
 weakened assertions, tautological tests, duplicated patterns, invented APIs,
 missing configuration, and code the author cannot explain.
 
-### 9. Synthesize, validate, and report
+### 8. Synthesize, validate, and report
 
 Apply [`../../references/review-evidence-contract.md`](../../references/review-evidence-contract.md)
 to every candidate. A candidate without an exact changed-line anchor cannot be
@@ -332,7 +289,7 @@ finding list.
 Approve only when you can defend the change as if you owned its production
 behavior. Applying fixes requires an explicit user instruction.
 
-### 10. Publish to GitHub only when explicitly authorized
+### 9. Publish to GitHub only when explicitly authorized
 
 The default remains report-only. Never post to GitHub merely because the
 review is complete. When publication is explicitly authorized, first verify

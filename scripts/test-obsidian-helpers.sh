@@ -39,8 +39,8 @@ ARTIFACT_DIR=$(mktemp -d)
 echo '<html></html>' > "$ARTIFACT_DIR/index.html"
 mkdir -p "$ARTIFACT_DIR/assets"
 echo 'body {}' > "$ARTIFACT_DIR/assets/style.css"
-COPIED_DIR=$(obsidian_copy_ticket_docs "$VAULT" "T-200" "explain-change/run-1" "$ARTIFACT_DIR")
-assert_eq "copy_ticket_docs destination" "$VAULT/Dev/Tickets/T-200/docs/explain-change/run-1" "$COPIED_DIR"
+COPIED_DIR=$(obsidian_copy_ticket_docs "$VAULT" "T-200" "artifact/run-1" "$ARTIFACT_DIR")
+assert_eq "copy_ticket_docs destination" "$VAULT/Dev/Tickets/T-200/docs/artifact/run-1" "$COPIED_DIR"
 assert_file_contains "artifact html copied" "$COPIED_DIR/index.html" '<html></html>'
 assert_file_contains "artifact asset copied" "$COPIED_DIR/assets/style.css" 'body {}'
 rm -rf "$ARTIFACT_DIR"
@@ -48,8 +48,8 @@ rm -rf "$ARTIFACT_DIR"
 # obsidian_copy_daily_artifact — copies a generated report into today's folder
 DAILY_ARTIFACT=$(mktemp -d)
 echo '<html>status</html>' > "$DAILY_ARTIFACT/index.html"
-DAILY_COPIED=$(obsidian_copy_daily_artifact "$VAULT" "current-status-1" "$DAILY_ARTIFACT")
-assert_eq "copy_daily_artifact destination" "$VAULT/Dev/Daily/$(date +%Y-%m-%d)/current-status-1" "$DAILY_COPIED"
+DAILY_COPIED=$(obsidian_copy_daily_artifact "$VAULT" "daily-report-1" "$DAILY_ARTIFACT")
+assert_eq "copy_daily_artifact destination" "$VAULT/Dev/Daily/$(date +%Y-%m-%d)/daily-report-1" "$DAILY_COPIED"
 assert_file_contains "daily artifact copied" "$DAILY_COPIED/index.html" '<html>status</html>'
 rm -rf "$DAILY_ARTIFACT"
 

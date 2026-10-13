@@ -5,13 +5,11 @@
 </p>
 
 Git workflow automation for coding agents, connected to Jira, Notion, GitHub, Slack,
-Confluence, Gmail, calendar, Granola and Obsidian.
+Confluence, Granola and Obsidian.
 
 `thebous-os` turns recurring engineering work into reusable skills: start from a
-Jira ticket or Notion task, create a branch, implement and verify a change, open or review a PR,
+Jira ticket or Notion task, create a branch, open or review a PR,
 merge it, update documentation, and keep the activity linked in Obsidian.
-It also provides a morning briefing, a live current-status report and an end-of-day
-recap.
 
 ## What it includes
 
@@ -19,12 +17,8 @@ recap.
 - Notion task tracking through a configured database with the same provider-neutral contract
 - Provider-neutral task creation with per-task Jira or Notion selection
 - Jira/Notion → Git branch workflow with provider status updates and Slack notifications
-- Feature/fix implementation with optional Granola context and Obsidian logging
 - PR creation, review, review-feedback resolution and merge workflows
 - Release tagging and provider status updates
-- Confluence document creation and update
-- Morning briefing, current-day status and end-of-day recap
-- Visual explanations of PRs, diffs, code and implementation changes
 - Shared provider-neutral credentials and helpers
 
 The workflows are read from the same canonical skills on every provider. External
@@ -63,7 +57,6 @@ The skills are namespaced with the plugin name, for example:
 ```text
 /thebous-os:setup
 /thebous-os:new-branch
-/thebous-os:cook
 /thebous-os:review-pr-multiharness
 ```
 
@@ -93,9 +86,9 @@ The skills are available with the `thebous-os:` namespace, for example:
 
 ```text
 thebous-os:setup
-thebous-os:cook
+thebous-os:new-branch
 thebous-os:create-pr
-thebous-os:current-status
+thebous-os:address-review
 ```
 
 Update the marketplace and plugin with:
@@ -210,14 +203,13 @@ NOTION_DATA_SOURCE_ID=your-notion-data-source-id-if-the-database-has-multiple-so
 NOTION_USER_EMAIL=your-notion-account-email
 ```
 
-The setup can also configure Jira transition IDs, Notion, Slack, Confluence, Obsidian,
-GitHub repositories and Gmail. Keep this file outside the repository and never
-commit API tokens, app passwords or webhooks.
+The setup configures Jira transition IDs, Notion, Slack, Confluence and Obsidian.
+Keep this file outside the repository and never commit API tokens or webhooks.
 
 Notion task databases use the fixed properties `Name`, `Description`, `Status`,
 and optionally `Assignee`, `Due date` and `Start date`. A database with multiple
 data sources must set `NOTION_DATA_SOURCE_ID` explicitly for list queries.
-`NOTION_USER_EMAIL` scopes report queries to one team member when set.
+`NOTION_USER_EMAIL` can scope task list queries to one team member when set.
 
 ## Common workflows
 
@@ -227,15 +219,10 @@ data sources must set `NOTION_DATA_SOURCE_ID` explicitly for list queries.
 | Create a Jira or Notion task | `thebous-os:create-task` |
 | Create a Jira task | `thebous-os:create-jira-task` |
 | Create a branch from a ticket | `thebous-os:new-branch` |
-| Implement a feature or fix | `thebous-os:cook` |
-| Show the current situation | `thebous-os:current-status` |
 | Open a pull request | `thebous-os:create-pr` |
 | Review a PR (multiharness) | `thebous-os:review-pr-multiharness` |
 | Review a PR (multiharness + ponytail) | `thebous-os:review-pr-multiharness-ponytail` |
 | Merge a pull request | `thebous-os:merge-pr` |
-| Explain a change visually | `thebous-os:explain-change` |
-| Run the morning briefing | `thebous-os:morning-briefing` |
-| Run the end-of-day recap | `thebous-os:end-of-day` |
 
 ## Architecture
 

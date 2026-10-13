@@ -157,7 +157,7 @@ Each provider adapter must expose these semantic operations:
 | `create` | `CreateTaskInput` | `Task` | Creates a task in the selected provider. |
 | `set_status` | `TaskRef`, canonical status | `Task` | Idempotent when the task already has that status. |
 | `add_comment` | `TaskRef`, body | `CommentReceipt` | Adds one provider comment. It is not automatically retried after an unknown timeout. |
-| `list` | filters and cursor | page of `Task` | Used by current-status and briefing queries. |
+| `list` | filters and cursor | page of `Task` | Used by provider-neutral task list queries. |
 | `list_activity` | time window, optional refs | page of activity | Used for comments, updates and status changes in briefings. |
 
 Language-neutral signatures:
@@ -320,8 +320,6 @@ existing Jira `ticket` field remains for old notes and Jira compatibility.
 | Create PR | `resolve` → `get` → `add_comment` → `set_status(in_review)` |
 | Merge PR | `resolve` → `set_status(in_staging)` → `add_comment` |
 | Tag release | resolve all refs → `set_status(done)` → `add_comment` |
-| Current status | `list` and `list_activity` per configured provider |
-| Morning briefing | `list` and `list_activity` per configured provider |
 | Obsidian logging | `TaskRef`, never a Jira key-only assumption |
 
 Provider-specific actions must not be reimplemented in individual workflow
@@ -336,11 +334,10 @@ skills. The canonical skills consume this contract.
 3. Add the Notion adapter and validate the fixed database schema.
 4. Migrate `new-branch`, `create-pr` and `merge-pr` first; these exercise the
    smallest complete lifecycle.
-5. Migrate task creation, `current-status`, `morning-briefing`, `cook` and tag
-   workflows.
+5. Migrate task creation and tag workflows.
 
 The first implementation milestone should stop after the lifecycle in step 4;
-briefing and reporting parity can follow once task identity is proven.
+the remaining task workflows can follow once task identity is proven.
 
 ## Explicitly out of scope
 

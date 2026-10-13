@@ -54,7 +54,7 @@ test('Cursor manifest exposes the canonical skills', () => {
   assert.equal(manifest.name, 'thebous-os');
   assert.equal(manifest.skills, './skills/');
   assert.equal(manifest.commands, undefined);
-  assert.ok(fs.existsSync(path.join(root, manifest.skills, 'cook', 'SKILL.md')));
+  assert.ok(fs.existsSync(path.join(root, manifest.skills, 'new-branch', 'SKILL.md')));
 });
 
 test('Cursor marketplace points at the repository plugin', () => {
@@ -141,73 +141,8 @@ test('create-jira-task always uses Markdown H2 description sections', () => {
   assert.doesNotMatch(skill, /^Acceptance Criteria\s*$/m);
 });
 
-test('explain-change defines a provider-neutral visual workflow', () => {
-  const skill = fs.readFileSync(path.join(skillsDir, 'explain-change', 'SKILL.md'), 'utf8');
-  assert.doesNotMatch(skill, /ce-explain|compound-engineering/i);
-  assert.match(skill, /HTML/i);
-  assert.match(skill, /SVG|diagram/i);
-  assert.match(skill, /business/i);
-  assert.match(skill, /technical/i);
-  assert.match(skill, /non.*wall of text|wall of text/i);
-  assert.match(skill, /OBSIDIAN_VAULT_PATH/);
-  assert.match(skill, /obsidian_ticket_docs_dir|obsidian_copy_ticket_docs/);
-  assert.match(skill, /docs\/explain-change/);
-  assert.match(skill, /guiding question/i);
-  assert.match(skill, /Evidence.*Inference.*Unverified/s);
-  assert.match(skill, /output.*function.*transformation.*data source.*input/i);
-  assert.match(skill, /counterexample/i);
-  assert.match(skill, /Final check/i);
-});
-
-test('cook asks before pulling Granola and saves a selected meeting as a ticket page', () => {
-  const cook = fs.readFileSync(path.join(skillsDir, 'cook', 'SKILL.md'), 'utf8');
-  assert.match(cook, /prima di iniziare|before.*coding|before.*implement/i);
-  assert.match(cook, /Granola/i);
-  assert.match(cook, /explicit|esplicita|conferma|ask which meeting/i);
-  assert.match(cook, /non.*auto|never.*auto|mai.*auto/i);
-  assert.match(cook, /Dev\/Tickets|Tickets/);
-  assert.match(cook, /include=transcript/);
-  assert.match(cook, /granola-<GRANOLA_ID>\.md/);
-  assert.match(cook, /granola_id.*title.*created_at.*updated_at.*granola_url.*imported_at/s);
-  assert.match(cook, /\.md/);
-  assert.match(cook, /300 lines of code|300 righe di codice/i);
-  assert.match(cook, /PR stack/i);
-  assert.match(cook, /git diff --numstat/);
-  assert.match(cook, /Do not assume|non.*assum/i);
-});
-
-test('cook initializes provider-neutral SDD artifacts before development', () => {
-  const cook = fs.readFileSync(path.join(skillsDir, 'cook', 'SKILL.md'), 'utf8');
-  assert.match(cook, /direct Jira relationships|linked issues|parent story/i);
-  assert.match(cook, /Do not show the user the ticket title or description/i);
-  assert.match(cook, /Tickets\/<TASK_STORAGE_KEY>\/spec\.md/);
-  assert.match(cook, /Tickets\/<TASK_STORAGE_KEY>\/plan\.md/);
-  assert.match(cook, /Tickets\/<TASK_STORAGE_KEY>\/tasks\.md/);
-  assert.match(cook, /Tickets\/DC-123/);
-  assert.match(cook, /implementation-direction\.html/);
-  assert.match(cook, /Before changing source or test code/i);
-  assert.match(cook, /each delegated action.*tasks\.md/is);
-});
-
-test('current-status covers the current-day multi-source snapshot', () => {
-  const skill = fs.readFileSync(path.join(skillsDir, 'current-status', 'SKILL.md'), 'utf8');
-  assert.match(skill, /current situation|situazione.*giornata/i);
-  assert.match(skill, /GitHub/);
-  assert.match(skill, /Jira/);
-  assert.match(skill, /Confluence/);
-  assert.match(skill, /Calendar|calendario/i);
-  assert.match(skill, /Granola/);
-  assert.match(skill, /non committati|uncommitted/i);
-  assert.match(skill, /HTML/i);
-  assert.match(skill, /read-only|read-only/i);
-  assert.match(skill, /obsidian_copy_daily_artifact/);
-  assert.match(skill, /30 - Current Status\.md/);
-  assert.match(skill, /append_daily_note\.sh/);
-});
-
 test('core workflow skills declare their automatic trigger conditions', () => {
   const triggers = {
-    cook: /Use when.*(develop|implement|plan).*(feature|fix)|Use when.*(feature|fix).*(develop|implement|plan)/is,
     'new-branch': /Use when.*(create|start|open).*branch/is,
     'create-pr': /Use when.*(create|open).*(PR|pull request).*merge|Use when.*merge.*branch/is,
   };

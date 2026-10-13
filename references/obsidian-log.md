@@ -26,7 +26,7 @@ fi
 Dev/
   Tickets/
     <KEY>/
-      plan.md            # from cook's SDD chain
+      plan.md            # task context and branch/PR activity
       review.md          # from review-pr-multiharness
       address-review.md  # from address-review
       calls.md           # wikilinks to related Granola notes
@@ -78,7 +78,7 @@ Granola sync is handled entirely by the user's own
 Obsidian community plugin, syncing into `<vault>/Granola/`. This plugin's
 commands never talk to Granola directly — they only read that folder.
 
-To offer a link (in `new-branch` and `cook`):
+To offer a link in `new-branch`:
 
 ```bash
 source "scripts/helpers.sh"

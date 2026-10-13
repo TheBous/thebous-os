@@ -11,7 +11,7 @@
     {
       "name": "thebous-os",
       "source": ".",
-      "description": "Branch, implement, review, merge and ship workflows, plus morning briefing and end-of-day recap."
+      "description": "Branch, PR review, merge and release workflows."
     }
   ]
 }

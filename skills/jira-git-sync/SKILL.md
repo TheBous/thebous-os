@@ -1,6 +1,6 @@
 ---
 name: jira-git-sync
-description: Git → Jira/Notion → Slack → Confluence workflow automation. Use when the user wants to start a task from a Jira or Notion task, create a branch, open/review/merge a PR, tag a release, or sync Confluence docs with code. Route the request to the matching workflow skill.
+description: Git → Jira/Notion → Slack → Confluence workflow automation. Use when the user wants to start a task from a Jira or Notion task, create a branch, open/review/merge a PR, or tag a release. Route the request to the matching workflow skill.
 ---
 
 # jira-git-sync
@@ -14,7 +14,7 @@ Shared helpers and references, loaded only when the selected workflow requires t
 - `references/jira-task-context.md` — Jira compatibility adapter for existing workflows
 - `references/jira-transition.md` — standard Jira transition and comment pattern
 - `references/run-tests.md` — how to find and run this project's test suite
-- `references/naming-conventions-{code,db,nextjs}.md` — naming rules applied during `cook` and PR review
+- `references/naming-conventions-{code,db,nextjs}.md` — naming rules applied during review fixes and PR review
 - `scripts/helpers.sh` — credential loading, Jira REST, Slack, slugification
 
 Credentials are shared with the rest of thebous-os and live in `${THEBOUS_OS_DATA_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/thebous-os}/.env`. If the file is missing, tell the user to run `/thebous-os:setup` first. Jira and Notion are selected per task; they are not synchronized.
@@ -25,20 +25,16 @@ Map the user's request to the matching skill:
 
 | User intent | Skill |
 |---|---|
-| Configure Jira/Notion/Slack/Confluence/Obsidian/GitHub/Gmail credentials (first run) | `skills/setup/SKILL.md` |
+| Configure Jira/Notion/Slack/Confluence/Obsidian/GitHub integrations (first run) | `skills/setup/SKILL.md` |
 | "Create a task", "open a Jira or Notion task with the standard template" | `skills/create-task/SKILL.md` |
 | "Create a Jira task" (compatibility entry point) | `skills/create-jira-task/SKILL.md` |
 | "Start this task", "create a branch for T-200 or a Notion page" | `skills/new-branch/SKILL.md` |
-| "Implement this", "cook the feature", "fix the bug" | `skills/cook/SKILL.md` |
 | "Open a PR", "create pull request" | `skills/create-pr/SKILL.md` |
 | "Review this PR", "look at PR #N" | `skills/review-pr-multiharness/SKILL.md` |
 | "Address review comments", "fix the review feedback" | `skills/address-review/SKILL.md` |
 | "Verify resolved comments", "check if feedback was fixed" | `skills/verify-resolved/SKILL.md` |
 | "Merge the PR", "ship it" | `skills/merge-pr/SKILL.md` |
 | "Tag a release", "cut v1.2.3" | `skills/tag/SKILL.md` |
-| "Create a Confluence page from this code" | `skills/create-doc/SKILL.md` |
-| "Update the Confluence doc for this" | `skills/update-doc/SKILL.md` |
-| "What is my current situation?", "What do I still have today?" | `skills/current-status/SKILL.md` |
 
 ## Invocation
 

@@ -27,18 +27,6 @@
       ]
     },
     {
-      id: 3,
-      command: "cook",
-      prompt: "Implement the fix on the current branch dc-500-fix-login and make sure tests pass",
-      expected_output: "Extracts DC-500 from the branch name, fetches ticket context, implements the change, runs the test suite, and updates docs if needed",
-      expectations: [
-        "Ticket key is uppercased to DC-500 before any Jira call",
-        "getJiraIssue is called with fields summary and description",
-        "The project's test command is run and its result reported before declaring success",
-        "Documentation is only updated if the change affects documented behavior"
-      ]
-    },
-    {
       id: 4,
       command: "create-pr",
       prompt: "Open a PR for this branch against main",
@@ -89,28 +77,6 @@
       ]
     },
     {
-      id: 9,
-      command: "create-doc",
-      prompt: "Create a Confluence page documenting the new export feature",
-      expected_output: "Loads Confluence credentials, generates page content from the code, and publishes only after user approval",
-      expectations: [
-        "Tells the user to run /thebous-os:setup if CONFLUENCE_PARENT_URL is missing",
-        "Generated content is shown to the user before publishing",
-        "Page is created under CONFLUENCE_PARENT_URL as parent"
-      ]
-    },
-    {
-      id: 10,
-      command: "update-doc",
-      prompt: "Update the Confluence page about the export feature with the latest changes",
-      expected_output: "Finds the existing page by URL or title, and updates it only after showing the diff to the user",
-      expectations: [
-        "Existing page is located before any write, not recreated as a new page",
-        "Proposed changes are shown to the user before calling the update API",
-        "Tells the user to run /thebous-os:setup if credentials are missing"
-      ]
-    },
-    {
       id: 11,
       command: "setup",
       prompt: "Set up jira-git-sync for this project",
@@ -148,16 +114,6 @@
       ]
     },
     {
-      id: 16,
-      command: "cook",
-      prompt: "Implement the fix on branch dc-500-fix-login with OBSIDIAN_VAULT_PATH configured",
-      expected_output: "After SDD completes and tests pass, appends a short summary section to Dev/Tickets/DC-500/plan.md and a daily note entry",
-      expectations: [
-        "The Obsidian section is a short summary, not the full SDD documents",
-        "Skips silently when OBSIDIAN_VAULT_PATH is unset"
-      ]
-    },
-    {
       id: 18,
       command: "address-review",
       prompt: "Address the review comments on the open PR for branch dc-700-y, OBSIDIAN_VAULT_PATH configured",
@@ -175,16 +131,6 @@
       expectations: [
         "Updates the existing pr: field in place rather than duplicating it if called again",
         "Skips silently when no Jira key was matched from the branch"
-      ]
-    },
-    {
-      id: 20,
-      command: "create-doc",
-      prompt: "Document src/auth/login.ts on branch dc-900-w, OBSIDIAN_VAULT_PATH configured",
-      expected_output: "Derives DC-900 from the branch, publishes the Confluence page, then appends the page link to Dev/Tickets/DC-900/plan.md and a daily note entry",
-      expectations: [
-        "Never fails the Confluence publish step because no ticket was found — the doc step and the Obsidian step are independent",
-        "Skips the Obsidian step silently when no branch ticket key is found"
       ]
     },
     {

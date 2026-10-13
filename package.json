@@ -1,7 +1,7 @@
 {
   "name": "@thebous/thebous-os-opencode-plugin",
   "version": "0.2.49",
-  "description": "OpenCode plugin for thebous-os — Git/Jira/Slack/Confluence workflow, morning briefing, and end-of-day recap, all logged to Obsidian",
+  "description": "OpenCode plugin for thebous-os — Git/Jira/Slack/Confluence workflow, all logged to Obsidian",
   "type": "module",
   "main": ".opencode/plugins/thebous-os.mjs",
   "exports": {
@@ -25,9 +25,7 @@
     "github",
     "slack",
     "confluence",
-    "gmail",
     "obsidian",
-    "briefing",
     "automation",
     "workflow"
   ],
