@@ -36,10 +36,10 @@ the user has reached that step.
 
 | Provider | Integration | Best for |
 |---|---|---|
-| Claude Code | Native Claude Code plugin marketplace | Slash commands and plugin-scoped skills |
+| Claude Code | Native Claude Code plugin marketplace | Plugin-scoped skills |
 | Codex | Native Codex plugin marketplace | Codex CLI and Codex desktop plugin installation |
 | OpenCode | Native local plugin adapter plus canonical skills | Local or project-level OpenCode installations |
-| Cursor | Native Cursor plugin plus canonical skills and commands | Cursor Agent and Cursor CLI |
+| Cursor | Native Cursor plugin plus canonical skills | Cursor Agent and Cursor CLI |
 
 ## Installation
 
@@ -148,9 +148,7 @@ Add the adapter to the other project's `opencode.json`:
 }
 ```
 
-Restart OpenCode. The compatibility commands become available as `/cook`,
-`/create-pr`, `/review-pr-multiharness`, `/current-status`, and so on. The
-canonical skills are also registered with OpenCode's native skill discovery.
+Restart OpenCode. The canonical skills are registered with OpenCode's native skill discovery.
 
 To update, pull the repository and restart OpenCode:
 
@@ -172,8 +170,7 @@ paste `https://github.com/TheBous/thebous-os` into `Paste Link` (or the plugin
 search field), then choose `thebous-os` and click `Add to Cursor`. Do not paste
 the URL in the chat composer while the slash-command suggestions are open.
 
-Cursor loads the canonical skills from `skills/` and workflow commands from
-`commands/`. The repository also includes `.cursor-plugin/marketplace.json` for
+Cursor loads the canonical skills from `skills/`. The repository also includes `.cursor-plugin/marketplace.json` for
 team marketplace imports.
 
 For local development or when GitHub import is unavailable:
@@ -244,7 +241,6 @@ data sources must set `NOTION_DATA_SOURCE_ID` explicitly for list queries.
 
 ```text
 skills/<name>/SKILL.md       canonical provider-neutral workflow
-commands/<name>.md            thin command adapter
 .claude-plugin/               Claude Code plugin and marketplace manifests
 .codex-plugin/                Codex plugin manifest
 .cursor-plugin/               Cursor plugin and marketplace manifests
@@ -265,7 +261,7 @@ Requirements: Node.js 18+, Git, and an authenticated `gh` CLI for GitHub workflo
 npm test
 ```
 
-The test suite validates skill frontmatter, command adapters, provider portability,
+The test suite validates skill frontmatter, provider portability,
 manifest version alignment and key workflow requirements.
 
 Version manifests are bumped automatically by
